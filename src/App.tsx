@@ -148,7 +148,7 @@ export function App() {
 
 			<main className="py-3 space-y-3">
 				{entries.map((entry) => (
-					<article key={entry.name} className="flex gap-3 items-stretch">
+					<article key={entry.slug} className="flex gap-3 items-stretch">
 						<Button onClick={() => changeActiveEntryAndAddTime(entry)}>
 							{entry.startedAt ? (
 								<HiPauseCircle size={20} />
