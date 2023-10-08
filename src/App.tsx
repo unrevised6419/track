@@ -159,16 +159,16 @@ export function App() {
 					Why are you running?
 				</strong>
 				<div className="ml-auto flex gap-2">
-					<button onClick={onFullReset} className="p-3">
+					<button onClick={onFullReset} className="p-3" title="Full Reset">
 						<HiTrash size={20} />
 					</button>
-					<button onClick={onResetTimers} className="p-3">
+					<button onClick={onResetTimers} className="p-3" title="Reset Timers">
 						<HiClock size={20} />
 					</button>
-					<button onClick={onImport} className="p-3">
+					<button onClick={onImport} className="p-3" title="Import JM Projects">
 						<HiFolderPlus size={20} />
 					</button>
-					<button onClick={onExport} className="p-3">
+					<button onClick={onExport} className="p-3" title="Export JM Format">
 						<HiClipboardDocument size={20} />
 					</button>
 				</div>
