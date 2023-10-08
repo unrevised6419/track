@@ -56,10 +56,7 @@ export function App() {
 			if (e.startedAt) {
 				const newEntry: Entry = {
 					...e,
-					times: [
-						...e.times,
-						{ startedAt: e.startedAt, endedAt: Date.now() + 1000 * 7 * 60 },
-					],
+					times: [...e.times, { startedAt: e.startedAt, endedAt: Date.now() }],
 					startedAt: undefined,
 				};
 				return newEntry;
