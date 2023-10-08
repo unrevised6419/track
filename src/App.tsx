@@ -79,6 +79,12 @@ export function App() {
 
 		const entriesExports = entries.map((entry) => {
 			const durations = entry.times.map((e) => e.endedAt - e.startedAt);
+
+			if (entry.startedAt) {
+				const lastDuration = Date.now() - entry.startedAt;
+				durations.push(lastDuration);
+			}
+
 			const totalTimeS = sum(durations) / 1000;
 			const totalTimeMinutes = Math.ceil(totalTimeS / 60);
 			const totalTimeHours = totalTimeMinutes / 60;
