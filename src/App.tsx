@@ -7,6 +7,7 @@ import {
 	HiClipboardDocument,
 	HiClock,
 	HiTrash,
+	HiFolderPlus,
 } from "react-icons/hi2";
 import { useLocalStorage } from "@uidotdev/usehooks";
 // @ts-expect-error - no types
@@ -126,6 +127,30 @@ export function App() {
 		setEntries([]);
 	}
 
+	function onImport() {
+		const text = window.prompt("Paste the Jagaad Manager `/projects me` here");
+
+		if (!text) return;
+
+		const lines = text
+			.split("\n")
+			.map((line) => line.split("] - ").at(0)?.split("• ").at(-1)?.trim())
+			.filter(Boolean);
+
+		const entries = lines.map((line) => {
+			const [name, slug] = line.split(" [");
+
+			return {
+				slug,
+				name,
+				times: [],
+				startedAt: undefined,
+			};
+		});
+
+		setEntries(entries);
+	}
+
 	return (
 		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
 			<header className="py-3 flex items-center gap-4 ">
@@ -139,6 +164,9 @@ export function App() {
 					</button>
 					<button onClick={onResetTimers} className="p-3">
 						<HiClock size={20} />
+					</button>
+					<button onClick={onImport} className="p-3">
+						<HiFolderPlus size={20} />
 					</button>
 					<button onClick={onExport} className="p-3">
 						<HiClipboardDocument size={20} />
