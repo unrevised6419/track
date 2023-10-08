@@ -127,7 +127,9 @@ export function App() {
 		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
 			<header className="py-3 flex items-center gap-4 ">
 				<Badge badgeText="Jagaatrack" />
-				<strong className="mt-0.5">Why are you running?</strong>
+				<strong className="hidden sm:inline mt-0.5">
+					Why are you running?
+				</strong>
 				<div className="ml-auto flex gap-2">
 					<button onClick={onFullReset} className="p-3">
 						<HiTrash size={20} />
