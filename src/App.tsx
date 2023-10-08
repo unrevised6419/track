@@ -129,13 +129,13 @@ export function App() {
 				<Badge badgeText="Jagaatrack" />
 				<strong className="mt-0.5">Why are you running?</strong>
 				<div className="ml-auto flex gap-2">
-					<button onClick={onFullReset}>
+					<button onClick={onFullReset} className="p-3">
 						<HiTrash size={20} />
 					</button>
-					<button onClick={onResetTimers}>
+					<button onClick={onResetTimers} className="p-3">
 						<HiClock size={20} />
 					</button>
-					<button onClick={onExport}>
+					<button onClick={onExport} className="p-3">
 						<HiClipboardDocument size={20} />
 					</button>
 				</div>
@@ -248,7 +248,7 @@ function Button({ children, onClick }: ButtonProps) {
 			role="button"
 			aria-label="Click to perform an action"
 			onClick={onClick}
-			className="flex cursor-pointer items-center rounded-md border-2 border-black bg-jagaatrack px-10 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
+			className="flex cursor-pointer items-center rounded-md border-2 border-black bg-jagaatrack px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
 		>
 			{children}
 		</button>
