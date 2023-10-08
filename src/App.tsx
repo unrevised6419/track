@@ -1,4 +1,4 @@
-import { FormEvent, Ref, useRef, useState } from "react";
+import { FormEvent, Ref, useEffect, useRef, useState } from "react";
 import {
 	HiPlusCircle,
 	HiPauseCircle,
@@ -147,32 +147,24 @@ export function App() {
 			</header>
 
 			<main className="py-3 space-y-3">
-				{entries.map((entry) => {
-					const totalTime = getEntryTotalTimeInHumanFormat(entry);
-					return (
-						<article key={entry.name} className="flex gap-3 items-stretch">
-							<Button onClick={() => changeActiveEntryAndAddTime(entry)}>
-								{entry.startedAt ? (
-									<HiPauseCircle size={20} />
-								) : (
-									<HiPlayCircle size={20} />
-								)}
-							</Button>
+				{entries.map((entry) => (
+					<article key={entry.name} className="flex gap-3 items-stretch">
+						<Button onClick={() => changeActiveEntryAndAddTime(entry)}>
+							{entry.startedAt ? (
+								<HiPauseCircle size={20} />
+							) : (
+								<HiPlayCircle size={20} />
+							)}
+						</Button>
 
-							<div className="grow">
-								<Input
-									disabled
-									value={`(${totalTime}) ${entry.name}, ${entry.slug}`}
-									setValue={() => {}}
-									placeholder=""
-								/>
-							</div>
-							<Button onClick={() => removeEntry(entry)}>
-								<HiMinusCircle size={20} />
-							</Button>
-						</article>
-					);
-				})}
+						<div className="grow">
+							<EntryInfo entry={entry} />
+						</div>
+						<Button onClick={() => removeEntry(entry)}>
+							<HiMinusCircle size={20} />
+						</Button>
+					</article>
+				))}
 			</main>
 
 			<form className="flex gap-3" onSubmit={onAddEntry}>
@@ -193,8 +185,39 @@ export function App() {
 	);
 }
 
+function EntryInfo({ entry }: { entry: Entry }) {
+	const [totalTime, setTotalTime] = useState(() =>
+		getEntryTotalTimeInHumanFormat(entry),
+	);
+
+	useEffect(() => {
+		if (!entry.startedAt) return;
+
+		const interval = setInterval(() => {
+			setTotalTime(getEntryTotalTimeInHumanFormat(entry));
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [entry]);
+
+	return (
+		<Input
+			disabled
+			value={`(${totalTime}) ${entry.name}, ${entry.slug}`}
+			setValue={() => {}}
+			placeholder=""
+		/>
+	);
+}
+
 function getEntryTotalTimeInHumanFormat(entry: Entry) {
 	const durations = entry.times.map((t) => t.endedAt - t.startedAt);
+
+	if (entry.startedAt) {
+		const lastDuration = Date.now() - entry.startedAt;
+		durations.push(lastDuration);
+	}
+
 	const totalTimeS = sum(durations) / 1000;
 	const hours = String(Math.floor(totalTimeS / 60 / 60)).padStart(2, "0");
 	const minutes = String(Math.floor(totalTimeS / 60) % 60).padStart(2, "0");
