@@ -252,7 +252,7 @@ export function App() {
 				))}
 			</main>
 
-			<form className="flex gap-3 py-3" onSubmit={onAddEntry}>
+			<form className="flex gap-3 pb-3" onSubmit={onAddEntry}>
 				<Input
 					inputRef={nameInputRef}
 					value={name}
