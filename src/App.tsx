@@ -78,7 +78,11 @@ export function App() {
 		playClick();
 		const date = new Date().toISOString().split("T").at(0) as string;
 
-		const entriesExports = entries.map((entry) => {
+		const filteredEntries = entries.filter(
+			(e) => e.times.length > 0 || e.startedAt,
+		);
+
+		const entriesExports = filteredEntries.map((entry) => {
 			const durations = entry.times.map((e) => e.endedAt - e.startedAt);
 
 			if (entry.startedAt) {
