@@ -213,6 +213,8 @@ export function App() {
 				</div>
 			</header>
 
+			<TotalInfo entries={entries} />
+
 			<main className="py-3 space-y-3">
 				{entries.map((entry) => (
 					<article key={entry.slug} className="flex gap-3 items-stretch">
@@ -250,7 +252,7 @@ export function App() {
 				))}
 			</main>
 
-			<form className="flex gap-3" onSubmit={onAddEntry}>
+			<form className="flex gap-3 py-3" onSubmit={onAddEntry}>
 				<Input
 					inputRef={nameInputRef}
 					value={name}
@@ -265,6 +267,52 @@ export function App() {
 				</Button>
 			</form>
 		</div>
+	);
+}
+
+function sumEntriesTimes(entries: Entry[]) {
+	const durations = entries.map((entry) => {
+		const durations = entry.times.map((t) => t.endedAt - t.startedAt);
+
+		if (entry.startedAt) {
+			const lastDuration = Date.now() - entry.startedAt;
+			durations.push(lastDuration);
+		}
+
+		return sum(durations) / 1000;
+	});
+
+	return sum(durations);
+}
+
+function TotalInfo({ entries }: { entries: Entry[] }) {
+	const [totalTime, setTotalTime] = useState(() => sumEntriesTimes(entries));
+
+	const overtime = useMemo(() => {
+		const eightHoursInSeconds = 8 * 60 * 60;
+		const overtime = totalTime - eightHoursInSeconds;
+		return overtime > 0 ? overtime : 0;
+	}, [totalTime]);
+
+	useEffect(() => {
+		setTotalTime(sumEntriesTimes(entries));
+
+		if (!entries.some((e) => e.startedAt)) return;
+
+		const interval = setInterval(() => {
+			setTotalTime(sumEntriesTimes(entries));
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [entries]);
+
+	return (
+		<aside className="bg-gray-200 p-3 rounded-md font-mono text-sm grid grid-cols-2">
+			<div>Total: {secondsToHumanFormat(totalTime)}</div>
+			<div className={cn(overtime ? "text-red-500" : undefined)}>
+				Overtime: {secondsToHumanFormat(overtime)}
+			</div>
+		</aside>
 	);
 }
 
@@ -308,9 +356,14 @@ function getEntryTotalTimeInHumanFormat(entry: Entry) {
 	}
 
 	const totalTimeS = sum(durations) / 1000;
-	const hours = String(Math.floor(totalTimeS / 60 / 60)).padStart(2, "0");
-	const minutes = String(Math.floor(totalTimeS / 60) % 60).padStart(2, "0");
-	const seconds = String(Math.floor(totalTimeS % 60)).padStart(2, "0");
+
+	return secondsToHumanFormat(totalTimeS);
+}
+
+function secondsToHumanFormat(value: number) {
+	const hours = String(Math.floor(value / 60 / 60)).padStart(2, "0");
+	const minutes = String(Math.floor(value / 60) % 60).padStart(2, "0");
+	const seconds = String(Math.floor(value % 60)).padStart(2, "0");
 
 	return `${hours}:${minutes}:${seconds}`;
 }
