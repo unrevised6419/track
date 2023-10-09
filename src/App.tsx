@@ -270,23 +270,30 @@ export function App() {
 	);
 }
 
-function sumEntriesTimes(entries: Entry[]) {
-	const durations = entries.map((entry) => {
-		const durations = entry.times.map((t) => t.endedAt - t.startedAt);
+function sumEntryTimesInSeconds(entry: Entry) {
+	const durations = entry.times.map((t) => t.endedAt - t.startedAt);
 
-		if (entry.startedAt) {
-			const lastDuration = Date.now() - entry.startedAt;
-			durations.push(lastDuration);
-		}
+	if (entry.startedAt) {
+		const lastDuration = Date.now() - entry.startedAt;
+		durations.push(lastDuration);
+	}
 
-		return sum(durations) / 1000;
-	});
+	return sum(durations) / 1000;
+}
 
+function sumEntriesTimesInSeconds(entries: Entry[]) {
+	const durations = entries.map((entry) => sumEntryTimesInSeconds(entry));
 	return sum(durations);
 }
 
 function TotalInfo({ entries }: { entries: Entry[] }) {
-	const [totalTime, setTotalTime] = useState(() => sumEntriesTimes(entries));
+	const [totalTime, setTotalTime] = useState(() =>
+		sumEntriesTimesInSeconds(entries),
+	);
+	const totalTimeHuman = useMemo(
+		() => secondsToHumanFormat(totalTime),
+		[totalTime],
+	);
 
 	const overtime = useMemo(() => {
 		const eightHoursInSeconds = 8 * 60 * 60;
@@ -294,13 +301,18 @@ function TotalInfo({ entries }: { entries: Entry[] }) {
 		return overtime > 0 ? overtime : 0;
 	}, [totalTime]);
 
+	const overtimeHuman = useMemo(
+		() => secondsToHumanFormat(overtime),
+		[overtime],
+	);
+
 	useEffect(() => {
-		setTotalTime(sumEntriesTimes(entries));
+		setTotalTime(sumEntriesTimesInSeconds(entries));
 
 		if (!entries.some((e) => e.startedAt)) return;
 
 		const interval = setInterval(() => {
-			setTotalTime(sumEntriesTimes(entries));
+			setTotalTime(sumEntriesTimesInSeconds(entries));
 		}, 1000);
 
 		return () => clearInterval(interval);
@@ -308,9 +320,9 @@ function TotalInfo({ entries }: { entries: Entry[] }) {
 
 	return (
 		<aside className="bg-gray-200 p-3 rounded-md font-mono text-sm grid grid-cols-2">
-			<div>Total: {secondsToHumanFormat(totalTime)}</div>
+			<div>Total: {totalTimeHuman}</div>
 			<div className={cn(overtime ? "text-red-500" : undefined)}>
-				Overtime: {secondsToHumanFormat(overtime)}
+				Overtime: {overtimeHuman}
 			</div>
 		</aside>
 	);
@@ -318,16 +330,21 @@ function TotalInfo({ entries }: { entries: Entry[] }) {
 
 function EntryInfo({ entry }: { entry: Entry }) {
 	const [totalTime, setTotalTime] = useState(() =>
-		getEntryTotalTimeInHumanFormat(entry),
+		sumEntryTimesInSeconds(entry),
+	);
+
+	const totalTimeHuman = useMemo(
+		() => secondsToHumanFormat(totalTime),
+		[totalTime],
 	);
 
 	useEffect(() => {
-		setTotalTime(getEntryTotalTimeInHumanFormat(entry));
+		setTotalTime(sumEntryTimesInSeconds(entry));
 
 		if (!entry.startedAt) return;
 
 		const interval = setInterval(() => {
-			setTotalTime(getEntryTotalTimeInHumanFormat(entry));
+			setTotalTime(sumEntryTimesInSeconds(entry));
 		}, 1000);
 
 		return () => clearInterval(interval);
@@ -336,28 +353,16 @@ function EntryInfo({ entry }: { entry: Entry }) {
 	return (
 		<Input
 			disabled
-			value={`(${totalTime}) ${entry.name}, ${entry.slug}`}
+			value={`(${totalTimeHuman}) ${entry.name}, ${entry.slug}`}
 			setValue={() => {}}
 			placeholder=""
 			className={cn(
 				"font-mono",
 				entry.startedAt ? "disabled:bg-red-500" : undefined,
+				!totalTime ? "text-gray-400" : undefined,
 			)}
 		/>
 	);
-}
-
-function getEntryTotalTimeInHumanFormat(entry: Entry) {
-	const durations = entry.times.map((t) => t.endedAt - t.startedAt);
-
-	if (entry.startedAt) {
-		const lastDuration = Date.now() - entry.startedAt;
-		durations.push(lastDuration);
-	}
-
-	const totalTimeS = sum(durations) / 1000;
-
-	return secondsToHumanFormat(totalTimeS);
 }
 
 function secondsToHumanFormat(value: number) {
