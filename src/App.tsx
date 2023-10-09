@@ -1,4 +1,4 @@
-import { FormEvent, Ref, useEffect, useRef, useState } from "react";
+import { FormEvent, Ref, useEffect, useMemo, useRef, useState } from "react";
 import {
 	HiPlusCircle,
 	HiPauseCircle,
@@ -9,7 +9,7 @@ import {
 	HiTrash,
 	HiFolderPlus,
 } from "react-icons/hi2";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
 
@@ -25,12 +25,23 @@ type Entry = {
 	startedAt?: number;
 };
 
+const faviconPlay = "/favicon-play.svg";
+const faviconPause = "/favicon-pause.svg";
+
 export function App() {
 	const [playClick] = useSound("/click.mp3");
 	const [name, setName] = useState("");
 	const [slug, setSlug] = useState("");
 	const [entries, setEntries] = useLocalStorage<Entry[]>("entries", []);
+	const playing = useMemo(() => entries.some((e) => e.startedAt), [entries]);
+	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
 	const nameInputRef = useRef<HTMLInputElement>(null);
+
+	useFavicon(favicon);
+
+	useEffect(() => {
+		setFavicon(playing ? faviconPlay : faviconPause);
+	}, [playing]);
 
 	function onAddEntry(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
