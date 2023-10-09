@@ -233,11 +233,17 @@ export function App() {
 
 						<Button
 							onClick={() => resetEntry(entry)}
-							className="hidden sm:flex"
+							className={cn(
+								"hidden sm:flex",
+								entry.startedAt ? "bg-red-500" : undefined,
+							)}
 						>
 							<HiArrowPath size={20} />
 						</Button>
-						<Button onClick={() => removeEntry(entry)}>
+						<Button
+							onClick={() => removeEntry(entry)}
+							className={entry.startedAt ? "bg-red-500" : undefined}
+						>
 							<HiMinusCircle size={20} />
 						</Button>
 					</article>
@@ -285,6 +291,10 @@ function EntryInfo({ entry }: { entry: Entry }) {
 			value={`(${totalTime}) ${entry.name}, ${entry.slug}`}
 			setValue={() => {}}
 			placeholder=""
+			className={cn(
+				"font-mono",
+				entry.startedAt ? "disabled:bg-red-500" : undefined,
+			)}
 		/>
 	);
 }
@@ -319,6 +329,7 @@ type InputProps = {
 	placeholder: string;
 	disabled?: boolean;
 	inputRef?: Ref<HTMLInputElement>;
+	className?: string;
 };
 
 function Input({
@@ -327,10 +338,14 @@ function Input({
 	placeholder,
 	disabled,
 	inputRef,
+	className,
 }: InputProps) {
 	return (
 		<input
-			className="rounded-md border-2 border-black p-[10px] font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none transition-all focus:translate-x-[3px] focus:translate-y-[3px] focus:shadow-none block disabled:bg-gray-200 w-full"
+			className={cn(
+				"rounded-md border-2 border-black p-[10px] font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none transition-all focus:translate-x-[3px] focus:translate-y-[3px] focus:shadow-none block disabled:bg-gray-200 w-full",
+				className,
+			)}
 			type="text"
 			name="text"
 			id="text"
