@@ -8,10 +8,13 @@ import {
 	HiClock,
 	HiTrash,
 	HiFolderPlus,
+	HiArrowPath,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 type Time = {
 	startedAt: number;
@@ -45,6 +48,7 @@ export function App() {
 
 	function onAddEntry(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
+
 		playClick();
 
 		if (!name || !slug) return;
@@ -58,12 +62,13 @@ export function App() {
 
 	function removeEntry(entry: Entry) {
 		playClick();
-		const newEntries = entries.filter((e) => e.name !== entry.name);
+		const newEntries = entries.filter((e) => e.slug !== entry.slug);
 		setEntries(newEntries);
 	}
 
 	function changeActiveEntryAndAddTime(entry: Entry) {
 		playClick();
+
 		const newEntries = entries.map((e) => {
 			if (e.startedAt) {
 				const newEntry: Entry = {
@@ -74,7 +79,7 @@ export function App() {
 				return newEntry;
 			}
 
-			if (e.name === entry.name) {
+			if (e.slug === entry.slug) {
 				const newEntry: Entry = { ...e, startedAt: Date.now() };
 				return newEntry;
 			}
@@ -87,6 +92,7 @@ export function App() {
 
 	async function onExport() {
 		playClick();
+
 		const date = new Date().toISOString().split("T").at(0) as string;
 
 		const filteredEntries = entries.filter(
@@ -116,6 +122,7 @@ export function App() {
 
 	function onResetTimers() {
 		playClick();
+
 		const shouldReset = window.confirm(
 			"Are you sure you want to reset all timers?",
 		);
@@ -133,6 +140,7 @@ export function App() {
 
 	function onFullReset() {
 		playClick();
+
 		const shouldReset = window.confirm(
 			"Are you sure you want to reset everything?",
 		);
@@ -143,6 +151,8 @@ export function App() {
 	}
 
 	function onImport() {
+		playClick();
+
 		const text = window.prompt("Paste the Jagaad Manager `/projects me` here");
 
 		if (!text) return;
@@ -164,6 +174,20 @@ export function App() {
 		});
 
 		setEntries(entries);
+	}
+
+	function resetEntry(entry: Entry) {
+		playClick();
+
+		const newEntries = entries.map((e) => {
+			if (e.slug === entry.slug) {
+				return { ...e, times: [], startedAt: undefined };
+			}
+
+			return e;
+		});
+
+		setEntries(newEntries);
 	}
 
 	return (
@@ -193,7 +217,7 @@ export function App() {
 				{entries.map((entry) => (
 					<article key={entry.slug} className="flex gap-3 items-stretch">
 						<Button
-							bgColor={entry.startedAt ? "bg-red-500" : undefined}
+							className={entry.startedAt ? "bg-red-500" : undefined}
 							onClick={() => changeActiveEntryAndAddTime(entry)}
 						>
 							{entry.startedAt ? (
@@ -206,6 +230,13 @@ export function App() {
 						<div className="grow">
 							<EntryInfo entry={entry} />
 						</div>
+
+						<Button
+							onClick={() => resetEntry(entry)}
+							className="hidden sm:flex"
+						>
+							<HiArrowPath size={20} />
+						</Button>
 						<Button onClick={() => removeEntry(entry)}>
 							<HiMinusCircle size={20} />
 						</Button>
@@ -237,6 +268,8 @@ function EntryInfo({ entry }: { entry: Entry }) {
 	);
 
 	useEffect(() => {
+		setTotalTime(getEntryTotalTimeInHumanFormat(entry));
+
 		if (!entry.startedAt) return;
 
 		const interval = setInterval(() => {
@@ -314,17 +347,20 @@ function Input({
 type ButtonProps = {
 	children: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-	bgColor?: string;
+	className?: string;
 };
 
 function Button(props: ButtonProps) {
-	const { children, onClick, bgColor = "bg-jagaatrack" } = props;
+	const { children, onClick, className } = props;
 	return (
 		<button
 			role="button"
 			aria-label="Click to perform an action"
 			onClick={onClick}
-			className={`${bgColor} flex cursor-pointer items-center rounded-md border-2 border-black px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none`}
+			className={cn(
+				"flex bg-jagaatrack cursor-pointer items-center rounded-md border-2 border-black px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none",
+				className,
+			)}
 		>
 			{children}
 		</button>
@@ -333,4 +369,8 @@ function Button(props: ButtonProps) {
 
 function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
+}
+
+function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
 }
