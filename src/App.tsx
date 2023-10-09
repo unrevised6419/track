@@ -192,7 +192,10 @@ export function App() {
 			<main className="py-3 space-y-3">
 				{entries.map((entry) => (
 					<article key={entry.slug} className="flex gap-3 items-stretch">
-						<Button onClick={() => changeActiveEntryAndAddTime(entry)}>
+						<Button
+							bgColor={entry.startedAt ? "bg-red-500" : undefined}
+							onClick={() => changeActiveEntryAndAddTime(entry)}
+						>
 							{entry.startedAt ? (
 								<HiPauseCircle size={20} />
 							) : (
@@ -311,15 +314,17 @@ function Input({
 type ButtonProps = {
 	children: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+	bgColor?: string;
 };
 
-function Button({ children, onClick }: ButtonProps) {
+function Button(props: ButtonProps) {
+	const { children, onClick, bgColor = "bg-jagaatrack" } = props;
 	return (
 		<button
 			role="button"
 			aria-label="Click to perform an action"
 			onClick={onClick}
-			className="flex cursor-pointer items-center rounded-md border-2 border-black bg-jagaatrack px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
+			className={`${bgColor} flex cursor-pointer items-center rounded-md border-2 border-black px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none`}
 		>
 			{children}
 		</button>
