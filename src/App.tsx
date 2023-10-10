@@ -3,6 +3,7 @@ import {
 	FormEvent,
 	Ref,
 	SetStateAction,
+	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
@@ -58,29 +59,52 @@ export function App() {
 		setEntries(newEntries);
 	}
 
-	function changeActiveEntryAndAddTime(entry: Entry) {
-		playClick();
+	const changeActiveEntry = useCallback(
+		(entry: Entry) => {
+			playClick();
 
-		const newEntries = entries.map((e) => {
-			if (e.startedAt) {
-				const newEntry: Entry = {
-					...e,
-					times: [...e.times, { startedAt: e.startedAt, endedAt: Date.now() }],
-					startedAt: undefined,
-				};
-				return newEntry;
-			}
+			const newEntries = entries.map((e) => {
+				if (e.startedAt) {
+					const newEntry: Entry = {
+						...e,
+						times: [
+							...e.times,
+							{ startedAt: e.startedAt, endedAt: Date.now() },
+						],
+						startedAt: undefined,
+					};
+					return newEntry;
+				}
 
-			if (e.slug === entry.slug) {
-				const newEntry: Entry = { ...e, startedAt: Date.now() };
-				return newEntry;
-			}
+				if (e.slug === entry.slug) {
+					const newEntry: Entry = { ...e, startedAt: Date.now() };
+					return newEntry;
+				}
 
-			return e;
-		});
+				return e;
+			});
 
-		setEntries(newEntries);
-	}
+			setEntries(newEntries);
+		},
+		[entries, playClick, setEntries],
+	);
+
+	useEffect(() => {
+		function onKeyPress(e: KeyboardEvent) {
+			if (document.activeElement !== document.body) return;
+
+			const maybeDigit = Number(e.key);
+			if (Number.isNaN(maybeDigit)) return;
+
+			const entry = entries[maybeDigit - 1];
+			if (!entry) return;
+
+			changeActiveEntry(entry);
+		}
+
+		document.addEventListener("keypress", onKeyPress);
+		return () => document.removeEventListener("keypress", onKeyPress);
+	}, [changeActiveEntry, entries]);
 
 	async function onExport() {
 		playClick();
@@ -214,7 +238,7 @@ export function App() {
 					<article key={entry.slug} className="flex gap-3 items-stretch">
 						<Button
 							className={entry.startedAt ? "bg-red-500" : undefined}
-							onClick={() => changeActiveEntryAndAddTime(entry)}
+							onClick={() => changeActiveEntry(entry)}
 						>
 							{entry.startedAt ? (
 								<HiPauseCircle size={20} />
@@ -259,7 +283,7 @@ function EntriesLogs({ entries }: { entries: Entry[] }) {
 	}, [entries]);
 
 	return (
-		<section className="grid gap-2 font-mono text-xs pb-3">
+		<section className="grid gap-2 font-mono text-xs pb-3 max-h-96 overflow-y-auto">
 			{allTimes.map((time) => {
 				const startTime = new Date(time.startedAt).toLocaleTimeString();
 				const endTime = new Date(time.endedAt).toLocaleTimeString();
