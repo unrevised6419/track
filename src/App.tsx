@@ -1,4 +1,13 @@
-import { FormEvent, Ref, useEffect, useMemo, useRef, useState } from "react";
+import {
+	Dispatch,
+	FormEvent,
+	Ref,
+	SetStateAction,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	HiPlusCircle,
 	HiPauseCircle,
@@ -33,32 +42,15 @@ const faviconPause = "/favicon-pause.svg";
 
 export function App() {
 	const [playClick] = useSound("/click.mp3");
-	const [name, setName] = useState("");
-	const [slug, setSlug] = useState("");
 	const [entries, setEntries] = useLocalStorage<Entry[]>("entries", []);
 	const playing = useMemo(() => entries.some((e) => e.startedAt), [entries]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
-	const nameInputRef = useRef<HTMLInputElement>(null);
 
 	useFavicon(favicon);
 
 	useEffect(() => {
 		setFavicon(playing ? faviconPlay : faviconPause);
 	}, [playing]);
-
-	function onAddEntry(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-
-		playClick();
-
-		if (!name || !slug) return;
-		if (entries.find((entry) => entry.slug === slug)) return;
-
-		setEntries([...entries, { name, slug: slug, times: [] }]);
-		setName("");
-		setSlug("");
-		nameInputRef.current?.focus();
-	}
 
 	function removeEntry(entry: Entry) {
 		playClick();
@@ -215,6 +207,8 @@ export function App() {
 
 			<TotalInfo entries={entries} />
 
+			<AddForm entries={entries} setEntries={setEntries} />
+
 			<main className="py-3 space-y-3">
 				{entries.map((entry) => (
 					<article key={entry.slug} className="flex gap-3 items-stretch">
@@ -252,21 +246,83 @@ export function App() {
 				))}
 			</main>
 
-			<form className="flex gap-3 pb-3" onSubmit={onAddEntry}>
-				<Input
-					inputRef={nameInputRef}
-					value={name}
-					setValue={(v) => setName(v)}
-					placeholder="Name"
-				/>
-				<div className="max-w-xs">
-					<Input value={slug} setValue={(v) => setSlug(v)} placeholder="Slug" />
-				</div>
-				<Button>
-					<HiPlusCircle size={20} />
-				</Button>
-			</form>
+			<EntriesLogs entries={entries} />
 		</div>
+	);
+}
+
+function EntriesLogs({ entries }: { entries: Entry[] }) {
+	const allTimes = useMemo(() => {
+		return entries
+			.flatMap((e) => e.times.map((t) => ({ ...t, entry: e })))
+			.sort((t1, t2) => t2.endedAt - t1.endedAt);
+	}, [entries]);
+
+	return (
+		<section className="grid gap-2 font-mono text-xs pb-3">
+			{allTimes.map((time) => {
+				const startTime = new Date(time.startedAt).toLocaleTimeString();
+				const endTime = new Date(time.endedAt).toLocaleTimeString();
+				const diff = time.endedAt - time.startedAt;
+				const diffHuman = secondsToHumanFormat(diff / 1000, "units");
+
+				return (
+					<article
+						key={time.startedAt}
+						className="bg-gray-200 px-3 py-2 rounded-md flex justify-between"
+					>
+						<span>
+							({startTime} - {endTime}) {time.entry.name}, {time.entry.slug}
+						</span>
+						<strong>{diffHuman}</strong>
+					</article>
+				);
+			})}
+		</section>
+	);
+}
+
+function AddForm({
+	entries,
+	setEntries,
+}: {
+	entries: Entry[];
+	setEntries: Dispatch<SetStateAction<Entry[]>>;
+}) {
+	const [playClick] = useSound("/click.mp3");
+	const [name, setName] = useState("");
+	const [slug, setSlug] = useState("");
+	const nameInputRef = useRef<HTMLInputElement>(null);
+
+	function onAddEntry(e: FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+
+		playClick();
+
+		if (!name || !slug) return;
+		if (entries.find((entry) => entry.slug === slug)) return;
+
+		setEntries([{ name, slug: slug, times: [] }, ...entries]);
+		setName("");
+		setSlug("");
+		nameInputRef.current?.focus();
+	}
+
+	return (
+		<form className="flex gap-3 pt-3" onSubmit={onAddEntry}>
+			<Input
+				inputRef={nameInputRef}
+				value={name}
+				setValue={(v) => setName(v)}
+				placeholder="Name"
+			/>
+			<div className="max-w-xs">
+				<Input value={slug} setValue={(v) => setSlug(v)} placeholder="Slug" />
+			</div>
+			<Button>
+				<HiPlusCircle size={20} />
+			</Button>
+		</form>
 	);
 }
 
@@ -365,12 +421,32 @@ function EntryInfo({ entry }: { entry: Entry }) {
 	);
 }
 
-function secondsToHumanFormat(value: number) {
-	const hours = String(Math.floor(value / 60 / 60)).padStart(2, "0");
-	const minutes = String(Math.floor(value / 60) % 60).padStart(2, "0");
-	const seconds = String(Math.floor(value % 60)).padStart(2, "0");
+function secondsToHumanFormat(
+	value: number,
+	separator: "units" | "colon" = "colon",
+) {
+	const hours = Math.floor(value / 60 / 60);
+	const minutes = Math.floor(value / 60) % 60;
+	const seconds = Math.ceil(value % 60);
 
-	return `${hours}:${minutes}:${seconds}`;
+	const pairs = [
+		{ value: hours, label: "h" },
+		{ value: minutes, label: "m" },
+		{ value: seconds, label: "s" },
+	];
+
+	if (separator === "units") {
+		return pairs
+			.filter((pair) => pair.value > 0)
+			.map((pair) => `${pair.value}${pair.label}`)
+			.join(" ");
+	}
+
+	const hoursPadded = String(hours).padStart(2, "0");
+	const minutesPadded = String(minutes).padStart(2, "0");
+	const secondsPadded = String(seconds).padStart(2, "0");
+
+	return `${hoursPadded}:${minutesPadded}:${secondsPadded}`;
 }
 
 function Badge({ badgeText }: { badgeText: string }) {
