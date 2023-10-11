@@ -38,6 +38,12 @@ type Entry = {
 	startedAt?: number;
 };
 
+type Log = {
+	startedAt: number;
+	endedAt: number;
+	entry: Entry;
+};
+
 const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
@@ -211,6 +217,20 @@ export function App() {
 		setEntries(newEntries);
 	}
 
+	async function onCopyLogs() {
+		playClick();
+
+		const logs = entriesToLogs(entries, { sort: false });
+		const text = logs.map((log) => {
+			const { timestamp, name, diffHuman } = logToTextParts(log);
+			return `(${timestamp}) ${name} [${diffHuman}]`;
+		});
+
+		await navigator.clipboard.writeText(text.join("\n"));
+
+		window.alert("Logs copied to clipboard!");
+	}
+
 	return (
 		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
 			<header className="py-3 flex items-center gap-4 ">
@@ -282,40 +302,63 @@ export function App() {
 				))}
 			</main>
 
-			<button
-				className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3"
-				onClick={() => setShowLogs(!showLogs)}
-			>
-				{showLogs ? "Hide Logs" : "Show Logs"}
-			</button>
+			<div className="flex gap-2">
+				<button
+					className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3 grow"
+					onClick={() => {
+						playClick();
+						setShowLogs(!showLogs);
+					}}
+				>
+					{showLogs ? "Hide Logs" : "Show Logs"}
+				</button>
+				<button
+					className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3"
+					onClick={onCopyLogs}
+				>
+					Copy Logs
+				</button>
+			</div>
 
 			{showLogs && <EntriesLogs entries={entries} />}
 		</div>
 	);
 }
 
+function entriesToLogs(entries: Entry[], options: { sort: boolean }): Log[] {
+	const logs = entries.flatMap((e) => e.times.map((t) => ({ ...t, entry: e })));
+
+	return options.sort ? logs.sort((t1, t2) => t2.endedAt - t1.endedAt) : logs;
+}
+
+function logToTextParts(log: Log) {
+	const startTime = new Date(log.startedAt).toLocaleTimeString();
+	const endTime = new Date(log.endedAt).toLocaleTimeString();
+	const diff = log.endedAt - log.startedAt;
+	const diffHuman = secondsToHumanFormat(diff / 1000, "units");
+
+	return {
+		timestamp: `${startTime} - ${endTime}`,
+		name: `${log.entry.name}, ${log.entry.slug}`,
+		diffHuman,
+	};
+}
+
 function EntriesLogs({ entries }: { entries: Entry[] }) {
-	const allTimes = useMemo(() => {
-		return entries
-			.flatMap((e) => e.times.map((t) => ({ ...t, entry: e })))
-			.sort((t1, t2) => t2.endedAt - t1.endedAt);
-	}, [entries]);
+	const logs = useMemo(() => entriesToLogs(entries, { sort: true }), [entries]);
 
 	return (
 		<section className="grid gap-2 font-mono text-xs pb-3 max-h-96 overflow-y-auto">
-			{allTimes.map((time) => {
-				const startTime = new Date(time.startedAt).toLocaleTimeString();
-				const endTime = new Date(time.endedAt).toLocaleTimeString();
-				const diff = time.endedAt - time.startedAt;
-				const diffHuman = secondsToHumanFormat(diff / 1000, "units");
+			{logs.map((log) => {
+				const { timestamp, name, diffHuman } = logToTextParts(log);
 
 				return (
 					<article
-						key={time.startedAt}
+						key={log.startedAt}
 						className="bg-gray-200 px-3 py-2 rounded-md flex justify-between"
 					>
 						<span>
-							({startTime} - {endTime}) {time.entry.name}, {time.entry.slug}
+							({timestamp}) {name}
 						</span>
 						<strong>{diffHuman}</strong>
 					</article>
