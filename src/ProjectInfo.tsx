@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { Input } from "./Input";
-import { Entry } from "./types";
-import { cn, secondsToHumanFormat, sumEntryTimesInSeconds } from "./utils";
+import { Project } from "./types";
+import { cn, secondsToHumanFormat, sumProjectTimesInSeconds } from "./utils";
 
-export function EntryInfo({ entry }: { entry: Entry }) {
+export function ProjectInfo({ project }: { project: Project }) {
 	const [totalTime, setTotalTime] = useState(() =>
-		sumEntryTimesInSeconds(entry),
+		sumProjectTimesInSeconds(project),
 	);
 
 	const totalTimeHuman = useMemo(
@@ -14,26 +14,26 @@ export function EntryInfo({ entry }: { entry: Entry }) {
 	);
 
 	useEffect(() => {
-		setTotalTime(sumEntryTimesInSeconds(entry));
+		setTotalTime(sumProjectTimesInSeconds(project));
 
-		if (!entry.startedAt) return;
+		if (!project.startedAt) return;
 
 		const interval = setInterval(() => {
-			setTotalTime(sumEntryTimesInSeconds(entry));
+			setTotalTime(sumProjectTimesInSeconds(project));
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, [entry]);
+	}, [project]);
 
 	return (
 		<Input
 			readOnly
-			value={`(${totalTimeHuman}) ${entry.name}, ${entry.slug}`}
+			value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
 			setValue={() => {}}
 			placeholder=""
 			className={cn(
 				"font-mono pr-12",
-				entry.startedAt ? "read-only:bg-red-500" : undefined,
+				project.startedAt ? "read-only:bg-red-500" : undefined,
 				!totalTime ? "text-gray-400" : undefined,
 			)}
 		/>

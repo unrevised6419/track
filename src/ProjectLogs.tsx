@@ -1,9 +1,12 @@
 import { useMemo } from "react";
-import { Entry } from "./types";
-import { entriesToLogs, logToTextParts } from "./utils";
+import { Project } from "./types";
+import { projectsToLogs, logToTextParts } from "./utils";
 
-export function EntriesLogs({ entries }: { entries: Entry[] }) {
-	const logs = useMemo(() => entriesToLogs(entries, { sort: true }), [entries]);
+export function ProjectLogs({ projects: projects }: { projects: Project[] }) {
+	const logs = useMemo(
+		() => projectsToLogs(projects, { sort: true }),
+		[projects],
+	);
 
 	return (
 		<section className="grid gap-2 font-mono text-xs pb-3 max-h-96 overflow-y-auto">

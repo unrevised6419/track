@@ -7,7 +7,7 @@ export type Time = {
 	activityName?: string;
 };
 
-export type Entry = {
+export type Project = {
 	name: string;
 	slug: string;
 	times: Time[];
@@ -18,6 +18,6 @@ export type Entry = {
 export type Log = {
 	startedAt: number;
 	endedAt: number;
-	entry: Entry;
+	project: Project;
 	activityName: string;
 };

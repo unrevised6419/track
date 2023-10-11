@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
-import { Entry, Log } from "./types";
+import { Project, Log } from "./types";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -40,31 +40,33 @@ export function secondsToHumanFormat(
 	return `${hoursPadded}:${minutesPadded}:${secondsPadded}`;
 }
 
-export function sumEntryTimesInSeconds(entry: Entry) {
-	const durations = entry.times.map((t) => t.endedAt - t.startedAt);
+export function sumProjectTimesInSeconds(project: Project) {
+	const durations = project.times.map((t) => t.endedAt - t.startedAt);
 
-	if (entry.startedAt) {
-		const lastDuration = Date.now() - entry.startedAt;
+	if (project.startedAt) {
+		const lastDuration = Date.now() - project.startedAt;
 		durations.push(lastDuration);
 	}
 
 	return sum(durations) / 1000;
 }
 
-export function sumEntriesTimesInSeconds(entries: Entry[]) {
-	const durations = entries.map((entry) => sumEntryTimesInSeconds(entry));
+export function sumProjectsTimesInSeconds(projects: Project[]) {
+	const durations = projects.map((project) =>
+		sumProjectTimesInSeconds(project),
+	);
 	return sum(durations);
 }
 
-export function entriesToLogs(
-	entries: Entry[],
+export function projectsToLogs(
+	projects: Project[],
 	options: { sort: boolean },
 ): Log[] {
-	const logs = entries.flatMap<Log>((e) =>
-		e.times.map((t) => ({
+	const logs = projects.flatMap((p) =>
+		p.times.map<Log>((t) => ({
 			...t,
-			entry: e,
-			activityName: t.activityName || e.name,
+			project: p,
+			activityName: t.activityName || p.name,
 		})),
 	);
 
@@ -79,7 +81,7 @@ export function logToTextParts(log: Log) {
 
 	return {
 		timestamp: `${startTime} - ${endTime}`,
-		name: `${log.activityName}, ${log.entry.slug}`,
+		name: `${log.activityName}, ${log.project.slug}`,
 		diffHuman,
 	};
 }

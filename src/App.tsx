@@ -17,29 +17,31 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { cn, entriesToLogs, logToTextParts, sum, usePlayClick } from "./utils";
+import { cn, projectsToLogs, logToTextParts, sum, usePlayClick } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Entry, Time } from "./types";
+import { Project, Time } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
-import { EntriesLogs } from "./EntriesLogs";
-import { EntryInfo } from "./EntryInfo";
+import { ProjectLogs } from "./ProjectLogs";
+import { ProjectInfo } from "./ProjectInfo";
 import { Modal } from "./Modal";
 import { Checkbox } from "./Checkbox";
 
 const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
+const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
+
 export function App() {
 	const playClick = usePlayClick();
-	const [entries, setEntries] = useLocalStorage<Entry[]>("entries", []);
-	const playing = useMemo(() => entries.some((e) => e.startedAt), [entries]);
+	const [projects, setProjects] = useLocalStorage<Project[]>("entries", []);
+	const playing = useMemo(() => projects.some((e) => e.startedAt), [projects]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
-		useLocalStorage("jagaatrack:should-ask-for-activity-name", false);
+		useLocalStorage(askForActivityNameStorageKey, false);
 
 	useFavicon(favicon);
 
@@ -47,27 +49,27 @@ export function App() {
 		setFavicon(playing ? faviconPlay : faviconPause);
 	}, [playing]);
 
-	function removeEntry(entry: Entry) {
+	function removeProject(project: Project) {
 		playClick();
-		const newEntries = entries.filter((e) => e.slug !== entry.slug);
-		setEntries(newEntries);
+		const newProjects = projects.filter((e) => e.slug !== project.slug);
+		setProjects(newProjects);
 	}
 
-	const toggleActiveEntry = useCallback(
-		(entry: Entry) => {
+	const toggleActiveProject = useCallback(
+		(project: Project) => {
 			playClick();
 
-			const newEntries = entries.map((e) => {
+			const newProject = projects.map((e) => {
 				if (e.startedAt) {
 					const newLog: Time = {
 						startedAt: e.startedAt,
 						endedAt: Date.now(),
 						activityName: shouldAskForActivityName
-							? e.lastActivityName || entry.name
+							? e.lastActivityName || project.name
 							: e.name,
 					};
 
-					const newEntry: Entry = {
+					const newProject: Project = {
 						...e,
 						times: [...e.times, newLog],
 						startedAt: undefined,
@@ -76,29 +78,29 @@ export function App() {
 							: undefined,
 					};
 
-					return newEntry;
+					return newProject;
 				}
 
-				if (e.slug === entry.slug) {
+				if (e.slug === project.slug) {
 					// TODO: Don't like this, needs to be outside `map`
 					const activityName = shouldAskForActivityName
-						? askForEntryActivityName(e)
+						? askForProjectActivityName(e)
 						: undefined;
 
-					const newEntry: Entry = {
+					const newProject: Project = {
 						...e,
 						startedAt: Date.now(),
 						lastActivityName: activityName,
 					};
-					return newEntry;
+					return newProject;
 				}
 
 				return e;
 			});
 
-			setEntries(newEntries);
+			setProjects(newProject);
 		},
-		[shouldAskForActivityName, entries, playClick, setEntries],
+		[shouldAskForActivityName, projects, playClick, setProjects],
 	);
 
 	useEffect(() => {
@@ -108,30 +110,30 @@ export function App() {
 			const maybeDigit = Number(e.key);
 			if (Number.isNaN(maybeDigit)) return;
 
-			const entry = entries[maybeDigit - 1];
-			if (!entry) return;
+			const project = projects[maybeDigit - 1];
+			if (!project) return;
 
-			toggleActiveEntry(entry);
+			toggleActiveProject(project);
 		}
 
 		document.addEventListener("keypress", onKeyPress);
 		return () => document.removeEventListener("keypress", onKeyPress);
-	}, [toggleActiveEntry, entries]);
+	}, [toggleActiveProject, projects]);
 
 	async function onExport() {
 		playClick();
 
 		const date = new Date().toISOString().split("T").at(0) as string;
 
-		const filteredEntries = entries.filter(
+		const filteredProjects = projects.filter(
 			(e) => e.times.length > 0 || e.startedAt,
 		);
 
-		const entriesExports = filteredEntries.map((entry) => {
-			const durations = entry.times.map((e) => e.endedAt - e.startedAt);
+		const projectsExports = filteredProjects.map((project) => {
+			const durations = project.times.map((e) => e.endedAt - e.startedAt);
 
-			if (entry.startedAt) {
-				const lastDuration = Date.now() - entry.startedAt;
+			if (project.startedAt) {
+				const lastDuration = Date.now() - project.startedAt;
 				durations.push(lastDuration);
 			}
 
@@ -140,10 +142,10 @@ export function App() {
 			const totalTimeHours = totalTimeMinutes / 60;
 			const totalTime = totalTimeHours.toFixed(2);
 
-			return `/track ${date} ${entry.slug} ${totalTime} TODO ${entry.name}`;
+			return `/track ${date} ${project.slug} ${totalTime} TODO ${project.name}`;
 		});
 
-		await navigator.clipboard.writeText(entriesExports.join("\n"));
+		await navigator.clipboard.writeText(projectsExports.join("\n"));
 
 		window.alert("Jagaad Manager Export format was copied to clipboard!");
 	}
@@ -157,13 +159,13 @@ export function App() {
 
 		if (!shouldReset) return;
 
-		const newEntries = entries.map<Entry>((e) => ({
+		const newProjects = projects.map<Project>((e) => ({
 			...e,
 			times: [],
 			startedAt: undefined,
 		}));
 
-		setEntries(newEntries);
+		setProjects(newProjects);
 	}
 
 	function onFullReset() {
@@ -175,7 +177,7 @@ export function App() {
 
 		if (!shouldReset) return;
 
-		setEntries([]);
+		setProjects([]);
 	}
 
 	function onImport() {
@@ -190,7 +192,7 @@ export function App() {
 			.map((line) => line.split("] - ").at(0)?.split("• ").at(-1)?.trim())
 			.filter(Boolean);
 
-		const newEntries = lines.map<Entry>((line) => {
+		const newProjects = lines.map<Project>((line) => {
 			const [name, slug] = line.split(" [");
 
 			return {
@@ -201,31 +203,31 @@ export function App() {
 			};
 		});
 
-		const filteredEntries = newEntries.filter(
-			(entry) => !entries.some((e) => e.slug === entry.slug),
+		const filteredProjects = newProjects.filter(
+			(p) => !projects.some((e) => e.slug === p.slug),
 		);
 
-		setEntries([...entries, ...filteredEntries]);
+		setProjects([...projects, ...filteredProjects]);
 	}
 
-	function resetEntry(entry: Entry) {
+	function resetProject(project: Project) {
 		playClick();
 
-		const newEntries = entries.map((e) => {
-			if (e.slug === entry.slug) {
-				return { ...e, times: [], startedAt: undefined };
+		const newProjects = projects.map((p) => {
+			if (p.slug === project.slug) {
+				return { ...p, times: [], startedAt: undefined };
 			}
 
-			return e;
+			return p;
 		});
 
-		setEntries(newEntries);
+		setProjects(newProjects);
 	}
 
 	async function onCopyLogs() {
 		playClick();
 
-		const logs = entriesToLogs(entries, { sort: false });
+		const logs = projectsToLogs(projects, { sort: false });
 		const text = logs.map((log) => {
 			const { timestamp, name, diffHuman } = logToTextParts(log);
 			return `(${timestamp}) ${name} [${diffHuman}]`;
@@ -265,18 +267,18 @@ export function App() {
 				</div>
 			</header>
 
-			<TotalInfo entries={entries} />
+			<TotalInfo projects={projects} />
 
-			<AddForm entries={entries} setEntries={setEntries} />
+			<AddForm projects={projects} setProjects={setProjects} />
 
 			<main className="py-3 space-y-3">
-				{entries.map((entry, index) => (
-					<article key={entry.slug} className="flex gap-3 items-stretch">
+				{projects.map((project, index) => (
+					<article key={project.slug} className="flex gap-3 items-stretch">
 						<Button
-							className={entry.startedAt ? "bg-red-500" : undefined}
-							onClick={() => toggleActiveEntry(entry)}
+							className={project.startedAt ? "bg-red-500" : undefined}
+							onClick={() => toggleActiveProject(project)}
 						>
-							{entry.startedAt ? (
+							{project.startedAt ? (
 								<HiPauseCircle size={20} />
 							) : (
 								<HiPlayCircle size={20} />
@@ -284,7 +286,7 @@ export function App() {
 						</Button>
 
 						<div className="grow relative">
-							<EntryInfo entry={entry} />
+							<ProjectInfo project={project} />
 							<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
 								{index < 9 && (
 									<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
@@ -295,17 +297,17 @@ export function App() {
 						</div>
 
 						<Button
-							onClick={() => resetEntry(entry)}
+							onClick={() => resetProject(project)}
 							className={cn(
 								"hidden sm:flex",
-								entry.startedAt ? "bg-red-500" : undefined,
+								project.startedAt ? "bg-red-500" : undefined,
 							)}
 						>
 							<HiArrowPath size={20} />
 						</Button>
 						<Button
-							onClick={() => removeEntry(entry)}
-							className={entry.startedAt ? "bg-red-500" : undefined}
+							onClick={() => removeProject(project)}
+							className={project.startedAt ? "bg-red-500" : undefined}
 						>
 							<HiMinusCircle size={20} />
 						</Button>
@@ -331,7 +333,7 @@ export function App() {
 				</button>
 			</div>
 
-			{showLogs && <EntriesLogs entries={entries} />}
+			{showLogs && <ProjectLogs projects={projects} />}
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<Checkbox
@@ -361,10 +363,10 @@ function HeaderButton(props: HeaderButtonProps) {
 	);
 }
 
-function askForEntryActivityName(entry: Entry) {
+function askForProjectActivityName(project: Project) {
 	const userAnswer = window.prompt(
 		"What are you working on?",
-		entry.lastActivityName,
+		project.lastActivityName,
 	);
 
 	return userAnswer || undefined;
