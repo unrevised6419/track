@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+	PropsWithChildren,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import {
 	HiPauseCircle,
 	HiPlayCircle,
@@ -8,16 +14,19 @@ import {
 	HiTrash,
 	HiFolderPlus,
 	HiArrowPath,
+	HiCog8Tooth,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 import { cn, entriesToLogs, logToTextParts, sum, usePlayClick } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { Entry } from "./types";
+import { Entry, Time } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { EntriesLogs } from "./EntriesLogs";
 import { EntryInfo } from "./EntryInfo";
+import { Modal } from "./Modal";
+import { Checkbox } from "./Checkbox";
 
 const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
@@ -28,6 +37,9 @@ export function App() {
 	const playing = useMemo(() => entries.some((e) => e.startedAt), [entries]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
 	const [showLogs, setShowLogs] = useState(false);
+	const [showSettingsModal, setShowSettingsModal] = useState(false);
+	const [shouldAskForActivityName, setShouldAskForActivityName] =
+		useLocalStorage("jagaatrack:should-ask-for-activity-name", false);
 
 	useFavicon(favicon);
 
@@ -41,25 +53,43 @@ export function App() {
 		setEntries(newEntries);
 	}
 
-	const changeActiveEntry = useCallback(
+	const toggleActiveEntry = useCallback(
 		(entry: Entry) => {
 			playClick();
 
 			const newEntries = entries.map((e) => {
 				if (e.startedAt) {
+					const newLog: Time = {
+						startedAt: e.startedAt,
+						endedAt: Date.now(),
+						activityName: shouldAskForActivityName
+							? e.lastActivityName || entry.name
+							: e.name,
+					};
+
 					const newEntry: Entry = {
 						...e,
-						times: [
-							...e.times,
-							{ startedAt: e.startedAt, endedAt: Date.now() },
-						],
+						times: [...e.times, newLog],
 						startedAt: undefined,
+						lastActivityName: shouldAskForActivityName
+							? e.lastActivityName
+							: undefined,
 					};
+
 					return newEntry;
 				}
 
 				if (e.slug === entry.slug) {
-					const newEntry: Entry = { ...e, startedAt: Date.now() };
+					// TODO: Don't like this, needs to be outside `map`
+					const activityName = shouldAskForActivityName
+						? askForEntryActivityName(e)
+						: undefined;
+
+					const newEntry: Entry = {
+						...e,
+						startedAt: Date.now(),
+						lastActivityName: activityName,
+					};
 					return newEntry;
 				}
 
@@ -68,7 +98,7 @@ export function App() {
 
 			setEntries(newEntries);
 		},
-		[entries, playClick, setEntries],
+		[shouldAskForActivityName, entries, playClick, setEntries],
 	);
 
 	useEffect(() => {
@@ -81,12 +111,12 @@ export function App() {
 			const entry = entries[maybeDigit - 1];
 			if (!entry) return;
 
-			changeActiveEntry(entry);
+			toggleActiveEntry(entry);
 		}
 
 		document.addEventListener("keypress", onKeyPress);
 		return () => document.removeEventListener("keypress", onKeyPress);
-	}, [changeActiveEntry, entries]);
+	}, [toggleActiveEntry, entries]);
 
 	async function onExport() {
 		playClick();
@@ -127,7 +157,7 @@ export function App() {
 
 		if (!shouldReset) return;
 
-		const newEntries = entries.map((e) => ({
+		const newEntries = entries.map<Entry>((e) => ({
 			...e,
 			times: [],
 			startedAt: undefined,
@@ -160,7 +190,7 @@ export function App() {
 			.map((line) => line.split("] - ").at(0)?.split("• ").at(-1)?.trim())
 			.filter(Boolean);
 
-		const newEntries = lines.map((line) => {
+		const newEntries = lines.map<Entry>((line) => {
 			const [name, slug] = line.split(" [");
 
 			return {
@@ -214,18 +244,24 @@ export function App() {
 					Why are you running?
 				</strong>
 				<div className="ml-auto flex gap-2">
-					<button onClick={onFullReset} className="p-3" title="Full Reset">
-						<HiTrash size={20} />
-					</button>
-					<button onClick={onResetTimers} className="p-3" title="Reset Timers">
-						<HiClock size={20} />
-					</button>
-					<button onClick={onImport} className="p-3" title="Import JM Projects">
-						<HiFolderPlus size={20} />
-					</button>
-					<button onClick={onExport} className="p-3" title="Export JM Format">
-						<HiClipboardDocument size={20} />
-					</button>
+					<HeaderButton onClick={onFullReset} title="Full Reset">
+						<HiTrash className="w-6 h-6 sm:w-6 sm:h-6" />
+					</HeaderButton>
+					<HeaderButton onClick={onResetTimers} title="Reset Timers">
+						<HiClock className="w-6 h-6 sm:w-6 sm:h-6" />
+					</HeaderButton>
+					<HeaderButton onClick={onImport} title="Import JM Projects">
+						<HiFolderPlus className="w-6 h-6 sm:w-6 sm:h-6" />
+					</HeaderButton>
+					<HeaderButton onClick={onExport} title="Export JM Format">
+						<HiClipboardDocument className="w-6 h-6 sm:w-6 sm:h-6" />
+					</HeaderButton>
+					<HeaderButton
+						onClick={() => setShowSettingsModal(true)}
+						title="Open Settings Modal"
+					>
+						<HiCog8Tooth className="w-6 h-6 sm:w-6 sm:h-6" />
+					</HeaderButton>
 				</div>
 			</header>
 
@@ -238,7 +274,7 @@ export function App() {
 					<article key={entry.slug} className="flex gap-3 items-stretch">
 						<Button
 							className={entry.startedAt ? "bg-red-500" : undefined}
-							onClick={() => changeActiveEntry(entry)}
+							onClick={() => toggleActiveEntry(entry)}
 						>
 							{entry.startedAt ? (
 								<HiPauseCircle size={20} />
@@ -296,6 +332,40 @@ export function App() {
 			</div>
 
 			{showLogs && <EntriesLogs entries={entries} />}
+
+			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
+				<Checkbox
+					item="Ask for activity name?"
+					isChecked={shouldAskForActivityName}
+					setIsChecked={setShouldAskForActivityName}
+				/>
+			</Modal>
 		</div>
 	);
+}
+
+type HeaderButtonProps = PropsWithChildren<{
+	onClick: () => void;
+	title?: string;
+}>;
+
+function HeaderButton(props: HeaderButtonProps) {
+	return (
+		<button
+			onClick={props.onClick}
+			className="p-1.5 sm:p-3 bg-gray-200 rounded-md hover:bg-gray-300 transition-all"
+			title={props.title}
+		>
+			{props.children}
+		</button>
+	);
+}
+
+function askForEntryActivityName(entry: Entry) {
+	const userAnswer = window.prompt(
+		"What are you working on?",
+		entry.lastActivityName,
+	);
+
+	return userAnswer || undefined;
 }
