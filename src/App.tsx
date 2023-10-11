@@ -46,6 +46,7 @@ export function App() {
 	const [entries, setEntries] = useLocalStorage<Entry[]>("entries", []);
 	const playing = useMemo(() => entries.some((e) => e.startedAt), [entries]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
+	const [showLogs, setShowLogs] = useState(false);
 
 	useFavicon(favicon);
 
@@ -281,7 +282,14 @@ export function App() {
 				))}
 			</main>
 
-			<EntriesLogs entries={entries} />
+			<button
+				className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3"
+				onClick={() => setShowLogs(!showLogs)}
+			>
+				{showLogs ? "Hide Logs" : "Show Logs"}
+			</button>
+
+			{showLogs && <EntriesLogs entries={entries} />}
 		</div>
 	);
 }
