@@ -178,7 +178,7 @@ export function App() {
 			.map((line) => line.split("] - ").at(0)?.split("• ").at(-1)?.trim())
 			.filter(Boolean);
 
-		const entries = lines.map((line) => {
+		const newEntries = lines.map((line) => {
 			const [name, slug] = line.split(" [");
 
 			return {
@@ -189,7 +189,11 @@ export function App() {
 			};
 		});
 
-		setEntries(entries);
+		const filteredEntries = newEntries.filter(
+			(entry) => !entries.some((e) => e.slug === entry.slug),
+		);
+
+		setEntries([...entries, ...filteredEntries]);
 	}
 
 	function resetEntry(entry: Entry) {
