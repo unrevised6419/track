@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Project } from "./types";
 import { projectsToLogs, logToTextParts } from "./utils";
 
-export function ProjectLogs({ projects: projects }: { projects: Project[] }) {
+export function ProjectsLogs({ projects: projects }: { projects: Project[] }) {
 	const logs = useMemo(
 		() => projectsToLogs(projects, { sort: true }),
 		[projects],
