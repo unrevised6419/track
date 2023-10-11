@@ -23,7 +23,7 @@ import { Badge } from "./Badge";
 import { Project, Time } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
-import { ProjectLogs } from "./ProjectLogs";
+import { ProjectsLogs } from "./ProjectsLogs";
 import { ProjectInfo } from "./ProjectInfo";
 import { Modal } from "./Modal";
 import { Checkbox } from "./Checkbox";
@@ -32,10 +32,18 @@ const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
+const projectsStorageKey = "jagaatrack:projects";
 
 export function App() {
 	const playClick = usePlayClick();
-	const [projects, setProjects] = useLocalStorage<Project[]>("entries", []);
+
+	// TODO: Remove this after a while
+	const [migratingProjects] = useLocalStorage<Project[]>("entries", []);
+	const [projects, setProjects] = useLocalStorage<Project[]>(
+		projectsStorageKey,
+		migratingProjects,
+	);
+
 	const playing = useMemo(() => projects.some((e) => e.startedAt), [projects]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
 	const [showLogs, setShowLogs] = useState(false);
@@ -333,7 +341,7 @@ export function App() {
 				</button>
 			</div>
 
-			{showLogs && <ProjectLogs projects={projects} />}
+			{showLogs && <ProjectsLogs projects={projects} />}
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<Checkbox
