@@ -60,7 +60,13 @@ export function entriesToLogs(
 	entries: Entry[],
 	options: { sort: boolean },
 ): Log[] {
-	const logs = entries.flatMap((e) => e.times.map((t) => ({ ...t, entry: e })));
+	const logs = entries.flatMap<Log>((e) =>
+		e.times.map((t) => ({
+			...t,
+			entry: e,
+			activityName: t.activityName || e.name,
+		})),
+	);
 
 	return options.sort ? logs.sort((t1, t2) => t2.endedAt - t1.endedAt) : logs;
 }
@@ -73,7 +79,7 @@ export function logToTextParts(log: Log) {
 
 	return {
 		timestamp: `${startTime} - ${endTime}`,
-		name: `${log.entry.name}, ${log.entry.slug}`,
+		name: `${log.activityName}, ${log.entry.slug}`,
 		diffHuman,
 	};
 }
