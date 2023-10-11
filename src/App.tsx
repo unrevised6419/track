@@ -234,7 +234,7 @@ export function App() {
 			<AddForm entries={entries} setEntries={setEntries} />
 
 			<main className="py-3 space-y-3">
-				{entries.map((entry) => (
+				{entries.map((entry, index) => (
 					<article key={entry.slug} className="flex gap-3 items-stretch">
 						<Button
 							className={entry.startedAt ? "bg-red-500" : undefined}
@@ -247,8 +247,15 @@ export function App() {
 							)}
 						</Button>
 
-						<div className="grow">
+						<div className="grow relative">
 							<EntryInfo entry={entry} />
+							<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
+								{index < 9 && (
+									<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
+										{index + 1}
+									</kbd>
+								)}
+							</div>
 						</div>
 
 						<Button
