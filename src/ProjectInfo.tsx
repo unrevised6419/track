@@ -32,7 +32,7 @@ export function ProjectInfo({ project }: { project: Project }) {
 			setValue={() => {}}
 			placeholder=""
 			className={cn(
-				"font-mono pr-12",
+				"font-mono lg:pr-12 sm:pl-10",
 				project.startedAt ? "read-only:bg-red-500" : undefined,
 				!totalTime ? "text-gray-400" : undefined,
 			)}
