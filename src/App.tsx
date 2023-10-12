@@ -1,5 +1,7 @@
 import {
+	Dispatch,
 	PropsWithChildren,
+	SetStateAction,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -15,6 +17,7 @@ import {
 	HiFolderPlus,
 	HiArrowPath,
 	HiCog8Tooth,
+	HiBars2,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 import { cn, projectsToLogs, logToTextParts, sum, usePlayClick } from "./utils";
@@ -27,36 +30,20 @@ import { ProjectsLogs } from "./ProjectsLogs";
 import { ProjectInfo } from "./ProjectInfo";
 import { Modal } from "./Modal";
 import { Checkbox } from "./Checkbox";
+import { ItemInterface, ReactSortable } from "react-sortablejs";
 
 const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
-const projectsStorageKey = "jagaatrack:projects";
-
-function useProjects() {
-	// TODO: Remove migration after a while
-	const [migratingProjects, setMigratingProjects] = useLocalStorage<Project[]>(
-		"entries",
-		[],
-	);
-
-	const state = useLocalStorage<Project[]>(
-		projectsStorageKey,
-		migratingProjects,
-	);
-
-	useEffect(() => {
-		// Clear old stored projects after initial migration
-		setMigratingProjects([]);
-	}, [setMigratingProjects]);
-
-	return state;
-}
 
 export function App() {
 	const playClick = usePlayClick();
 	const [projects, setProjects] = useProjects();
+	const [sortableList, setSortableList] = useSortableList({
+		projects,
+		setProjects,
+	});
 	const playing = useMemo(() => projects.some((e) => e.startedAt), [projects]);
 	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
 	const [showLogs, setShowLogs] = useState(false);
@@ -221,7 +208,7 @@ export function App() {
 				name,
 				times: [],
 				startedAt: undefined,
-			};
+			} satisfies Project;
 		});
 
 		const filteredProjects = newProjects.filter(
@@ -292,7 +279,13 @@ export function App() {
 
 			<AddForm projects={projects} setProjects={setProjects} />
 
-			<main className="py-3 space-y-3">
+			<ReactSortable
+				tag="main"
+				className="py-3 space-y-3"
+				list={sortableList}
+				setList={setSortableList}
+				handle=".js-handle"
+			>
 				{projects.map((project, index) => (
 					<article key={project.slug} className="flex gap-3 items-stretch">
 						<Button
@@ -332,9 +325,17 @@ export function App() {
 						>
 							<HiMinusCircle size={20} />
 						</Button>
+						<Button
+							className={cn(
+								"hidden sm:flex js-handle",
+								project.startedAt ? "bg-red-500" : undefined,
+							)}
+						>
+							<HiBars2 size={20} />
+						</Button>
 					</article>
 				))}
-			</main>
+			</ReactSortable>
 
 			<div className="flex gap-2">
 				<button
@@ -391,4 +392,49 @@ function askForProjectActivityName(project: Project) {
 	);
 
 	return userAnswer || undefined;
+}
+
+function useProjects() {
+	// TODO: Remove migration after a while
+	const [migratingProjects, setMigratingProjects] = useLocalStorage<Project[]>(
+		"entries",
+		[],
+	);
+
+	const state = useLocalStorage<Project[]>(
+		"jagaatrack:projects",
+		migratingProjects,
+	);
+
+	useEffect(() => {
+		// Clear old stored projects after initial migration
+		setMigratingProjects([]);
+	}, [setMigratingProjects]);
+
+	return state;
+}
+
+function useSortableList({
+	projects,
+	setProjects,
+}: {
+	projects: Project[];
+	setProjects: Dispatch<SetStateAction<Project[]>>;
+}) {
+	const projectsList = useMemo<ItemInterface[]>(
+		() => projects.map((p) => ({ id: p.slug })),
+		[projects],
+	);
+	const setProjectsList = useCallback(
+		(list: ItemInterface[]) => {
+			const newProjects = list.map((item) =>
+				projects.find((p) => p.slug === item.id),
+			);
+
+			setProjects(newProjects as Project[]);
+		},
+		[projects, setProjects],
+	);
+
+	return [projectsList, setProjectsList] as const;
 }
