@@ -17,7 +17,7 @@ import {
 	HiFolderPlus,
 	HiArrowPath,
 	HiCog8Tooth,
-	HiBars2,
+	HiBars3BottomLeft,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 import { cn, projectsToLogs, logToTextParts, sum, usePlayClick } from "./utils";
@@ -300,6 +300,11 @@ export function App() {
 						</Button>
 
 						<div className="grow relative">
+							<div className="absolute left-4 inset-y-0 items-center hidden sm:flex">
+								<button className="js-handle">
+									<HiBars3BottomLeft size={20} />
+								</button>
+							</div>
 							<ProjectInfo project={project} />
 							<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
 								{index < 9 && (
@@ -324,14 +329,6 @@ export function App() {
 							className={project.startedAt ? "bg-red-500" : undefined}
 						>
 							<HiMinusCircle size={20} />
-						</Button>
-						<Button
-							className={cn(
-								"hidden sm:flex js-handle",
-								project.startedAt ? "bg-red-500" : undefined,
-							)}
-						>
-							<HiBars2 size={20} />
 						</Button>
 					</article>
 				))}
