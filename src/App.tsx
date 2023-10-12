@@ -112,6 +112,17 @@ export function App() {
 	);
 
 	useEffect(() => {
+		function onKeyDown(e: KeyboardEvent) {
+			if (e.code === "Escape" && isFocusable(document.activeElement)) {
+				document.activeElement.blur();
+			}
+		}
+
+		document.addEventListener("keydown", onKeyDown);
+		return () => document.removeEventListener("keydown", onKeyDown);
+	}, []);
+
+	useEffect(() => {
 		function onKeyPress(e: KeyboardEvent) {
 			if (document.activeElement !== document.body) return;
 
@@ -434,4 +445,16 @@ function useSortableList({
 	);
 
 	return [projectsList, setProjectsList] as const;
+}
+
+type FocusableElements =
+	| HTMLInputElement
+	| HTMLTextAreaElement
+	| HTMLButtonElement
+	| HTMLSelectElement
+	| HTMLAnchorElement;
+
+function isFocusable(element: Element | null): element is FocusableElements {
+	const elements = ["INPUT", "TEXTAREA", "BUTTON", "SELECT", "A"];
+	return elements.includes(element?.tagName as string);
 }
