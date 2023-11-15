@@ -58,19 +58,30 @@ export function sumProjectsTimesInSeconds(projects: Project[]) {
 	return sum(durations);
 }
 
+export function projectToLogs(
+	project: Project,
+	options: { sortByTime: boolean },
+): Log[] {
+	const logs = project.times.map<Log>((t) => ({
+		...t,
+		project: project,
+		activityName: t.activityName || project.name,
+	}));
+
+	return options.sortByTime
+		? logs.sort((t1, t2) => t2.endedAt - t1.endedAt)
+		: logs;
+}
+
 export function projectsToLogs(
 	projects: Project[],
-	options: { sort: boolean },
+	options: { sortByTime: boolean },
 ): Log[] {
-	const logs = projects.flatMap((p) =>
-		p.times.map<Log>((t) => ({
-			...t,
-			project: p,
-			activityName: t.activityName || p.name,
-		})),
-	);
+	const logs = projects.flatMap((p) => projectToLogs(p, options));
 
-	return options.sort ? logs.sort((t1, t2) => t2.endedAt - t1.endedAt) : logs;
+	return options.sortByTime
+		? logs.sort((t1, t2) => t2.endedAt - t1.endedAt)
+		: logs;
 }
 
 export function logToTextParts(log: Log) {
@@ -89,5 +100,54 @@ export function logToTextParts(log: Log) {
 export function usePlayClick() {
 	const [playClick] = useSound("/click.mp3");
 
-	return playClick;
+	return playClick as () => void;
+}
+
+type LogsTimelineOptions = {
+	start: number;
+	timestamps: number[];
+	end: number;
+	minutes: number;
+};
+
+export function logsTimeline(options: LogsTimelineOptions) {
+	const { start, timestamps, end, minutes } = options;
+	const miuntesInMs = 1000 * 60 * minutes;
+	let visualization = "";
+
+	for (let time = start; time <= end; time += miuntesInMs) {
+		const isInRange = timestamps.some((date) =>
+			inRange(date, time, time + miuntesInMs),
+		);
+
+		visualization += isInRange ? "🟥" : "🟨";
+	}
+
+	return visualization;
+}
+
+function inRange(value: number, start: number, end: number): boolean {
+	return start <= value && value <= end;
+}
+
+export function getLogsConstraints(projects: Project[]) {
+	const times = projects.flatMap((e) => e.times);
+	const startedAts = projects.map((e) => e.startedAt).filter(Boolean);
+
+	const start = Math.min(...startedAts, ...times.map((e) => e.startedAt));
+	const end = Math.max(...times.map((e) => e.endedAt));
+
+	return { start, end };
+}
+
+export function projectToTimestamps(project: Project, minutes: number) {
+	return project.times.flatMap((e) => {
+		const blocks: number[] = [];
+
+		for (let i = e.startedAt; i < e.endedAt; i += 1000 * 60 * minutes) {
+			blocks.push(i);
+		}
+
+		return blocks.length > 0 ? blocks : [(e.startedAt + e.endedAt) / 2];
+	});
 }
