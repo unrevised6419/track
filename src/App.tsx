@@ -36,6 +36,9 @@ const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
+const projectEndButtonsStorageKey = "jagaatrack:project-end-buttons";
+
+type EndButton = "reset" | "remove";
 
 export function App() {
 	const playClick = usePlayClick();
@@ -50,6 +53,18 @@ export function App() {
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
 		useLocalStorage(askForActivityNameStorageKey, false);
+
+	const [projectEndButtons, _setProjectEndButtons] = useLocalStorage<
+		EndButton[]
+	>(projectEndButtonsStorageKey, ["reset", "remove"]);
+
+	function toggleProjectEndButton(button: EndButton) {
+		const newButtons = projectEndButtons.includes(button)
+			? projectEndButtons.filter((e) => e !== button)
+			: [...projectEndButtons, button];
+
+		_setProjectEndButtons([...new Set(newButtons)]);
+	}
 
 	useFavicon(favicon);
 
@@ -326,21 +341,23 @@ export function App() {
 							</div>
 						</div>
 
-						<Button
-							onClick={() => resetProject(project)}
-							className={cn(
-								"hidden sm:flex",
-								project.startedAt ? "bg-red-500" : undefined,
-							)}
-						>
-							<HiArrowPath size={20} />
-						</Button>
-						<Button
-							onClick={() => removeProject(project)}
-							className={project.startedAt ? "bg-red-500" : undefined}
-						>
-							<HiMinusCircle size={20} />
-						</Button>
+						{projectEndButtons.includes("reset") && (
+							<Button
+								onClick={() => resetProject(project)}
+								className={cn(project.startedAt ? "bg-red-500" : undefined)}
+							>
+								<HiArrowPath size={20} />
+							</Button>
+						)}
+
+						{projectEndButtons.includes("remove") && (
+							<Button
+								onClick={() => removeProject(project)}
+								className={project.startedAt ? "bg-red-500" : undefined}
+							>
+								<HiMinusCircle size={20} />
+							</Button>
+						)}
 					</article>
 				))}
 			</ReactSortable>
@@ -366,11 +383,28 @@ export function App() {
 			{showLogs && <ProjectsLogs projects={projects} />}
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
-				<Checkbox
-					item="Ask for activity name?"
-					isChecked={shouldAskForActivityName}
-					setIsChecked={setShouldAskForActivityName}
-				/>
+				<div className="grid gap-2">
+					<div className="border px-2 rounded-md">
+						<Checkbox
+							item="Ask for activity name?"
+							isChecked={shouldAskForActivityName}
+							setIsChecked={setShouldAskForActivityName}
+						/>
+					</div>
+
+					<div className="border px-2 rounded-md">
+						<Checkbox
+							item="Show Project Reset Button"
+							isChecked={projectEndButtons.includes("reset")}
+							setIsChecked={() => toggleProjectEndButton("reset")}
+						/>
+						<Checkbox
+							item="Show Project Remove Button"
+							isChecked={projectEndButtons.includes("remove")}
+							setIsChecked={() => toggleProjectEndButton("remove")}
+						/>
+					</div>
+				</div>
 			</Modal>
 		</div>
 	);
