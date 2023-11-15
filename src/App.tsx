@@ -18,9 +18,20 @@ import {
 	HiArrowPath,
 	HiCog8Tooth,
 	HiBars3BottomLeft,
+	HiClipboardDocumentList,
 } from "react-icons/hi2";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { cn, projectsToLogs, logToTextParts, sum, usePlayClick } from "./utils";
+import {
+	cn,
+	sum,
+	usePlayClick,
+	logsTimeline,
+	getLogsConstraints,
+	projectToTimestamps,
+	projectToLogs,
+	projectsToLogs,
+	logToTextParts,
+} from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
 import { Project, Time } from "./types";
@@ -38,7 +49,7 @@ const faviconPause = "/favicon-pause.svg";
 const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
 const projectEndButtonsStorageKey = "jagaatrack:project-end-buttons";
 
-type EndButton = "reset" | "remove";
+type EndButton = "reset" | "remove" | "copy";
 
 export function App() {
 	const playClick = usePlayClick();
@@ -56,7 +67,7 @@ export function App() {
 
 	const [projectEndButtons, _setProjectEndButtons] = useLocalStorage<
 		EndButton[]
-	>(projectEndButtonsStorageKey, ["reset", "remove"]);
+	>(projectEndButtonsStorageKey, ["reset", "copy"]);
 
 	function toggleProjectEndButton(button: EndButton) {
 		const newButtons = projectEndButtons.includes(button)
@@ -258,18 +269,53 @@ export function App() {
 		setProjects(newProjects);
 	}
 
+	async function copyProjectLog(project: Project) {
+		playClick();
+
+		const minutes = 30;
+		const validProjects = projects.filter((p) => p.times.length !== 0);
+		const { start, end } = getLogsConstraints(validProjects);
+		const timestamps = projectToTimestamps(project, minutes);
+		const timeline = logsTimeline({ start, end, timestamps, minutes });
+		const logs = projectToLogs(project, { sortByTime: true });
+		const activities = logs
+			.map((l) => l.activityName)
+			.filter((a) => a !== project.name);
+
+		const uniqueActivities = [...new Set(activities)];
+
+		const log = [
+			`${project.name} (${project.slug})\n`,
+			uniqueActivities.map((a) => `- ${a}`).join("\n"),
+			`\nIntervals of ${minutes} minutes.`,
+			timeline,
+		].join("\n");
+
+		await navigator.clipboard.writeText(log);
+	}
+
 	async function onCopyLogs() {
 		playClick();
 
-		const logs = projectsToLogs(projects, { sort: false });
+		const minutes = 30;
+		const validProjects = projects.filter((p) => p.times.length !== 0);
+		const { start, end } = getLogsConstraints(validProjects);
+
+		const projectsTimeline = validProjects.map((project) => {
+			const timestamps = projectToTimestamps(project, minutes);
+			const timeline = logsTimeline({ start, end, timestamps, minutes });
+			return `${timeline} ${project.name} (${project.slug})`;
+		});
+
+		const logs = projectsToLogs(projects, { sortByTime: false });
 		const text = logs.map((log) => {
 			const { timestamp, name, diffHuman } = logToTextParts(log);
 			return `(${timestamp}) ${name} [${diffHuman}]`;
 		});
 
-		await navigator.clipboard.writeText(text.join("\n"));
-
-		window.alert("Logs copied to clipboard!");
+		await navigator.clipboard.writeText(
+			[projectsTimeline.join("\n"), "", text.join("\n")].join("\n"),
+		);
 	}
 
 	return (
@@ -358,6 +404,15 @@ export function App() {
 								<HiMinusCircle size={20} />
 							</Button>
 						)}
+
+						{projectEndButtons.includes("copy") && (
+							<Button
+								onClick={() => copyProjectLog(project)}
+								className={project.startedAt ? "bg-red-500" : undefined}
+							>
+								<HiClipboardDocumentList size={20} />
+							</Button>
+						)}
 					</article>
 				))}
 			</ReactSortable>
@@ -384,6 +439,8 @@ export function App() {
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<div className="grid gap-2">
+					<label>Actions</label>
+
 					<div className="border px-2 rounded-md">
 						<Checkbox
 							item="Ask for activity name?"
@@ -392,14 +449,21 @@ export function App() {
 						/>
 					</div>
 
+					<label>Show Buttons</label>
+
 					<div className="border px-2 rounded-md">
 						<Checkbox
-							item="Show Project Reset Button"
+							item="Project Time Reset"
 							isChecked={projectEndButtons.includes("reset")}
 							setIsChecked={() => toggleProjectEndButton("reset")}
 						/>
 						<Checkbox
-							item="Show Project Remove Button"
+							item="Project Log Copy"
+							isChecked={projectEndButtons.includes("copy")}
+							setIsChecked={() => toggleProjectEndButton("copy")}
+						/>
+						<Checkbox
+							item="Project Remove"
 							isChecked={projectEndButtons.includes("remove")}
 							setIsChecked={() => toggleProjectEndButton("remove")}
 						/>

@@ -4,7 +4,7 @@ import { projectsToLogs, logToTextParts } from "./utils";
 
 export function ProjectsLogs({ projects: projects }: { projects: Project[] }) {
 	const logs = useMemo(
-		() => projectsToLogs(projects, { sort: true }),
+		() => projectsToLogs(projects, { sortByTime: true }),
 		[projects],
 	);
 
