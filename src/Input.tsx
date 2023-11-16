@@ -25,8 +25,6 @@ export function Input({
 				className,
 			)}
 			type="text"
-			name="text"
-			id="text"
 			placeholder={placeholder}
 			value={value}
 			onChange={(e) => setValue(e.target.value)}
