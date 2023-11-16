@@ -19,7 +19,7 @@ import {
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { EndButton, Project, Time } from "./types";
+import { ProjectAction, Project, Time, projectActions } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
@@ -33,6 +33,13 @@ import { HeaderActions } from "./HeaderActions";
 const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
 const projectEndButtonsStorageKey = "jagaatrack:project-end-buttons";
 const projectsStorageKey = "jagaatrack:projects";
+
+const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
+	reset: "Project Time Reset",
+	copy: "Project Log Copy",
+	remove: "Project Remove",
+	rename: "Rename Project Activity Name",
+};
 
 export function App() {
 	const playClick = usePlayClick();
@@ -50,12 +57,12 @@ export function App() {
 		useLocalStorage(askForActivityNameStorageKey, false);
 
 	const [projectEndButtons, _setProjectEndButtons] = useLocalStorage<
-		EndButton[]
-	>(projectEndButtonsStorageKey, ["reset", "copy"]);
+		ProjectAction[]
+	>(projectEndButtonsStorageKey, ["copy", "rename"]);
 
 	useDynamicFavicon(projects);
 
-	function toggleProjectEndButton(button: EndButton) {
+	function toggleProjectEndButton(button: ProjectAction) {
 		const newButtons = projectEndButtons.includes(button)
 			? projectEndButtons.filter((e) => e !== button)
 			: [...projectEndButtons, button];
@@ -263,21 +270,14 @@ export function App() {
 					<label>Show Buttons</label>
 
 					<div className="border px-2 rounded-md">
-						<Checkbox
-							item="Project Time Reset"
-							isChecked={projectEndButtons.includes("reset")}
-							setIsChecked={() => toggleProjectEndButton("reset")}
-						/>
-						<Checkbox
-							item="Project Log Copy"
-							isChecked={projectEndButtons.includes("copy")}
-							setIsChecked={() => toggleProjectEndButton("copy")}
-						/>
-						<Checkbox
-							item="Project Remove"
-							isChecked={projectEndButtons.includes("remove")}
-							setIsChecked={() => toggleProjectEndButton("remove")}
-						/>
+						{projectActions.map((button) => (
+							<Checkbox
+								key={button}
+								item={ProjectActionsSettingsProps[button]}
+								isChecked={projectEndButtons.includes(button)}
+								setIsChecked={() => toggleProjectEndButton(button)}
+							/>
+						))}
 					</div>
 				</div>
 			</Modal>
