@@ -21,3 +21,5 @@ export type Log = {
 	project: Project;
 	activityName: string;
 };
+
+export type EndButton = "reset" | "remove" | "copy";

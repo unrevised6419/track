@@ -3,6 +3,16 @@ import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
 import { Project, Log } from "./types";
+import {
+	Dispatch,
+	SetStateAction,
+	useMemo,
+	useCallback,
+	useEffect,
+	useState,
+} from "react";
+import { ItemInterface } from "react-sortablejs";
+import { useFavicon } from "@uidotdev/usehooks";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -150,4 +160,66 @@ export function projectToTimestamps(project: Project, minutes: number) {
 
 		return blocks.length > 0 ? blocks : [(e.startedAt + e.endedAt) / 2];
 	});
+}
+
+type FocusableElements =
+	| HTMLInputElement
+	| HTMLTextAreaElement
+	| HTMLButtonElement
+	| HTMLSelectElement
+	| HTMLAnchorElement;
+
+export function isFocusable(
+	element: Element | null,
+): element is FocusableElements {
+	const elements = ["INPUT", "TEXTAREA", "BUTTON", "SELECT", "A"];
+	return elements.includes(element?.tagName as string);
+}
+
+export function askForProjectActivityName(project: Project) {
+	const userAnswer = window.prompt(
+		"What are you working on?",
+		project.lastActivityName,
+	);
+
+	return userAnswer || undefined;
+}
+
+export function useSortableList({
+	projects,
+	setProjects,
+}: {
+	projects: Project[];
+	setProjects: Dispatch<SetStateAction<Project[]>>;
+}) {
+	const projectsList = useMemo<ItemInterface[]>(
+		() => projects.map((p) => ({ id: p.slug })),
+		[projects],
+	);
+	const setProjectsList = useCallback(
+		(list: ItemInterface[]) => {
+			const newProjects = list.map((item) =>
+				projects.find((p) => p.slug === item.id),
+			);
+
+			setProjects(newProjects as Project[]);
+		},
+		[projects, setProjects],
+	);
+
+	return [projectsList, setProjectsList] as const;
+}
+
+const faviconPlay = "/favicon-play.svg";
+const faviconPause = "/favicon-pause.svg";
+
+export function useDynamicFavicon(projects: Project[]) {
+	const playing = useMemo(() => projects.some((e) => e.startedAt), [projects]);
+	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
+
+	useFavicon(favicon);
+
+	useEffect(() => {
+		setFavicon(playing ? faviconPlay : faviconPause);
+	}, [playing]);
 }
