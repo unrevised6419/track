@@ -13,7 +13,7 @@ import {
 	projectsToLogs,
 	logToTextParts,
 	isFocusable,
-	askForProjectActivityName,
+	askForActivityName,
 	useSortableList,
 	useDynamicFavicon,
 } from "./utils";
@@ -74,46 +74,57 @@ export function App() {
 		(project: Project) => {
 			playClick();
 
-			const newProject = projects.map((e) => {
-				if (e.startedAt) {
+			const newProjects = projects.map((p) => {
+				if (p.startedAt) {
 					const newLog: Time = {
-						startedAt: e.startedAt,
+						startedAt: p.startedAt,
 						endedAt: Date.now(),
 						activityName: shouldAskForActivityName
-							? e.lastActivityName || project.name
-							: e.name,
+							? p.lastActivityName || project.name
+							: p.name,
 					};
 
 					const newProject: Project = {
-						...e,
-						times: [...e.times, newLog],
+						...p,
+						times: [...p.times, newLog],
 						startedAt: undefined,
 						lastActivityName: shouldAskForActivityName
-							? e.lastActivityName
+							? p.lastActivityName
 							: undefined,
 					};
 
 					return newProject;
 				}
 
-				if (e.slug === project.slug) {
-					// TODO: Don't like this, needs to be outside `map`
+				if (p.slug === project.slug) {
+					return { ...p, startedAt: Date.now() } satisfies Project;
+				}
+
+				return p;
+			});
+
+			setProjects(newProjects);
+
+			const startedProject = newProjects.find((p) => p.startedAt);
+
+			if (startedProject) {
+				setTimeout(() => {
 					const activityName = shouldAskForActivityName
-						? askForProjectActivityName(e)
+						? askForActivityName(startedProject.lastActivityName)
 						: undefined;
 
 					const newProject: Project = {
-						...e,
-						startedAt: Date.now(),
-						lastActivityName: activityName,
+						...startedProject,
+						lastActivityName: activityName || startedProject.name,
 					};
-					return newProject;
-				}
 
-				return e;
-			});
-
-			setProjects(newProject);
+					setProjects(
+						newProjects.map((p) =>
+							p.slug === newProject.slug ? newProject : p,
+						),
+					);
+				}, 200);
+			}
 		},
 		[shouldAskForActivityName, projects, playClick, setProjects],
 	);
