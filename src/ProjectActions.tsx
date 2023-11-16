@@ -2,10 +2,12 @@ import {
 	HiArrowPath,
 	HiMinusCircle,
 	HiClipboardDocumentList,
+	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { EndButton, Project } from "./types";
+import { ProjectAction, Project } from "./types";
 import {
+	askForProjectActivityName,
 	cn,
 	getLogsConstraints,
 	logsTimeline,
@@ -21,7 +23,7 @@ type ProjectActionsProps = {
 	project: Project;
 	projects: Project[];
 	setProjects: Dispatch<SetStateAction<Project[]>>;
-	projectEndButtons: EndButton[];
+	projectEndButtons: ProjectAction[];
 };
 
 type ProjectActionProps = {
@@ -80,7 +82,20 @@ export function ProjectActions(props: ProjectActionsProps) {
 		setProjects(newProjects);
 	}
 
-	const ProjectActionsMapper: Record<EndButton, ProjectActionProps> = {
+	function renameProjectActivity(project: Project) {
+		playClick();
+		const activityName = askForProjectActivityName(project);
+
+		if (!activityName) return;
+
+		const newProject = { ...project, lastActivityName: activityName };
+
+		setProjects(
+			projects.map((p) => (p.slug === project.slug ? newProject : p)),
+		);
+	}
+
+	const ProjectActionsMapper: Record<ProjectAction, ProjectActionProps> = {
 		copy: {
 			action: copyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
@@ -94,6 +109,10 @@ export function ProjectActions(props: ProjectActionsProps) {
 			action: resetProject,
 			icon: <HiArrowPath size={20} />,
 			disabled: project.times.length === 0,
+		},
+		rename: {
+			action: renameProjectActivity,
+			icon: <HiPencil size={20} />,
 		},
 	};
 

@@ -22,4 +22,5 @@ export type Log = {
 	activityName: string;
 };
 
-export type EndButton = "reset" | "remove" | "copy";
+export const projectActions = ["copy", "rename", "reset", "remove"] as const;
+export type ProjectAction = (typeof projectActions)[number];
