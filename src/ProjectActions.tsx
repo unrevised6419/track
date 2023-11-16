@@ -7,7 +7,7 @@ import {
 import { Button } from "./Button";
 import { ProjectAction, Project, projectActions } from "./types";
 import {
-	askForProjectActivityName,
+	askForActivityName,
 	cn,
 	getLogsConstraints,
 	logsTimeline,
@@ -15,7 +15,7 @@ import {
 	projectToTimestamps,
 	usePlayClick,
 } from "./utils";
-import { Dispatch, Fragment, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
 
@@ -84,7 +84,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 	function renameProjectActivity(project: Project) {
 		playClick();
-		const activityName = askForProjectActivityName(project);
+		const activityName = askForActivityName(project.lastActivityName);
 
 		if (!activityName) return;
 
@@ -116,33 +116,27 @@ export function ProjectActions(props: ProjectActionsProps) {
 		},
 	};
 
-	const finalActions: ReadonlyArray<ProjectAction> =
-		isSmallDevice && actions.length > 1 ? projectActions : actions;
+	const renderActions = (actions: ReadonlyArray<ProjectAction>) => {
+		return actions.map((button) => (
+			<Button
+				key={button}
+				onClick={() => ProjectActionsMapper[button].action(project)}
+				className={cn(project.startedAt ? "bg-red-500" : undefined)}
+				disabled={ProjectActionsMapper[button].disabled}
+			>
+				{ProjectActionsMapper[button].icon}
+			</Button>
+		));
+	};
 
-	const buttons = (
-		<Fragment>
-			{finalActions.map((button) => (
-				<Button
-					key={button}
-					onClick={() => ProjectActionsMapper[button].action(project)}
-					className={cn(project.startedAt ? "bg-red-500" : undefined)}
-					disabled={ProjectActionsMapper[button].disabled}
-				>
-					{ProjectActionsMapper[button].icon}
-				</Button>
-			))}
-		</Fragment>
-	);
-
-	return (
-		<div className="flex gap-3">
-			{isSmallDevice && actions.length > 1 ? (
-				<ShowMoreDropdown>
-					<div className="flex gap-2">{buttons}</div>
-				</ShowMoreDropdown>
-			) : (
-				buttons
-			)}
-		</div>
-	);
+	if (isSmallDevice && actions.length > 1) {
+		return (
+			<ShowMoreDropdown>
+				{/* Render all the actions, no matter what is selected */}
+				<div className="flex gap-2">{renderActions(projectActions)}</div>
+			</ShowMoreDropdown>
+		);
+	} else {
+		return <div className="flex gap-3">{renderActions(actions)}</div>;
+	}
 }

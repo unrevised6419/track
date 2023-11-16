@@ -176,12 +176,8 @@ export function isFocusable(
 	return elements.includes(element?.tagName as string);
 }
 
-export function askForProjectActivityName(project: Project) {
-	const userAnswer = window.prompt(
-		"What are you working on?",
-		project.lastActivityName,
-	);
-
+export function askForActivityName(defaultName?: string) {
+	const userAnswer = window.prompt("What are you working on?", defaultName);
 	return userAnswer || undefined;
 }
 
