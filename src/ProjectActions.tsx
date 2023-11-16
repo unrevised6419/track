@@ -18,12 +18,15 @@ import {
 import { Dispatch, SetStateAction } from "react";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
+import { useHotkeys } from "react-hotkeys-hook";
 
 type ProjectActionsProps = {
 	project: Project;
 	projects: Project[];
 	setProjects: Dispatch<SetStateAction<Project[]>>;
 	actions: ProjectAction[];
+	index: number;
+	toggleActiveProject: (project: Project) => void;
 };
 
 type ProjectActionProps = {
@@ -35,7 +38,14 @@ type ProjectActionProps = {
 export function ProjectActions(props: ProjectActionsProps) {
 	const playClick = usePlayClick();
 	const isSmallDevice = useMediaQuery("(max-width : 640px)");
-	const { project, projects, setProjects, actions } = props;
+	const {
+		project,
+		projects,
+		setProjects,
+		actions,
+		index,
+		toggleActiveProject,
+	} = props;
 
 	async function copyProjectLog(project: Project) {
 		playClick();
@@ -94,6 +104,9 @@ export function ProjectActions(props: ProjectActionsProps) {
 			projects.map((p) => (p.slug === project.slug ? newProject : p)),
 		);
 	}
+
+	useHotkeys(`${index}+r`, () => renameProjectActivity(project), [project]);
+	useHotkeys(`${index}+s`, () => toggleActiveProject(project), [project]);
 
 	const ProjectActionsMapper: Record<ProjectAction, ProjectActionProps> = {
 		copy: {

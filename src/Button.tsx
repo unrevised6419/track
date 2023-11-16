@@ -9,6 +9,7 @@ type ButtonProps = {
 
 export function Button(props: ButtonProps) {
 	const { children, onClick, className, disabled } = props;
+
 	return (
 		<button
 			role="button"

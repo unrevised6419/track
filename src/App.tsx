@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	HiPauseCircle,
 	HiPlayCircle,
@@ -12,7 +12,6 @@ import {
 	projectToTimestamps,
 	projectsToLogs,
 	logToTextParts,
-	isFocusable,
 	askForActivityName,
 	useSortableList,
 	useDynamicFavicon,
@@ -129,34 +128,6 @@ export function App() {
 		[shouldAskForActivityName, projects, playClick, setProjects],
 	);
 
-	useEffect(() => {
-		function onKeyDown(e: KeyboardEvent) {
-			if (e.code === "Escape" && isFocusable(document.activeElement)) {
-				document.activeElement.blur();
-			}
-		}
-
-		document.addEventListener("keydown", onKeyDown);
-		return () => document.removeEventListener("keydown", onKeyDown);
-	}, []);
-
-	useEffect(() => {
-		function onKeyPress(e: KeyboardEvent) {
-			if (document.activeElement !== document.body) return;
-
-			const maybeDigit = Number(e.key);
-			if (Number.isNaN(maybeDigit)) return;
-
-			const project = projects[maybeDigit - 1];
-			if (!project) return;
-
-			toggleActiveProject(project);
-		}
-
-		document.addEventListener("keypress", onKeyPress);
-		return () => document.removeEventListener("keypress", onKeyPress);
-	}, [toggleActiveProject, projects]);
-
 	async function onCopyLogs() {
 		playClick();
 
@@ -241,6 +212,8 @@ export function App() {
 							actions={projectEndButtons}
 							projects={projects}
 							setProjects={setProjects}
+							index={index + 1}
+							toggleActiveProject={toggleActiveProject}
 						/>
 					</article>
 				))}
