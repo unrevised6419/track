@@ -227,7 +227,7 @@ export function App() {
 
 						<ProjectActions
 							project={project}
-							projectEndButtons={projectEndButtons}
+							actions={projectEndButtons}
 							projects={projects}
 							setProjects={setProjects}
 						/>

@@ -5,7 +5,7 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectAction, Project } from "./types";
+import { ProjectAction, Project, projectActions } from "./types";
 import {
 	askForProjectActivityName,
 	cn,
@@ -23,7 +23,7 @@ type ProjectActionsProps = {
 	project: Project;
 	projects: Project[];
 	setProjects: Dispatch<SetStateAction<Project[]>>;
-	projectEndButtons: ProjectAction[];
+	actions: ProjectAction[];
 };
 
 type ProjectActionProps = {
@@ -35,7 +35,7 @@ type ProjectActionProps = {
 export function ProjectActions(props: ProjectActionsProps) {
 	const playClick = usePlayClick();
 	const isSmallDevice = useMediaQuery("(max-width : 640px)");
-	const { project, projects, setProjects, projectEndButtons } = props;
+	const { project, projects, setProjects, actions } = props;
 
 	async function copyProjectLog(project: Project) {
 		playClick();
@@ -116,9 +116,12 @@ export function ProjectActions(props: ProjectActionsProps) {
 		},
 	};
 
-	let buttons = (
+	const finalActions: ReadonlyArray<ProjectAction> =
+		isSmallDevice && actions.length > 1 ? projectActions : actions;
+
+	const buttons = (
 		<Fragment>
-			{projectEndButtons.map((button) => (
+			{finalActions.map((button) => (
 				<Button
 					key={button}
 					onClick={() => ProjectActionsMapper[button].action(project)}
@@ -131,13 +134,15 @@ export function ProjectActions(props: ProjectActionsProps) {
 		</Fragment>
 	);
 
-	if (projectEndButtons.length > 1 && isSmallDevice) {
-		buttons = (
-			<ShowMoreDropdown>
-				<div className="flex gap-2">{buttons}</div>
-			</ShowMoreDropdown>
-		);
-	}
-
-	return <div className="flex gap-3">{buttons}</div>;
+	return (
+		<div className="flex gap-3">
+			{isSmallDevice && actions.length > 1 ? (
+				<ShowMoreDropdown>
+					<div className="flex gap-2">{buttons}</div>
+				</ShowMoreDropdown>
+			) : (
+				buttons
+			)}
+		</div>
+	);
 }
