@@ -22,9 +22,10 @@ type ProjectActionsProps = {
 	projectEndButtons: EndButton[];
 };
 
-type ButtonInfo = {
+type ProjectActionProps = {
 	action: (project: Project) => void;
 	icon: JSX.Element;
+	disabled?: boolean;
 };
 
 export function ProjectActions(props: ProjectActionsProps) {
@@ -76,10 +77,11 @@ export function ProjectActions(props: ProjectActionsProps) {
 		setProjects(newProjects);
 	}
 
-	const ProjectActionsMapper: Record<EndButton, ButtonInfo> = {
+	const ProjectActionsMapper: Record<EndButton, ProjectActionProps> = {
 		copy: {
 			action: copyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
+			disabled: project.times.length === 0,
 		},
 		remove: {
 			action: removeProject,
@@ -88,6 +90,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		reset: {
 			action: resetProject,
 			icon: <HiArrowPath size={20} />,
+			disabled: project.times.length === 0,
 		},
 	};
 
@@ -98,6 +101,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 					key={button}
 					onClick={() => ProjectActionsMapper[button].action(project)}
 					className={cn(project.startedAt ? "bg-red-500" : undefined)}
+					disabled={ProjectActionsMapper[button].disabled}
 				>
 					{ProjectActionsMapper[button].icon}
 				</Button>
