@@ -13,7 +13,9 @@ import {
 	projectToTimestamps,
 	usePlayClick,
 } from "./utils";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, Fragment, SetStateAction } from "react";
+import { ShowMoreDropdown } from "./ShowMoreDropdown";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 type ProjectActionsProps = {
 	project: Project;
@@ -30,6 +32,7 @@ type ProjectActionProps = {
 
 export function ProjectActions(props: ProjectActionsProps) {
 	const playClick = usePlayClick();
+	const isSmallDevice = useMediaQuery("(max-width : 640px)");
 	const { project, projects, setProjects, projectEndButtons } = props;
 
 	async function copyProjectLog(project: Project) {
@@ -94,8 +97,8 @@ export function ProjectActions(props: ProjectActionsProps) {
 		},
 	};
 
-	return (
-		<div className="flex gap-3">
+	let buttons = (
+		<Fragment>
 			{projectEndButtons.map((button) => (
 				<Button
 					key={button}
@@ -106,6 +109,16 @@ export function ProjectActions(props: ProjectActionsProps) {
 					{ProjectActionsMapper[button].icon}
 				</Button>
 			))}
-		</div>
+		</Fragment>
 	);
+
+	if (projectEndButtons.length > 1 && isSmallDevice) {
+		buttons = (
+			<ShowMoreDropdown>
+				<div className="flex gap-2">{buttons}</div>
+			</ShowMoreDropdown>
+		);
+	}
+
+	return <div className="flex gap-3">{buttons}</div>;
 }
