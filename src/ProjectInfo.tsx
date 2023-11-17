@@ -1,29 +1,14 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { Input } from "./Input";
 import { Project } from "./types";
-import { cn, secondsToHumanFormat, sumProjectTimesInSeconds } from "./utils";
+import { cn, secondsToHumanFormat, useLiveTotalTime } from "./utils";
 
 export function ProjectInfo({ project }: { project: Project }) {
-	const [totalTime, setTotalTime] = useState(() =>
-		sumProjectTimesInSeconds(project),
-	);
-
+	const totalTime = useLiveTotalTime([project]);
 	const totalTimeHuman = useMemo(
 		() => secondsToHumanFormat(totalTime),
 		[totalTime],
 	);
-
-	useEffect(() => {
-		setTotalTime(sumProjectTimesInSeconds(project));
-
-		if (!project.startedAt) return;
-
-		const interval = setInterval(() => {
-			setTotalTime(sumProjectTimesInSeconds(project));
-		}, 1000);
-
-		return () => clearInterval(interval);
-	}, [project]);
 
 	return (
 		<Input

@@ -1,11 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { Project } from "./types";
-import { sumProjectsTimesInSeconds, secondsToHumanFormat, cn } from "./utils";
+import { secondsToHumanFormat, cn, useLiveTotalTime } from "./utils";
 
 export function TotalInfo({ projects }: { projects: Project[] }) {
-	const [totalTime, setTotalTime] = useState(() =>
-		sumProjectsTimesInSeconds(projects),
-	);
+	const totalTime = useLiveTotalTime(projects);
 	const totalTimeHuman = useMemo(
 		() => secondsToHumanFormat(totalTime),
 		[totalTime],
@@ -21,18 +19,6 @@ export function TotalInfo({ projects }: { projects: Project[] }) {
 		() => secondsToHumanFormat(overtime),
 		[overtime],
 	);
-
-	useEffect(() => {
-		setTotalTime(sumProjectsTimesInSeconds(projects));
-
-		if (!projects.some((e) => e.startedAt)) return;
-
-		const interval = setInterval(() => {
-			setTotalTime(sumProjectsTimesInSeconds(projects));
-		}, 1000);
-
-		return () => clearInterval(interval);
-	}, [projects]);
 
 	return (
 		<aside className="bg-gray-200 p-3 rounded-md font-mono text-sm grid grid-cols-2">

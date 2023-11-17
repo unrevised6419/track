@@ -27,7 +27,7 @@ type ProjectActionsProps = {
 	actions: ProjectAction[];
 	index: number;
 	toggleActiveProject: (project: Project) => void;
-	minutes: number;
+	rangeMinutes: number;
 };
 
 type ProjectActionProps = {
@@ -46,7 +46,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		actions,
 		index,
 		toggleActiveProject,
-		minutes,
+		rangeMinutes,
 	} = props;
 
 	async function copyProjectLog(project: Project) {
@@ -54,8 +54,8 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 		const validProjects = projects.filter((p) => p.times.length !== 0);
 		const { start, end } = getLogsConstraints(validProjects);
-		const timestamps = projectToTimestamps(project, minutes);
-		const timeline = logsTimeline({ start, end, timestamps, minutes });
+		const timestamps = projectToTimestamps(project, rangeMinutes);
+		const timeline = logsTimeline({ start, end, timestamps, rangeMinutes });
 		const logs = projectToLogs(project, { sortByTime: true });
 		const activities = logs
 			.map((l) => l.activityName)
@@ -66,7 +66,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		const log = [
 			`${project.name} (${project.slug})\n`,
 			uniqueActivities.map((a) => `- ${a}`).join("\n"),
-			`\nIntervals of ${minutes} minutes.`,
+			`\nIntervals of ${rangeMinutes} minutes.`,
 			timeline,
 		].join("\n");
 

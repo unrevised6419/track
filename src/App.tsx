@@ -15,6 +15,8 @@ import {
 	askForActivityName,
 	useSortableList,
 	useDynamicFavicon,
+	useProjectButtons,
+	storageKey,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
@@ -29,9 +31,7 @@ import { ReactSortable } from "react-sortablejs";
 import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
 
-const askForActivityNameStorageKey = "jagaatrack:should-ask-for-activity-name";
-const projectEndButtonsStorageKey = "jagaatrack:project-end-buttons";
-const projectsStorageKey = "jagaatrack:projects";
+const rangeMinutes = 30;
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -42,32 +42,23 @@ const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 
 export function App() {
 	const playClick = usePlayClick();
+	const [projectButtons, toggleProjectButton] = useProjectButtons();
+	const [showLogs, setShowLogs] = useState(false);
+	const [showSettingsModal, setShowSettingsModal] = useState(false);
+	const [shouldAskForActivityName, setShouldAskForActivityName] =
+		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
+
 	const [projects, setProjects] = useLocalStorage<Project[]>(
-		projectsStorageKey,
+		storageKey("projects"),
 		[],
 	);
+
 	const [sortableList, setSortableList] = useSortableList({
 		projects,
 		setProjects,
 	});
-	const [showLogs, setShowLogs] = useState(false);
-	const [showSettingsModal, setShowSettingsModal] = useState(false);
-	const [shouldAskForActivityName, setShouldAskForActivityName] =
-		useLocalStorage(askForActivityNameStorageKey, false);
-
-	const [projectEndButtons, _setProjectEndButtons] = useLocalStorage<
-		ProjectAction[]
-	>(projectEndButtonsStorageKey, ["copy", "rename"]);
 
 	useDynamicFavicon(projects);
-
-	function toggleProjectEndButton(button: ProjectAction) {
-		const newButtons = projectEndButtons.includes(button)
-			? projectEndButtons.filter((e) => e !== button)
-			: [...projectEndButtons, button];
-
-		_setProjectEndButtons([...new Set(newButtons)]);
-	}
 
 	const toggleActiveProject = useCallback(
 		(project: Project) => {
@@ -129,8 +120,6 @@ export function App() {
 		[shouldAskForActivityName, projects, playClick, setProjects],
 	);
 
-	const minutes = 30;
-
 	async function onCopyLogs() {
 		playClick();
 
@@ -138,8 +127,8 @@ export function App() {
 		const { start, end } = getLogsConstraints(validProjects);
 
 		const projectsTimeline = validProjects.map((project) => {
-			const timestamps = projectToTimestamps(project, minutes);
-			const timeline = logsTimeline({ start, end, timestamps, minutes });
+			const timestamps = projectToTimestamps(project, rangeMinutes);
+			const timeline = logsTimeline({ start, end, timestamps, rangeMinutes });
 			return `${timeline} ${project.name} (${project.slug})`;
 		});
 
@@ -211,12 +200,12 @@ export function App() {
 
 						<ProjectActions
 							project={project}
-							actions={projectEndButtons}
+							actions={projectButtons}
 							projects={projects}
 							setProjects={setProjects}
 							index={index + 1}
 							toggleActiveProject={toggleActiveProject}
-							minutes={minutes}
+							rangeMinutes={rangeMinutes}
 						/>
 					</article>
 				))}
@@ -261,8 +250,8 @@ export function App() {
 							<Checkbox
 								key={button}
 								item={ProjectActionsSettingsProps[button]}
-								isChecked={projectEndButtons.includes(button)}
-								setIsChecked={() => toggleProjectEndButton(button)}
+								isChecked={projectButtons.includes(button)}
+								setIsChecked={() => toggleProjectButton(button)}
 							/>
 						))}
 					</div>
