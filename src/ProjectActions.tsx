@@ -12,7 +12,6 @@ import {
 	getLogsConstraints,
 	getProjectLogs,
 	logsTimeline,
-	projectToTimestamps,
 	usePlayClick,
 } from "./utils";
 import { Dispatch, SetStateAction, useMemo } from "react";
@@ -62,8 +61,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		playClick();
 
 		const { start, end } = getLogsConstraints(allLogs, projects);
-		const timestamps = projectToTimestamps(logs, rangeMinutes);
-		const timeline = logsTimeline({ start, end, timestamps, rangeMinutes });
+		const timeline = logsTimeline({ start, end, logs, rangeMinutes });
 
 		const activities = logs
 			.map((l) => l.activityName)

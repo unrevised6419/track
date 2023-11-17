@@ -72,13 +72,14 @@ export function usePlayClick() {
 
 type LogsTimelineOptions = {
 	start: number;
-	timestamps: number[];
+	logs: Log[];
 	end: number;
 	rangeMinutes: number;
 };
 
 export function logsTimeline(options: LogsTimelineOptions) {
-	const { start, timestamps, end, rangeMinutes } = options;
+	const { start, logs, end, rangeMinutes } = options;
+	const timestamps = projectToTimestamps(logs, rangeMinutes);
 	const miuntesInMs = 1000 * 60 * rangeMinutes;
 	let visualization = "";
 
