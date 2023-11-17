@@ -79,7 +79,7 @@ type LogsTimelineOptions = {
 
 export function logsTimeline(options: LogsTimelineOptions) {
 	const { start, logs, end, rangeMinutes } = options;
-	const timestamps = projectToTimestamps(logs, rangeMinutes);
+	const timestamps = logsToTimestamps(logs, rangeMinutes);
 	const miuntesInMs = 1000 * 60 * rangeMinutes;
 	let visualization = "";
 
@@ -100,7 +100,7 @@ function inRange(value: number, start: number, end: number): boolean {
 
 export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	const startedAts = projects.map((e) => e.startedAt).filter(Boolean);
-	const endedAts = startedAts ? [Date.now()] : [];
+	const endedAts = startedAts.length ? [Date.now()] : [];
 
 	const start = Math.min(...logs.map((e) => e.interval[0]), ...startedAts);
 	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
@@ -108,8 +108,8 @@ export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	return { start, end };
 }
 
-export function projectToTimestamps(projectLogs: Log[], rangeMinutes: number) {
-	return projectLogs.flatMap((log) => {
+export function logsToTimestamps(logs: Log[], rangeMinutes: number) {
+	return logs.flatMap((log) => {
 		const blocks: number[] = [];
 		const [start, end] = log.interval;
 
