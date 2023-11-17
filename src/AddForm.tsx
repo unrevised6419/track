@@ -25,7 +25,7 @@ export function AddForm({
 		if (!name || !slug) return;
 		if (projects.find((p) => p.slug === slug)) return;
 
-		setProjects([{ name, slug: slug, times: [] }, ...projects]);
+		setProjects([{ name, slug: slug }, ...projects]);
 		setName("");
 		setSlug("");
 		nameInputRef.current?.focus();

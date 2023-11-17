@@ -6,8 +6,8 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, sum, usePlayClick } from "./utils";
-import { Project } from "./types";
+import { cn, getProjectLogs, sum, usePlayClick } from "./utils";
+import { Log, Project } from "./types";
 import { Dispatch, SetStateAction } from "react";
 
 type HeaderActionsProps = {
@@ -15,10 +15,19 @@ type HeaderActionsProps = {
 	onShowSettingsModal: () => void;
 	projects: Project[];
 	setProjects: Dispatch<SetStateAction<Project[]>>;
+	logs: Log[];
+	setLogs: Dispatch<SetStateAction<Log[]>>;
 };
 
 export function HeaderActions(props: HeaderActionsProps) {
-	const { className, onShowSettingsModal, projects, setProjects } = props;
+	const {
+		className,
+		onShowSettingsModal,
+		projects,
+		setProjects,
+		logs: allLogs,
+		setLogs,
+	} = props;
 
 	const playClick = usePlayClick();
 
@@ -45,11 +54,11 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		const newProjects = projects.map<Project>((e) => ({
 			...e,
-			times: [],
 			startedAt: undefined,
 		}));
 
 		setProjects(newProjects);
+		setLogs([]);
 	}
 
 	function onImport() {
@@ -66,13 +75,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		const newProjects = lines.map<Project>((line) => {
 			const [name, slug] = line.split(" [");
-
-			return {
-				slug,
-				name,
-				times: [],
-				startedAt: undefined,
-			} satisfies Project;
+			return { slug, name } satisfies Project;
 		});
 
 		const filteredProjects = newProjects.filter(
@@ -87,17 +90,16 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		const date = new Date().toISOString().split("T").at(0) as string;
 
-		const filteredProjects = projects.filter(
-			(e) => e.times.length > 0 || e.startedAt,
-		);
-
-		const projectsExports = filteredProjects.map((project) => {
-			const durations = project.times.map((e) => e.endedAt - e.startedAt);
+		const projectsExports = projects.map((project) => {
+			const logs = getProjectLogs(project, allLogs);
+			const durations = logs.map((e) => e.interval[1] - e.interval[0]);
 
 			if (project.startedAt) {
 				const lastDuration = Date.now() - project.startedAt;
 				durations.push(lastDuration);
 			}
+
+			if (durations.length === 0) return;
 
 			const totalTimeS = sum(durations) / 1000;
 			const totalTimeMinutes = Math.ceil(totalTimeS / 60);
@@ -107,7 +109,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 			return `/track ${date} ${project.slug} ${totalTime} TODO ${project.name}`;
 		});
 
-		await navigator.clipboard.writeText(projectsExports.join("\n"));
+		await navigator.clipboard.writeText(
+			projectsExports.filter(Boolean).join("\n"),
+		);
 
 		window.alert("Jagaad Manager Export format was copied to clipboard!");
 	}

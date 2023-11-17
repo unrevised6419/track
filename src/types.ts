@@ -1,19 +1,19 @@
-export type Interval = {
-	startedAt: number;
-	endedAt: number;
-};
-
 export type Project = {
 	name: string;
 	slug: string;
-	times: Log[];
 	startedAt?: number;
 	lastActivityName?: string;
 };
 
-export type Log = Interval & {
+export type StartedProject = Project & {
+	startedAt: number;
+};
+
+export type Interval = [start: number, start: number];
+export type Log = {
 	projectSlug: string;
 	activityName: string;
+	interval: Interval;
 };
 
 export const projectActions = ["copy", "rename", "reset", "remove"] as const;
