@@ -15,7 +15,6 @@ import {
 	usePlayClick,
 	logsTimeline,
 	getLogsConstraints,
-	projectToTimestamps,
 	logToTextParts,
 	askForActivityName,
 	useSortableList,
@@ -138,8 +137,12 @@ export function App() {
 
 				if (projectLogs.length === 0) return;
 
-				const timestamps = projectToTimestamps(projectLogs, rangeMinutes);
-				const timeline = logsTimeline({ start, end, timestamps, rangeMinutes });
+				const timeline = logsTimeline({
+					start,
+					end,
+					logs: projectLogs,
+					rangeMinutes,
+				});
 				return `${timeline} ${project.name} (${project.slug})`;
 			})
 			.filter(Boolean);
