@@ -74,7 +74,7 @@ export function projectToLogs(
 ): Log[] {
 	const logs = project.times.map<Log>((t) => ({
 		...t,
-		project: project,
+		projectSlug: project.slug,
 		activityName: t.activityName || project.name,
 	}));
 
@@ -102,7 +102,7 @@ export function logToTextParts(log: Log) {
 
 	return {
 		timestamp: `${startTime} - ${endTime}`,
-		name: `${log.activityName}, ${log.project.slug}`,
+		name: `${log.activityName}, ${log.projectSlug}`,
 		diffHuman,
 	};
 }
