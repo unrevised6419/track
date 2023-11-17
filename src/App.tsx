@@ -18,7 +18,7 @@ import {
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { ProjectAction, Project, Time, projectActions } from "./types";
+import { ProjectAction, Project, projectActions, Log } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
@@ -75,7 +75,8 @@ export function App() {
 
 			const newProjects = projects.map((p) => {
 				if (p.startedAt) {
-					const newLog: Time = {
+					const newLog: Log = {
+						projectSlug: project.slug,
 						startedAt: p.startedAt,
 						endedAt: Date.now(),
 						activityName: shouldAskForActivityName
