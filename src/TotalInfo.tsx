@@ -1,9 +1,15 @@
 import { useMemo } from "react";
-import { Project } from "./types";
+import { Log, Project } from "./types";
 import { secondsToHumanFormat, cn, useLiveTotalTime } from "./utils";
 
-export function TotalInfo({ projects }: { projects: Project[] }) {
-	const totalTime = useLiveTotalTime(projects);
+export function TotalInfo({
+	projects,
+	logs,
+}: {
+	logs: Log[];
+	projects: Project[];
+}) {
+	const totalTime = useLiveTotalTime(logs, projects);
 	const totalTimeHuman = useMemo(
 		() => secondsToHumanFormat(totalTime),
 		[totalTime],

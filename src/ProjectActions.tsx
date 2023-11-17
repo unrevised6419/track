@@ -5,17 +5,17 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectAction, Project, projectActions } from "./types";
+import { ProjectAction, Project, projectActions, Log } from "./types";
 import {
 	askForActivityName,
 	cn,
 	getLogsConstraints,
+	getProjectLogs,
 	logsTimeline,
-	projectToLogs,
 	projectToTimestamps,
 	usePlayClick,
 } from "./utils";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -23,6 +23,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 type ProjectActionsProps = {
 	project: Project;
 	projects: Project[];
+	logs: Log[];
+	setLogs: Dispatch<SetStateAction<Log[]>>;
 	setProjects: Dispatch<SetStateAction<Project[]>>;
 	actions: ProjectAction[];
 	index: number;
@@ -47,16 +49,22 @@ export function ProjectActions(props: ProjectActionsProps) {
 		index,
 		toggleActiveProject,
 		rangeMinutes,
+		logs: allLogs,
+		setLogs,
 	} = props;
+
+	const logs = useMemo(
+		() => getProjectLogs(project, allLogs),
+		[allLogs, project],
+	);
 
 	async function copyProjectLog(project: Project) {
 		playClick();
 
-		const validProjects = projects.filter((p) => p.times.length !== 0);
-		const { start, end } = getLogsConstraints(validProjects);
-		const timestamps = projectToTimestamps(project, rangeMinutes);
+		const { start, end } = getLogsConstraints(allLogs, projects);
+		const timestamps = projectToTimestamps(logs, rangeMinutes);
 		const timeline = logsTimeline({ start, end, timestamps, rangeMinutes });
-		const logs = projectToLogs(project, { sortByTime: true });
+
 		const activities = logs
 			.map((l) => l.activityName)
 			.filter((a) => a !== project.name);
@@ -78,13 +86,16 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 		const newProjects = projects.map((p) => {
 			if (p.slug === project.slug) {
-				return { ...p, times: [], startedAt: undefined };
+				return { ...p, startedAt: undefined } satisfies Project;
 			}
 
 			return p;
 		});
 
+		const newLogs = allLogs.filter((l) => l.projectSlug !== project.slug);
+
 		setProjects(newProjects);
+		setLogs(newLogs);
 	}
 
 	function removeProject(project: Project) {
@@ -113,7 +124,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		copy: {
 			action: copyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
-			disabled: project.times.length === 0,
+			disabled: logs.length === 0,
 		},
 		remove: {
 			action: removeProject,
@@ -122,7 +133,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		reset: {
 			action: resetProject,
 			icon: <HiArrowPath size={20} />,
-			disabled: project.times.length === 0,
+			disabled: logs.length === 0,
 		},
 		rename: {
 			action: renameProjectActivity,

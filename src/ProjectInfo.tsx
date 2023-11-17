@@ -1,10 +1,21 @@
 import { useMemo } from "react";
 import { Input } from "./Input";
-import { Project } from "./types";
+import { Log, Project } from "./types";
 import { cn, secondsToHumanFormat, useLiveTotalTime } from "./utils";
 
-export function ProjectInfo({ project }: { project: Project }) {
-	const totalTime = useLiveTotalTime([project]);
+export function ProjectInfo({
+	project,
+	logs: allLogs,
+}: {
+	logs: Log[];
+	project: Project;
+}) {
+	const logs = useMemo(
+		() => allLogs.filter((log) => log.projectSlug === project.slug),
+		[allLogs, project],
+	);
+	const localProjects = useMemo(() => [project], [project]);
+	const totalTime = useLiveTotalTime(logs, localProjects);
 	const totalTimeHuman = useMemo(
 		() => secondsToHumanFormat(totalTime),
 		[totalTime],

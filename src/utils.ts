@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
-import { Project, Log, ProjectAction } from "./types";
+import { Project, Log, ProjectAction, StartedProject } from "./types";
 import {
 	Dispatch,
 	SetStateAction,
@@ -50,54 +50,11 @@ export function secondsToHumanFormat(
 	return `${hoursPadded}:${minutesPadded}:${secondsPadded}`;
 }
 
-export function sumProjectTimesInSeconds(project: Project) {
-	const durations = project.times.map((t) => t.endedAt - t.startedAt);
-
-	if (project.startedAt) {
-		const lastDuration = Date.now() - project.startedAt;
-		durations.push(lastDuration);
-	}
-
-	return sum(durations) / 1000;
-}
-
-export function sumProjectsTimesInSeconds(projects: Project[]) {
-	const durations = projects.map((project) =>
-		sumProjectTimesInSeconds(project),
-	);
-	return sum(durations);
-}
-
-export function projectToLogs(
-	project: Project,
-	options: { sortByTime: boolean },
-): Log[] {
-	const logs = project.times.map<Log>((t) => ({
-		...t,
-		projectSlug: project.slug,
-		activityName: t.activityName || project.name,
-	}));
-
-	return options.sortByTime
-		? logs.sort((t1, t2) => t2.endedAt - t1.endedAt)
-		: logs;
-}
-
-export function projectsToLogs(
-	projects: Project[],
-	options: { sortByTime: boolean },
-): Log[] {
-	const logs = projects.flatMap((p) => projectToLogs(p, options));
-
-	return options.sortByTime
-		? logs.sort((t1, t2) => t2.endedAt - t1.endedAt)
-		: logs;
-}
-
 export function logToTextParts(log: Log) {
-	const startTime = new Date(log.startedAt).toLocaleTimeString();
-	const endTime = new Date(log.endedAt).toLocaleTimeString();
-	const diff = log.endedAt - log.startedAt;
+	const [start, end] = log.interval;
+	const startTime = new Date(start).toLocaleTimeString();
+	const endTime = new Date(end).toLocaleTimeString();
+	const diff = end - start;
 	const diffHuman = secondsToHumanFormat(diff / 1000, "units");
 
 	return {
@@ -140,25 +97,26 @@ function inRange(value: number, start: number, end: number): boolean {
 	return start <= value && value <= end;
 }
 
-export function getLogsConstraints(projects: Project[]) {
-	const times = projects.flatMap((e) => e.times);
+export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	const startedAts = projects.map((e) => e.startedAt).filter(Boolean);
+	const endedAts = startedAts ? [Date.now()] : [];
 
-	const start = Math.min(...startedAts, ...times.map((e) => e.startedAt));
-	const end = Math.max(...times.map((e) => e.endedAt));
+	const start = Math.min(...logs.map((e) => e.interval[0]), ...startedAts);
+	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
 
 	return { start, end };
 }
 
-export function projectToTimestamps(project: Project, rangeMinutes: number) {
-	return project.times.flatMap((e) => {
+export function projectToTimestamps(projectLogs: Log[], rangeMinutes: number) {
+	return projectLogs.flatMap((log) => {
 		const blocks: number[] = [];
+		const [start, end] = log.interval;
 
-		for (let i = e.startedAt; i < e.endedAt; i += 1000 * 60 * rangeMinutes) {
+		for (let i = start; i < end; i += 1000 * 60 * rangeMinutes) {
 			blocks.push(i);
 		}
 
-		return blocks.length > 0 ? blocks : [(e.startedAt + e.endedAt) / 2];
+		return blocks.length > 0 ? blocks : [(start + end) / 2];
 	});
 }
 
@@ -241,22 +199,43 @@ export function useProjectButtons() {
 	return [projectButtons, toggleProjectButton] as const;
 }
 
-export function useLiveTotalTime(projects: Project[]) {
-	const [totalTime, setTotalTime] = useState(() =>
-		sumProjectsTimesInSeconds(projects),
+const sumStartedAts = (startedAts: number[]) =>
+	sum(startedAts.map((startedAt) => Date.now() - startedAt));
+
+export function useLiveTotalTime(logs: Log[], projects: Project[]) {
+	const logsTime = useMemo(
+		() => sum(logs.map((e) => e.interval[1] - e.interval[0])),
+		[logs],
+	);
+
+	const startedAts = useMemo(
+		() => projects.filter(isStartedProject).map((p) => p.startedAt),
+		[projects],
+	);
+
+	const [totalTime, setTotalTime] = useState(
+		logsTime + sumStartedAts(startedAts),
 	);
 
 	useEffect(() => {
-		setTotalTime(sumProjectsTimesInSeconds(projects));
+		setTotalTime(logsTime + sumStartedAts(startedAts));
 
 		if (!projects.some((e) => e.startedAt)) return;
 
 		const interval = setInterval(() => {
-			setTotalTime(sumProjectsTimesInSeconds(projects));
+			setTotalTime(logsTime + sumStartedAts(startedAts));
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, [projects]);
+	}, [logsTime, projects, startedAts]);
 
-	return totalTime;
+	return totalTime / 1000;
+}
+
+export function isStartedProject(project: Project): project is StartedProject {
+	return project.startedAt !== undefined;
+}
+
+export function getProjectLogs(project: Project, logs: Log[]) {
+	return logs.filter((e) => e.projectSlug === project.slug);
 }

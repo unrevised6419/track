@@ -1,13 +1,7 @@
-import { useMemo } from "react";
-import { Project } from "./types";
-import { projectsToLogs, logToTextParts } from "./utils";
+import { Log } from "./types";
+import { logToTextParts } from "./utils";
 
-export function ProjectsLogs({ projects: projects }: { projects: Project[] }) {
-	const logs = useMemo(
-		() => projectsToLogs(projects, { sortByTime: true }),
-		[projects],
-	);
-
+export function ProjectsLogs({ logs }: { logs: Log[] }) {
 	return (
 		<section className="grid gap-2 font-mono text-xs pb-3 max-h-96 overflow-y-auto">
 			{logs.map((log) => {
@@ -15,7 +9,7 @@ export function ProjectsLogs({ projects: projects }: { projects: Project[] }) {
 
 				return (
 					<article
-						key={log.startedAt}
+						key={log.interval.toString()}
 						className="bg-gray-200 px-3 py-2 rounded-md flex justify-between"
 					>
 						<span>
