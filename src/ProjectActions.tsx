@@ -27,6 +27,7 @@ type ProjectActionsProps = {
 	actions: ProjectAction[];
 	index: number;
 	toggleActiveProject: (project: Project) => void;
+	minutes: number;
 };
 
 type ProjectActionProps = {
@@ -45,12 +46,12 @@ export function ProjectActions(props: ProjectActionsProps) {
 		actions,
 		index,
 		toggleActiveProject,
+		minutes,
 	} = props;
 
 	async function copyProjectLog(project: Project) {
 		playClick();
 
-		const minutes = 30;
 		const validProjects = projects.filter((p) => p.times.length !== 0);
 		const { start, end } = getLogsConstraints(validProjects);
 		const timestamps = projectToTimestamps(project, minutes);

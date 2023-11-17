@@ -128,10 +128,11 @@ export function App() {
 		[shouldAskForActivityName, projects, playClick, setProjects],
 	);
 
+	const minutes = 30;
+
 	async function onCopyLogs() {
 		playClick();
 
-		const minutes = 30;
 		const validProjects = projects.filter((p) => p.times.length !== 0);
 		const { start, end } = getLogsConstraints(validProjects);
 
@@ -214,6 +215,7 @@ export function App() {
 							setProjects={setProjects}
 							index={index + 1}
 							toggleActiveProject={toggleActiveProject}
+							minutes={minutes}
 						/>
 					</article>
 				))}
