@@ -1,9 +1,12 @@
+export type Interval = {
+	startedAt: number;
+	endedAt: number;
+};
+
 /**
  * TODO: Remove or combine with {@link Log} type
  */
-export type Time = {
-	startedAt: number;
-	endedAt: number;
+export type Time = Interval & {
 	activityName?: string;
 };
 
@@ -15,9 +18,7 @@ export type Project = {
 	lastActivityName?: string;
 };
 
-export type Log = {
-	startedAt: number;
-	endedAt: number;
+export type Log = Interval & {
 	project: Project;
 	activityName: string;
 };
