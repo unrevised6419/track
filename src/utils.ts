@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
-import { Project, Log } from "./types";
+import { Project, Log, ProjectAction } from "./types";
 import {
 	Dispatch,
 	SetStateAction,
@@ -12,7 +12,7 @@ import {
 	useState,
 } from "react";
 import { ItemInterface } from "react-sortablejs";
-import { useFavicon } from "@uidotdev/usehooks";
+import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -117,12 +117,12 @@ type LogsTimelineOptions = {
 	start: number;
 	timestamps: number[];
 	end: number;
-	minutes: number;
+	rangeMinutes: number;
 };
 
 export function logsTimeline(options: LogsTimelineOptions) {
-	const { start, timestamps, end, minutes } = options;
-	const miuntesInMs = 1000 * 60 * minutes;
+	const { start, timestamps, end, rangeMinutes } = options;
+	const miuntesInMs = 1000 * 60 * rangeMinutes;
 	let visualization = "";
 
 	for (let time = start; time <= end; time += miuntesInMs) {
@@ -150,11 +150,11 @@ export function getLogsConstraints(projects: Project[]) {
 	return { start, end };
 }
 
-export function projectToTimestamps(project: Project, minutes: number) {
+export function projectToTimestamps(project: Project, rangeMinutes: number) {
 	return project.times.flatMap((e) => {
 		const blocks: number[] = [];
 
-		for (let i = e.startedAt; i < e.endedAt; i += 1000 * 60 * minutes) {
+		for (let i = e.startedAt; i < e.endedAt; i += 1000 * 60 * rangeMinutes) {
 			blocks.push(i);
 		}
 
@@ -218,4 +218,45 @@ export function useDynamicFavicon(projects: Project[]) {
 	useEffect(() => {
 		setFavicon(playing ? faviconPlay : faviconPause);
 	}, [playing]);
+}
+
+export function storageKey(key: string) {
+	return `jagaatrack:${key}`;
+}
+
+export function useProjectButtons() {
+	const [projectButtons, _setProjectButtons] = useLocalStorage<ProjectAction[]>(
+		storageKey("project-end-buttons"),
+		["copy", "rename"],
+	);
+
+	function toggleProjectButton(button: ProjectAction) {
+		const newButtons = projectButtons.includes(button)
+			? projectButtons.filter((e) => e !== button)
+			: [...projectButtons, button];
+
+		_setProjectButtons([...new Set(newButtons)]);
+	}
+
+	return [projectButtons, toggleProjectButton] as const;
+}
+
+export function useLiveTotalTime(projects: Project[]) {
+	const [totalTime, setTotalTime] = useState(() =>
+		sumProjectsTimesInSeconds(projects),
+	);
+
+	useEffect(() => {
+		setTotalTime(sumProjectsTimesInSeconds(projects));
+
+		if (!projects.some((e) => e.startedAt)) return;
+
+		const interval = setInterval(() => {
+			setTotalTime(sumProjectsTimesInSeconds(projects));
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [projects]);
+
+	return totalTime;
 }
