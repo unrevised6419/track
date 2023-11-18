@@ -23,6 +23,7 @@ import {
 	storageKey,
 	isStartedProject,
 	getProjectLogs,
+	getLegend,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
@@ -153,7 +154,11 @@ export function App() {
 		});
 
 		await navigator.clipboard.writeText(
-			[projectsTimeline.join("\n"), "", text.join("\n")].join("\n"),
+			[
+				projectsTimeline.join("\n"),
+				`${getLegend(rangeMinutes)}\n`,
+				text.join("\n"),
+			].join("\n"),
 		);
 	}
 

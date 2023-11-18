@@ -70,6 +70,16 @@ export function usePlayClick() {
 	return playClick as () => void;
 }
 
+export function getLegend(rangeMinutes: number) {
+	const thirdPartM = rangeMinutes / 3;
+	const noActivity = "⬜ 0m";
+	const oneThird = `< 🟨 < ${Math.floor(thirdPartM)}m`;
+	const twoThirds = `< 🟧 < ${Math.floor(thirdPartM * 2)}m`;
+	const full = `< 🟥 < ${rangeMinutes}m`;
+
+	return `Legend: ${noActivity} ${oneThird} ${twoThirds} ${full}`;
+}
+
 type LogsTimelineOptions = {
 	start: number;
 	logs: Log[];

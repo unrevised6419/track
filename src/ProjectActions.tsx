@@ -9,6 +9,7 @@ import { ProjectAction, Project, projectActions, Log } from "./types";
 import {
 	askForActivityName,
 	cn,
+	getLegend,
 	getLogsConstraints,
 	getProjectLogs,
 	logsTimeline,
@@ -78,16 +79,6 @@ export function ProjectActions(props: ProjectActionsProps) {
 		].join("\n");
 
 		await navigator.clipboard.writeText(log);
-	}
-
-	function getLegend(rangeMinutes: number) {
-		const thirdPartM = rangeMinutes / 3;
-		const noActivity = "⬜ 0m";
-		const oneThird = `< 🟨 < ${Math.floor(thirdPartM)}m`;
-		const twoThirds = `< 🟧 < ${Math.floor(thirdPartM * 2)}m`;
-		const full = `< 🟥 < ${rangeMinutes}m`;
-
-		return `Legend: ${noActivity} ${oneThird} ${twoThirds} ${full}`;
 	}
 
 	function resetProject(project: Project) {
