@@ -79,19 +79,51 @@ type LogsTimelineOptions = {
 
 export function logsTimeline(options: LogsTimelineOptions) {
 	const { start, logs, end, rangeMinutes } = options;
-	const timestamps = logsToTimestamps(logs, rangeMinutes);
-	const miuntesInMs = 1000 * 60 * rangeMinutes;
+	const rangeMs = 1000 * 60 * rangeMinutes;
+	const thirdPartMs = rangeMs / 3;
 	let visualization = "";
 
-	for (let time = start; time <= end; time += miuntesInMs) {
-		const isInRange = timestamps.some((date) =>
-			inRange(date, time, time + miuntesInMs),
+	const timeRange = logs.flatMap((log) => {
+		const [start, end] = log.interval;
+		const logRange = [...createRange(start, end, rangeMs)];
+		return logRange.map((rangeItem) => ({
+			start: rangeItem,
+			length: Math.min(rangeMs, end - rangeItem),
+		}));
+	});
+
+	for (
+		let intervalStart = start;
+		intervalStart <= end;
+		intervalStart += rangeMs
+	) {
+		const intervalEnd = intervalStart + rangeMs;
+		const blocksInRange = timeRange.filter((rangeItem) =>
+			inRange(rangeItem.start, intervalStart, intervalEnd),
 		);
 
-		visualization += isInRange ? "🟥" : "🟨";
+		if (blocksInRange.length !== 0) {
+			const sumMs = sum(blocksInRange.map((e) => e.length));
+
+			if (sumMs < thirdPartMs) {
+				visualization += "🟨";
+			} else if (sumMs < thirdPartMs * 2) {
+				visualization += "🟧";
+			} else {
+				visualization += "🟥";
+			}
+		} else {
+			visualization += "⬜";
+		}
 	}
 
 	return visualization;
+}
+
+function* createRange(start: number, end: number, step = 1) {
+	for (let i = start; i < end; i += step) {
+		yield i;
+	}
 }
 
 function inRange(value: number, start: number, end: number): boolean {
@@ -106,19 +138,6 @@ export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
 
 	return { start, end };
-}
-
-export function logsToTimestamps(logs: Log[], rangeMinutes: number) {
-	return logs.flatMap((log) => {
-		const blocks: number[] = [];
-		const [start, end] = log.interval;
-
-		for (let i = start; i < end; i += 1000 * 60 * rangeMinutes) {
-			blocks.push(i);
-		}
-
-		return blocks.length > 0 ? blocks : [(start + end) / 2];
-	});
 }
 
 type FocusableElements =
