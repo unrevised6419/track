@@ -72,11 +72,22 @@ export function ProjectActions(props: ProjectActionsProps) {
 		const log = [
 			`${project.name} (${project.slug})\n`,
 			uniqueActivities.map((a) => `- ${a}`).join("\n"),
-			`\nIntervals of ${rangeMinutes} minutes.`,
+			`\nEach block represents ${rangeMinutes}m interval`,
 			timeline,
+			getLegend(rangeMinutes),
 		].join("\n");
 
 		await navigator.clipboard.writeText(log);
+	}
+
+	function getLegend(rangeMinutes: number) {
+		const thirdPartM = rangeMinutes / 3;
+		const noActivity = "⬜ 0m";
+		const oneThird = `< 🟨 < ${Math.floor(thirdPartM)}m`;
+		const twoThirds = `< 🟧 < ${Math.floor(thirdPartM * 2)}m`;
+		const full = `< 🟥 < ${rangeMinutes}m`;
+
+		return `Legend: ${noActivity} ${oneThird} ${twoThirds} ${full}`;
 	}
 
 	function resetProject(project: Project) {
