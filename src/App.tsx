@@ -38,8 +38,6 @@ import { ReactSortable } from "react-sortablejs";
 import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
 
-const rangeMinutes = 15;
-
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
 	copy: "Project Log Copy",
@@ -67,6 +65,11 @@ export function App() {
 	});
 
 	useDynamicFavicon(projects);
+
+	const constraints = getLogsConstraints(logs, projects);
+	const timelineLength = 32;
+	const diff = constraints[1] - constraints[0];
+	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
 	const toggleActiveProject = useCallback(
 		(project: Project) => {
@@ -131,7 +134,6 @@ export function App() {
 	async function onCopyLogs() {
 		playClick();
 
-		const { start, end } = getLogsConstraints(logs, projects);
 		const projectsTimeline = projects
 			.map((project) => {
 				const projectLogs = getProjectLogs(project, logs);
@@ -139,10 +141,10 @@ export function App() {
 				if (projectLogs.length === 0) return;
 
 				const timeline = logsTimeline({
-					start,
-					end,
+					constraints,
 					logs: projectLogs,
-					rangeMinutes,
+					intervalMinutes,
+					timelineLength,
 				});
 				return `${timeline} ${project.name} (${project.slug})`;
 			})
@@ -156,7 +158,7 @@ export function App() {
 		await navigator.clipboard.writeText(
 			[
 				projectsTimeline.join("\n"),
-				`${getLegend(rangeMinutes)}\n`,
+				`${getLegend(intervalMinutes)}\n`,
 				text.join("\n"),
 			].join("\n"),
 		);
@@ -226,9 +228,11 @@ export function App() {
 							setProjects={setProjects}
 							index={index + 1}
 							toggleActiveProject={toggleActiveProject}
-							rangeMinutes={rangeMinutes}
+							intervalMinutes={intervalMinutes}
 							logs={logs}
 							setLogs={setLogs}
+							timelineLength={timelineLength}
+							constraints={constraints}
 						/>
 					</article>
 				))}

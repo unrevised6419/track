@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
-import { Project, Log, ProjectAction, StartedProject } from "./types";
+import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
 import {
 	Dispatch,
 	SetStateAction,
@@ -70,73 +70,63 @@ export function usePlayClick() {
 	return playClick as () => void;
 }
 
-export function getLegend(rangeMinutes: number) {
-	const thirdPartM = rangeMinutes / 3;
+export function getLegend(intervalMinutes: number) {
+	const thirdPartM = intervalMinutes / 3;
 	const noActivity = "⬜ 0m";
 	const oneThird = `< 🟨 < ${Math.floor(thirdPartM)}m`;
 	const twoThirds = `< 🟧 < ${Math.floor(thirdPartM * 2)}m`;
-	const full = `< 🟥 < ${rangeMinutes}m`;
+	const full = `< 🟥 < ${intervalMinutes}m`;
 
 	return `Legend: ${noActivity} ${oneThird} ${twoThirds} ${full}`;
 }
 
 type LogsTimelineOptions = {
-	start: number;
+	constraints: Interval;
 	logs: Log[];
-	end: number;
-	rangeMinutes: number;
+	intervalMinutes: number;
+	timelineLength: number;
 };
 
 export function logsTimeline(options: LogsTimelineOptions) {
-	const { start, logs, end, rangeMinutes } = options;
-	const rangeMs = 1000 * 60 * rangeMinutes;
-	const thirdPartMs = rangeMs / 3;
-	let visualization = "";
+	const { constraints, logs, intervalMinutes, timelineLength } = options;
+	const intervalMs = 1000 * 60 * intervalMinutes;
+	const thirdPartMs = intervalMs / 3;
 
-	const timeRange = logs.flatMap((log) => {
-		const [start, end] = log.interval;
-		const logRange = [...createRange(start, end, rangeMs)];
-		return logRange.map((rangeItem) => ({
-			start: rangeItem,
-			length: Math.min(rangeMs, end - rangeItem),
-		}));
+	const intervals = logs.flatMap((log) =>
+		[...createInterval(log.interval, intervalMs)].map((start) => ({
+			start,
+			size: Math.min(intervalMs, log.interval[1] - start),
+		})),
+	);
+
+	const blocks = [...createInterval([0, timelineLength])].map((i) => {
+		const intervalStart = constraints[0] + i * intervalMs;
+		const intervalEnd = intervalStart + intervalMs;
+		const interval = [intervalStart, intervalEnd] as Interval;
+		const blocks = intervals.filter(({ start }) => inInterval(start, interval));
+		const sumMs = sum(blocks.map((e) => e.size));
+
+		if (sumMs > thirdPartMs * 2) {
+			return "🟥";
+		} else if (sumMs > thirdPartMs) {
+			return "🟧";
+		} else if (sumMs > 0) {
+			return "🟨";
+		} else {
+			return "⬜";
+		}
 	});
 
-	for (
-		let intervalStart = start;
-		intervalStart <= end;
-		intervalStart += rangeMs
-	) {
-		const intervalEnd = intervalStart + rangeMs;
-		const blocksInRange = timeRange.filter((rangeItem) =>
-			inRange(rangeItem.start, intervalStart, intervalEnd),
-		);
-
-		if (blocksInRange.length !== 0) {
-			const sumMs = sum(blocksInRange.map((e) => e.length));
-
-			if (sumMs < thirdPartMs) {
-				visualization += "🟨";
-			} else if (sumMs < thirdPartMs * 2) {
-				visualization += "🟧";
-			} else {
-				visualization += "🟥";
-			}
-		} else {
-			visualization += "⬜";
-		}
-	}
-
-	return visualization;
+	return blocks.join("");
 }
 
-function* createRange(start: number, end: number, step = 1) {
+function* createInterval([start, end]: Interval, step = 1) {
 	for (let i = start; i < end; i += step) {
 		yield i;
 	}
 }
 
-function inRange(value: number, start: number, end: number): boolean {
+function inInterval(value: number, [start, end]: Interval): boolean {
 	return start <= value && value <= end;
 }
 
@@ -147,7 +137,7 @@ export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	const start = Math.min(...logs.map((e) => e.interval[0]), ...startedAts);
 	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
 
-	return { start, end };
+	return [start, end] as Interval;
 }
 
 type FocusableElements =
