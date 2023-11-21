@@ -5,12 +5,11 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectAction, Project, projectActions, Log } from "./types";
+import { ProjectAction, Project, projectActions, Log, Interval } from "./types";
 import {
 	askForActivityName,
 	cn,
 	getLegend,
-	getLogsConstraints,
 	getProjectLogs,
 	logsTimeline,
 	usePlayClick,
@@ -29,7 +28,9 @@ type ProjectActionsProps = {
 	actions: ProjectAction[];
 	index: number;
 	toggleActiveProject: (project: Project) => void;
-	rangeMinutes: number;
+	intervalMinutes: number;
+	timelineLength: number;
+	constraints: Interval;
 };
 
 type ProjectActionProps = {
@@ -48,9 +49,11 @@ export function ProjectActions(props: ProjectActionsProps) {
 		actions,
 		index,
 		toggleActiveProject,
-		rangeMinutes,
+		intervalMinutes,
 		logs: allLogs,
 		setLogs,
+		timelineLength,
+		constraints,
 	} = props;
 
 	const logs = useMemo(
@@ -61,8 +64,12 @@ export function ProjectActions(props: ProjectActionsProps) {
 	async function copyProjectLog(project: Project) {
 		playClick();
 
-		const { start, end } = getLogsConstraints(allLogs, projects);
-		const timeline = logsTimeline({ start, end, logs, rangeMinutes });
+		const timeline = logsTimeline({
+			constraints,
+			logs,
+			intervalMinutes,
+			timelineLength,
+		});
 
 		const activities = logs
 			.map((l) => l.activityName)
@@ -73,9 +80,9 @@ export function ProjectActions(props: ProjectActionsProps) {
 		const log = [
 			`${project.name} (${project.slug})\n`,
 			uniqueActivities.map((a) => `- ${a}`).join("\n"),
-			`\nEach block represents ${rangeMinutes}m interval`,
+			`\nEach block represents ${intervalMinutes}m interval`,
 			timeline,
-			getLegend(rangeMinutes),
+			getLegend(intervalMinutes),
 		].join("\n");
 
 		await navigator.clipboard.writeText(log);
