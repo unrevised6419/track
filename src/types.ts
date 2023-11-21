@@ -9,7 +9,7 @@ export type StartedProject = Project & {
 	startedAt: number;
 };
 
-export type Interval = [start: number, start: number];
+export type Interval = readonly [start: number, end: number];
 export type Log = {
 	projectSlug: string;
 	activityName: string;
