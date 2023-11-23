@@ -78,9 +78,8 @@ export function ProjectActions(props: ProjectActionsProps) {
 		const uniqueActivities = [...new Set(activities)];
 
 		const log = [
-			`${project.name} (${project.slug})\n`,
 			uniqueActivities.map((a) => `- ${a}`).join("\n"),
-			`\nEach block represents ${intervalMinutes}m interval`,
+			"",
 			timeline,
 			getLegend(intervalMinutes),
 		].join("\n");
