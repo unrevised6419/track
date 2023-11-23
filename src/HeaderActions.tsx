@@ -41,6 +41,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		if (!shouldReset) return;
 
 		setProjects([]);
+		setLogs([]);
 	}
 
 	function onResetTimers() {
