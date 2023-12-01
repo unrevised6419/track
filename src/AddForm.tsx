@@ -1,17 +1,12 @@
-import { Dispatch, SetStateAction, useState, useRef, FormEvent } from "react";
+import { useState, useRef, FormEvent } from "react";
 import { HiPlusCircle } from "react-icons/hi2";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { Project } from "./types";
 import { usePlayClick } from "./utils";
+import { useAppContext } from "./AppProvider";
 
-export function AddForm({
-	projects,
-	setProjects,
-}: {
-	projects: Project[];
-	setProjects: Dispatch<SetStateAction<Project[]>>;
-}) {
+export function AddForm() {
+	const { projects, setProjects } = useAppContext();
 	const playClick = usePlayClick();
 	const [name, setName] = useState("");
 	const [slug, setSlug] = useState("");

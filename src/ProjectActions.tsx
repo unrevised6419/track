@@ -5,26 +5,21 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectAction, Project, projectActions, Log, Interval } from "./types";
+import { ProjectAction, Project, projectActions, Interval } from "./types";
 import {
 	askForActivityName,
 	cn,
 	getLegend,
-	getProjectLogs,
 	logsTimeline,
 	usePlayClick,
 } from "./utils";
-import { Dispatch, SetStateAction, useMemo } from "react";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useAppContext } from "./AppProvider";
 
 type ProjectActionsProps = {
 	project: Project;
-	projects: Project[];
-	logs: Log[];
-	setLogs: Dispatch<SetStateAction<Log[]>>;
-	setProjects: Dispatch<SetStateAction<Project[]>>;
 	actions: ProjectAction[];
 	index: number;
 	toggleActiveProject: (project: Project) => void;
@@ -44,34 +39,30 @@ export function ProjectActions(props: ProjectActionsProps) {
 	const isSmallDevice = useMediaQuery("(max-width : 640px)");
 	const {
 		project,
-		projects,
-		setProjects,
 		actions,
 		index,
 		toggleActiveProject,
 		intervalMinutes,
-		logs: allLogs,
-		setLogs,
 		timelineLength,
 		constraints,
 	} = props;
 
-	const logs = useMemo(
-		() => getProjectLogs(project, allLogs),
-		[allLogs, project],
-	);
+	const { getProjectLogs, projects, setProjects, logs, setLogs } =
+		useAppContext();
+
+	const projectLogs = getProjectLogs(project);
 
 	async function copyProjectLog(project: Project) {
 		playClick();
 
 		const timeline = logsTimeline({
 			constraints,
-			logs,
+			logs: projectLogs,
 			intervalMinutes,
 			timelineLength,
 		});
 
-		const activities = logs
+		const activities = projectLogs
 			.map((l) => l.activityName)
 			.filter((a) => a !== project.name);
 
@@ -98,7 +89,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 			return p;
 		});
 
-		const newLogs = allLogs.filter((l) => l.projectSlug !== project.slug);
+		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 
 		setProjects(newProjects);
 		setLogs(newLogs);
@@ -130,7 +121,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		copy: {
 			action: copyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
-			disabled: logs.length === 0,
+			disabled: projectLogs.length === 0,
 		},
 		remove: {
 			action: removeProject,
@@ -139,7 +130,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		reset: {
 			action: resetProject,
 			icon: <HiArrowPath size={20} />,
-			disabled: logs.length === 0,
+			disabled: projectLogs.length === 0,
 		},
 		rename: {
 			action: renameProjectActivity,
