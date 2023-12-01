@@ -3,16 +3,10 @@ import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
 import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
-import {
-	Dispatch,
-	SetStateAction,
-	useMemo,
-	useCallback,
-	useEffect,
-	useState,
-} from "react";
+import { useMemo, useCallback, useEffect, useState } from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
+import { useAppContext } from "./AppProvider";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -66,7 +60,6 @@ export function logToTextParts(log: Log) {
 
 export function usePlayClick() {
 	const [playClick] = useSound("/click.mp3");
-
 	return playClick as () => void;
 }
 
@@ -159,13 +152,8 @@ export function askForActivityName(defaultName?: string) {
 	return userAnswer || undefined;
 }
 
-export function useSortableList({
-	projects,
-	setProjects,
-}: {
-	projects: Project[];
-	setProjects: Dispatch<SetStateAction<Project[]>>;
-}) {
+export function useSortableList() {
+	const { projects, setProjects } = useAppContext();
 	const projectsList = useMemo<ItemInterface[]>(
 		() => projects.map((p) => ({ id: p.slug })),
 		[projects],
@@ -187,15 +175,17 @@ export function useSortableList({
 const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
-export function useDynamicFavicon(projects: Project[]) {
-	const playing = useMemo(() => projects.some((e) => e.startedAt), [projects]);
-	const [favicon, setFavicon] = useState(playing ? faviconPlay : faviconPause);
+export function useDynamicFavicon() {
+	const { activeProjects } = useAppContext();
+	const [favicon, setFavicon] = useState(
+		activeProjects.length ? faviconPlay : faviconPause,
+	);
 
 	useFavicon(favicon);
 
 	useEffect(() => {
-		setFavicon(playing ? faviconPlay : faviconPause);
-	}, [playing]);
+		setFavicon(activeProjects.length ? faviconPlay : faviconPause);
+	}, [activeProjects.length]);
 }
 
 export function storageKey(key: string) {
@@ -222,7 +212,14 @@ export function useProjectButtons() {
 const sumStartedAts = (startedAts: number[]) =>
 	sum(startedAts.map((startedAt) => Date.now() - startedAt));
 
-export function useLiveTotalTime(logs: Log[], projects: Project[]) {
+export function useLiveTotalTime(projects: Project[]) {
+	const { getProjectLogs } = useAppContext();
+
+	const logs = useMemo(
+		() => projects.flatMap((p) => getProjectLogs(p)),
+		[getProjectLogs, projects],
+	);
+
 	const logsTime = useMemo(
 		() => sum(logs.map((e) => e.interval[1] - e.interval[0])),
 		[logs],
@@ -256,6 +253,12 @@ export function isStartedProject(project: Project): project is StartedProject {
 	return project.startedAt !== undefined;
 }
 
-export function getProjectLogs(project: Project, logs: Log[]) {
-	return logs.filter((e) => e.projectSlug === project.slug);
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const groupBy = <T extends Record<string, any>, K extends keyof T>(
+	arr: T[],
+	key: K,
+): Record<string, T[]> =>
+	arr.reduce(
+		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
+		{} as Record<string, T[]>,
+	);

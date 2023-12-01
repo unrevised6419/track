@@ -1,10 +1,4 @@
-import {
-	Dispatch,
-	SetStateAction,
-	useCallback,
-	useMemo,
-	useState,
-} from "react";
+import { useCallback, useState } from "react";
 import {
 	HiPauseCircle,
 	HiPlayCircle,
@@ -22,12 +16,11 @@ import {
 	useProjectButtons,
 	storageKey,
 	isStartedProject,
-	getProjectLogs,
 	getLegend,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { ProjectAction, Project, projectActions, Log, Interval } from "./types";
+import { ProjectAction, Project, projectActions, Log } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
@@ -37,6 +30,7 @@ import { Checkbox } from "./Checkbox";
 import { ReactSortable } from "react-sortablejs";
 import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
+import { useAppContext } from "./AppProvider";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -53,18 +47,11 @@ export function App() {
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
 		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
 
-	const [projects, setProjects] = useProjects();
-	const [logs, setLogs] = useLocalStorage<Log[]>(
-		storageKey("logs"),
-		useMigrateOldLogs(projects),
-	);
+	const { projects, setProjects, logs, setLogs, getProjectLogs } =
+		useAppContext();
+	const [sortableList, setSortableList] = useSortableList();
 
-	const [sortableList, setSortableList] = useSortableList({
-		projects,
-		setProjects,
-	});
-
-	useDynamicFavicon(projects);
+	useDynamicFavicon();
 
 	const constraints = getLogsConstraints(logs, projects);
 	const timelineLength = 32;
@@ -136,7 +123,7 @@ export function App() {
 
 		const projectsTimeline = projects
 			.map((project) => {
-				const projectLogs = getProjectLogs(project, logs);
+				const projectLogs = getProjectLogs(project);
 
 				if (projectLogs.length === 0) return;
 
@@ -173,17 +160,12 @@ export function App() {
 				</strong>
 				<HeaderActions
 					className="ml-auto"
-					projects={projects}
-					setProjects={setProjects}
 					onShowSettingsModal={() => setShowSettingsModal(true)}
-					logs={logs}
-					setLogs={setLogs}
 				/>
 			</header>
 
-			<TotalInfo projects={projects} logs={logs} />
-
-			<AddForm projects={projects} setProjects={setProjects} />
+			<TotalInfo />
+			<AddForm />
 
 			<ReactSortable
 				tag="main"
@@ -211,7 +193,7 @@ export function App() {
 									<HiBars3BottomLeft size={20} />
 								</button>
 							</div>
-							<ProjectInfo project={project} logs={logs} />
+							<ProjectInfo project={project} />
 							<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
 								{index < 9 && (
 									<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
@@ -224,13 +206,9 @@ export function App() {
 						<ProjectActions
 							project={project}
 							actions={projectButtons}
-							projects={projects}
-							setProjects={setProjects}
 							index={index + 1}
 							toggleActiveProject={toggleActiveProject}
 							intervalMinutes={intervalMinutes}
-							logs={logs}
-							setLogs={setLogs}
 							timelineLength={timelineLength}
 							constraints={constraints}
 						/>
@@ -256,7 +234,7 @@ export function App() {
 				</button>
 			</div>
 
-			{showLogs && <ProjectsLogs logs={logs} />}
+			{showLogs && <ProjectsLogs />}
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<div className="grid gap-2">
@@ -286,57 +264,4 @@ export function App() {
 			</Modal>
 		</div>
 	);
-}
-
-function useProjects() {
-	const [projects, _setProjects] = useLocalStorage<Project[]>(
-		storageKey("projects"),
-		[],
-	);
-
-	// TODO: Remove migration after a while
-	const setProjects: Dispatch<SetStateAction<Project[]>> = useCallback(
-		function (value) {
-			const voidTimes = (projects: Project[]) =>
-				projects.map((p: Project) => ({ ...p, times: undefined }));
-
-			if (typeof value !== "function") {
-				_setProjects(voidTimes(value));
-			} else {
-				_setProjects((projects) => voidTimes(value(projects)));
-			}
-		},
-		[_setProjects],
-	);
-
-	return [projects, setProjects] as const;
-}
-
-// TODO: Remove migration after a while
-type OldProject = Project & {
-	times?: Array<{
-		projectSlug: string;
-		activityName: string;
-		startedAt: number;
-		endedAt: number;
-	}>;
-};
-function useMigrateOldLogs(projects: OldProject[]) {
-	return useMemo(() => {
-		const oldLogs = projects
-			.flatMap((project) => {
-				return (project.times ?? []).map((t) => ({
-					...t,
-					projectSlug: project.slug,
-					activityName: t.activityName || project.name,
-				}));
-			})
-			.sort((t1, t2) => t2.endedAt - t1.endedAt);
-
-		return oldLogs.map((log) => ({
-			projectSlug: log.projectSlug,
-			activityName: log.activityName,
-			interval: [log.startedAt, log.endedAt] as Interval,
-		}));
-	}, [projects]);
 }

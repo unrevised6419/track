@@ -6,29 +6,18 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, getProjectLogs, sum, usePlayClick } from "./utils";
-import { Log, Project } from "./types";
-import { Dispatch, SetStateAction } from "react";
+import { cn, sum, usePlayClick } from "./utils";
+import { Project } from "./types";
+import { useAppContext } from "./AppProvider";
 
 type HeaderActionsProps = {
 	className?: string;
 	onShowSettingsModal: () => void;
-	projects: Project[];
-	setProjects: Dispatch<SetStateAction<Project[]>>;
-	logs: Log[];
-	setLogs: Dispatch<SetStateAction<Log[]>>;
 };
 
 export function HeaderActions(props: HeaderActionsProps) {
-	const {
-		className,
-		onShowSettingsModal,
-		projects,
-		setProjects,
-		logs: allLogs,
-		setLogs,
-	} = props;
-
+	const { className, onShowSettingsModal } = props;
+	const { getProjectLogs, setLogs, projects, setProjects } = useAppContext();
 	const playClick = usePlayClick();
 
 	function onFullReset() {
@@ -92,7 +81,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		const date = new Date().toISOString().split("T").at(0) as string;
 
 		const projectsExports = projects.map((project) => {
-			const logs = getProjectLogs(project, allLogs);
+			const logs = getProjectLogs(project);
 			const durations = logs.map((e) => e.interval[1] - e.interval[0]);
 
 			if (project.startedAt) {

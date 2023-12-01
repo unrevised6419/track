@@ -1,15 +1,10 @@
 import { useMemo } from "react";
-import { Log, Project } from "./types";
 import { secondsToHumanFormat, cn, useLiveTotalTime } from "./utils";
+import { useAppContext } from "./AppProvider";
 
-export function TotalInfo({
-	projects,
-	logs,
-}: {
-	logs: Log[];
-	projects: Project[];
-}) {
-	const totalTime = useLiveTotalTime(logs, projects);
+export function TotalInfo() {
+	const { projects } = useAppContext();
+	const totalTime = useLiveTotalTime(projects);
 	const totalTimeHuman = useMemo(
 		() => secondsToHumanFormat(totalTime),
 		[totalTime],
