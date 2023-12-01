@@ -98,7 +98,9 @@ export function ProjectActions(props: ProjectActionsProps) {
 	function removeProject(project: Project) {
 		playClick();
 		const newProjects = projects.filter((e) => e.slug !== project.slug);
+		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		setProjects(newProjects);
+		setLogs(newLogs);
 	}
 
 	function renameProjectActivity(project: Project) {
