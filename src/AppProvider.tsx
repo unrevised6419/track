@@ -36,9 +36,10 @@ export function AppProvider({ children }: PropsWithChildren) {
 
 	const logsByProject = useMemo(() => groupBy(logs, "projectSlug"), [logs]);
 
-	function getProjectLogs(project: Project) {
-		return logsByProject[project.slug] ?? [];
-	}
+	const getProjectLogs = useCallback(
+		(project: Project) => logsByProject[project.slug] ?? [],
+		[logsByProject],
+	);
 
 	return (
 		<AppContext.Provider

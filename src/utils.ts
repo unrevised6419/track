@@ -16,10 +16,11 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function secondsToHumanFormat(
-	value: number,
+export function msToHumanFormat(
+	ms: number,
 	separator: "units" | "colon" = "colon",
 ) {
+	const value = ms / 1000;
 	const hours = Math.floor(value / 60 / 60);
 	const minutes = Math.floor(value / 60) % 60;
 	const seconds = Math.ceil(value % 60);
@@ -49,7 +50,7 @@ export function logToTextParts(log: Log) {
 	const startTime = new Date(start).toLocaleTimeString();
 	const endTime = new Date(end).toLocaleTimeString();
 	const diff = end - start;
-	const diffHuman = secondsToHumanFormat(diff / 1000, "units");
+	const diffHuman = msToHumanFormat(diff, "units");
 
 	return {
 		timestamp: `${startTime} - ${endTime}`,
@@ -246,7 +247,7 @@ export function useLiveTotalTime(projects: Project[]) {
 		return () => clearInterval(interval);
 	}, [logsTime, projects, startedAts]);
 
-	return totalTime / 1000;
+	return totalTime;
 }
 
 export function isStartedProject(project: Project): project is StartedProject {
