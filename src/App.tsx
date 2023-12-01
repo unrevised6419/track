@@ -260,6 +260,12 @@ export function App() {
 							/>
 						))}
 					</div>
+
+					<div className="border font-mono text-xs flex gap-1 items-center justify-center p-1 rounded">
+						<span>{import.meta.env.VITE_BUILD_HASH}</span>
+						<span>:</span>
+						<span>{import.meta.env.VITE_BUILD_TIME}</span>
+					</div>
 				</div>
 			</Modal>
 		</div>
