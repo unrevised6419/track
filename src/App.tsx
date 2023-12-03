@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
 	HiPauseCircle,
 	HiPlayCircle,
@@ -7,7 +7,6 @@ import {
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { hash, date } from "virtual:local";
 import {
-	usePlayClick,
 	logsTimeline,
 	getLogsConstraints,
 	logToTextParts,
@@ -19,6 +18,7 @@ import {
 	isStartedProject,
 	getLegend,
 	useAppContext,
+	useWithClick,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
@@ -41,7 +41,6 @@ const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 };
 
 export function App() {
-	const playClick = usePlayClick();
 	const [projectButtons, toggleProjectButton] = useProjectButtons();
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -59,69 +58,60 @@ export function App() {
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
-	const toggleActiveProject = useCallback(
-		(project: Project) => {
-			playClick();
+	const toggleActiveProject = useWithClick((project: Project) => {
+		const startedProject = projects.find(isStartedProject);
 
-			const startedProject = projects.find(isStartedProject);
+		if (startedProject) {
+			const newLog: Log = {
+				projectSlug: startedProject.slug,
+				interval: [startedProject.startedAt, Date.now()],
+				activityName: shouldAskForActivityName
+					? startedProject.lastActivityName ?? startedProject.name
+					: startedProject.name,
+			};
 
-			if (startedProject) {
-				const newLog: Log = {
-					projectSlug: startedProject.slug,
-					interval: [startedProject.startedAt, Date.now()],
-					activityName: shouldAskForActivityName
-						? startedProject.lastActivityName ?? startedProject.name
-						: startedProject.name,
+			setLogs([newLog, ...logs]);
+		}
+
+		const newProjects = projects.map((p) => {
+			if (p.startedAt) {
+				return {
+					...p,
+					startedAt: undefined,
+					lastActivityName: shouldAskForActivityName
+						? p.lastActivityName
+						: undefined,
+				} satisfies Project;
+			} else if (p.slug === project.slug) {
+				return { ...p, startedAt: Date.now() } satisfies Project;
+			} else {
+				return p;
+			}
+		});
+
+		setProjects(newProjects);
+
+		const newStartedProject = newProjects.find((p) => p.startedAt);
+
+		if (newStartedProject) {
+			setTimeout(() => {
+				const activityName = shouldAskForActivityName
+					? askForActivityName(newStartedProject.lastActivityName)
+					: undefined;
+
+				const newProject: Project = {
+					...newStartedProject,
+					lastActivityName: activityName || newStartedProject.name,
 				};
 
-				setLogs([newLog, ...logs]);
-			}
+				setProjects(
+					newProjects.map((p) => (p.slug === newProject.slug ? newProject : p)),
+				);
+			}, 200);
+		}
+	});
 
-			const newProjects = projects.map((p) => {
-				if (p.startedAt) {
-					return {
-						...p,
-						startedAt: undefined,
-						lastActivityName: shouldAskForActivityName
-							? p.lastActivityName
-							: undefined,
-					} satisfies Project;
-				} else if (p.slug === project.slug) {
-					return { ...p, startedAt: Date.now() } satisfies Project;
-				} else {
-					return p;
-				}
-			});
-
-			setProjects(newProjects);
-
-			const newStartedProject = newProjects.find((p) => p.startedAt);
-
-			if (newStartedProject) {
-				setTimeout(() => {
-					const activityName = shouldAskForActivityName
-						? askForActivityName(newStartedProject.lastActivityName)
-						: undefined;
-
-					const newProject: Project = {
-						...newStartedProject,
-						lastActivityName: activityName || newStartedProject.name,
-					};
-
-					setProjects(
-						newProjects.map((p) =>
-							p.slug === newProject.slug ? newProject : p,
-						),
-					);
-				}, 200);
-			}
-		},
-		[playClick, projects, setProjects, shouldAskForActivityName, setLogs, logs],
-	);
-
-	async function onCopyLogs() {
-		playClick();
-
+	const onCopyLogs = useWithClick(async () => {
 		const projectsTimeline = projects
 			.map((project) => {
 				const projectLogs = getProjectLogs(project);
@@ -150,7 +140,9 @@ export function App() {
 				text.join("\n"),
 			].join("\n"),
 		);
-	}
+	});
+
+	const onShowLogs = useWithClick(() => setShowLogs(!showLogs));
 
 	return (
 		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
@@ -220,10 +212,7 @@ export function App() {
 			<div className="flex gap-2">
 				<button
 					className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3 grow"
-					onClick={() => {
-						playClick();
-						setShowLogs(!showLogs);
-					}}
+					onClick={onShowLogs}
 				>
 					{showLogs ? "Hide Logs" : "Show Logs"}
 				</button>
