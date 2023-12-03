@@ -4,6 +4,7 @@ import {
 	HiFolderPlus,
 	HiClipboardDocument,
 	HiCog8Tooth,
+	HiUser,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
 import {
@@ -14,6 +15,7 @@ import {
 	useWithClick,
 } from "./utils";
 import { Project } from "./types";
+import { supabase } from "./supabase";
 
 type HeaderActionsProps = {
 	className?: string;
@@ -95,6 +97,14 @@ export function HeaderActions(props: HeaderActionsProps) {
 			});
 	});
 
+	const login = useWithClick(async () => {
+		const { data } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+		});
+
+		if (data.url) window.location.href = data.url;
+	});
+
 	return (
 		<div className={cn("flex gap-2", className)}>
 			<HeaderButton onClick={onFullReset} title="Full Reset">
@@ -111,6 +121,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 			</HeaderButton>
 			<HeaderButton onClick={onShowSettingsModal} title="Open Settings Modal">
 				<HiCog8Tooth className="h-5 w-5 sm:h-6 sm:w-6" />
+			</HeaderButton>
+			<HeaderButton onClick={() => void login()} title="Open Settings Modal">
+				<HiUser className="h-6 w-6 sm:h-6 sm:w-6" />
 			</HeaderButton>
 		</div>
 	);
