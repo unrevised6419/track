@@ -18,6 +18,7 @@ import {
 	storageKey,
 	isStartedProject,
 	getLegend,
+	useAppContext,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
@@ -31,7 +32,6 @@ import { Checkbox } from "./Checkbox";
 import { ReactSortable } from "react-sortablejs";
 import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
-import { useAppContext } from "./AppProvider";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",

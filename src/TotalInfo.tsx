@@ -1,8 +1,13 @@
 import { useEffect, useMemo } from "react";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
-import { msToHumanFormat, cn, useLiveTotalTime, storageKey } from "./utils";
-import { useAppContext } from "./AppProvider";
+import {
+	msToHumanFormat,
+	cn,
+	useLiveTotalTime,
+	storageKey,
+	useAppContext,
+} from "./utils";
 import { useLocalStorage } from "@uidotdev/usehooks";
 
 export function TotalInfo() {

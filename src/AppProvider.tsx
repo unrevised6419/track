@@ -3,24 +3,12 @@ import {
 	Dispatch,
 	PropsWithChildren,
 	SetStateAction,
-	createContext,
 	useCallback,
-	useContext,
 	useMemo,
 } from "react";
-import { Interval, Log, Project, StartedProject } from "./types";
+import { Interval, Log, Project } from "./types";
 import { groupBy, isStartedProject, storageKey } from "./utils";
-
-type AppContextType = {
-	projects: Project[];
-	setProjects: Dispatch<SetStateAction<Project[]>>;
-	logs: Log[];
-	setLogs: Dispatch<SetStateAction<Log[]>>;
-	activeProjects: StartedProject[];
-	getProjectLogs: (project: Project) => Log[];
-};
-
-export const AppContext = createContext<AppContextType | undefined>(undefined);
+import { AppContext } from "./app-context";
 
 export function AppProvider({ children }: PropsWithChildren) {
 	const [projects, setProjects] = useProjects();
@@ -55,12 +43,6 @@ export function AppProvider({ children }: PropsWithChildren) {
 			{children}
 		</AppContext.Provider>
 	);
-}
-
-export function useAppContext() {
-	const context = useContext(AppContext);
-	if (context) return context;
-	throw new Error("useAppContext must be used within an AppProvider");
 }
 
 function useProjects() {

@@ -11,12 +11,12 @@ import {
 	cn,
 	getLegend,
 	logsTimeline,
+	useAppContext,
 	usePlayClick,
 } from "./utils";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useAppContext } from "./AppProvider";
 
 type ProjectActionsProps = {
 	project: Project;

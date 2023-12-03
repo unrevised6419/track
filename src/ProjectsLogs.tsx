@@ -1,5 +1,4 @@
-import { useAppContext } from "./AppProvider";
-import { logToTextParts } from "./utils";
+import { logToTextParts, useAppContext } from "./utils";
 
 export function ProjectsLogs() {
 	const { logs } = useAppContext();
