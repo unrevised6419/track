@@ -6,9 +6,8 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, sum, usePlayClick } from "./utils";
+import { cn, sum, useAppContext, usePlayClick } from "./utils";
 import { Project } from "./types";
-import { useAppContext } from "./AppProvider";
 
 type HeaderActionsProps = {
 	className?: string;

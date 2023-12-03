@@ -3,10 +3,10 @@ import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
 import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
-import { useMemo, useCallback, useEffect, useState } from "react";
+import { useMemo, useCallback, useEffect, useState, useContext } from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { useAppContext } from "./AppProvider";
+import { AppContext } from "./app-context";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -263,3 +263,9 @@ export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
 		{} as Record<string, T[]>,
 	);
+
+export function useAppContext() {
+	const context = useContext(AppContext);
+	if (context) return context;
+	throw new Error("useAppContext must be used within an AppProvider");
+}

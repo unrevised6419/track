@@ -20,6 +20,6 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"include": ["src", "packages/vite-plugin-local/client.d.ts"],
+	"include": ["src", "packages"],
 	"references": [{ "path": "./tsconfig.node.json" }]
 }
