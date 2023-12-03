@@ -5,6 +5,7 @@ import {
 	HiBars3BottomLeft,
 } from "react-icons/hi2";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { hash, date } from "virtual:local";
 import {
 	usePlayClick,
 	logsTimeline,
@@ -262,9 +263,9 @@ export function App() {
 					</div>
 
 					<div className="border font-mono text-xs flex gap-1 items-center justify-center p-1 rounded">
-						<span>{import.meta.env.VITE_BUILD_HASH}</span>
+						<span>{hash}</span>
 						<span>:</span>
-						<span>{import.meta.env.VITE_BUILD_TIME}</span>
+						<span>{date}</span>
 					</div>
 				</div>
 			</Modal>
