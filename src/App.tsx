@@ -15,14 +15,20 @@ import {
 	useDynamicFavicon,
 	useProjectButtons,
 	storageKey,
-	isStartedProject,
 	getLegend,
 	useAppContext,
 	useWithClick,
+	isStartedProject,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import { ProjectAction, Project, projectActions, Log } from "./types";
+import {
+	ProjectAction,
+	Project,
+	projectActions,
+	Log,
+	StartedProject,
+} from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
@@ -47,8 +53,14 @@ export function App() {
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
 		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
 
-	const { projects, setProjects, logs, setLogs, getProjectLogs } =
-		useAppContext();
+	const {
+		projects,
+		setProjects,
+		logs,
+		setLogs,
+		getProjectLogs,
+		activeProjects,
+	} = useAppContext();
 	const [sortableList, setSortableList] = useSortableList();
 
 	useDynamicFavicon();
@@ -58,88 +70,89 @@ export function App() {
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
-	const toggleActiveProject = useWithClick((project: Project) => {
-		const startedProject = projects.find(isStartedProject);
+	const startProject = useWithClick((project: Project) => {
+		const startedProject = {
+			...project,
+			startedAt: Date.now(),
+		} satisfies StartedProject;
 
-		if (startedProject) {
-			const newLog: Log = {
-				projectSlug: startedProject.slug,
-				interval: [startedProject.startedAt, Date.now()],
-				activityName: shouldAskForActivityName
-					? startedProject.lastActivityName ?? startedProject.name
-					: startedProject.name,
-			};
-
-			setLogs([newLog, ...logs]);
-		}
-
-		const newProjects = projects.map((p) => {
-			if (p.startedAt) {
-				return {
-					...p,
-					startedAt: undefined,
-					lastActivityName: shouldAskForActivityName
-						? p.lastActivityName
-						: undefined,
-				} satisfies Project;
-			} else if (p.slug === project.slug) {
-				return { ...p, startedAt: Date.now() } satisfies Project;
-			} else {
-				return p;
-			}
-		});
+		const newProjects = projects.map<Project>((p) =>
+			p.slug === project.slug ? startedProject : { ...p, startedAt: undefined },
+		);
 
 		setProjects(newProjects);
 
-		const newStartedProject = newProjects.find((p) => p.startedAt);
+		setTimeout(() => {
+			const activityName = shouldAskForActivityName
+				? askForActivityName(project.lastActivityName)
+				: undefined;
 
-		if (newStartedProject) {
-			setTimeout(() => {
-				const activityName = shouldAskForActivityName
-					? askForActivityName(newStartedProject.lastActivityName)
-					: undefined;
+			const newProject: StartedProject = {
+				...startedProject,
+				lastActivityName: activityName || project.name,
+			};
 
-				const newProject: Project = {
-					...newStartedProject,
-					lastActivityName: activityName || newStartedProject.name,
-				};
-
-				setProjects(
-					newProjects.map((p) => (p.slug === newProject.slug ? newProject : p)),
-				);
-			}, 200);
-		}
+			setProjects(
+				newProjects.map((p) => (p.slug === newProject.slug ? newProject : p)),
+			);
+		}, 200);
 	});
 
-	const onCopyLogs = useWithClick(async () => {
+	const toggleActiveProject = useWithClick((project: Project) =>
+		isStartedProject(project) ? stopProject(project) : startProject(project),
+	);
+
+	const stopProject = useWithClick((project: StartedProject) => {
+		const newLogs = activeProjects.map<Log>((startedProject) => ({
+			projectSlug: startedProject.slug,
+			interval: [startedProject.startedAt, Date.now()],
+			activityName: shouldAskForActivityName
+				? startedProject.lastActivityName ?? startedProject.name
+				: startedProject.name,
+		}));
+
+		const newProjects = projects.map<Project>((p) => {
+			if (p.slug !== project.slug) return p;
+			return {
+				...p,
+				startedAt: undefined,
+				lastActivityName: shouldAskForActivityName
+					? p.lastActivityName
+					: undefined,
+			};
+		});
+
+		setLogs([...newLogs, ...logs]);
+		setProjects(newProjects);
+	});
+
+	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects
-			.map((project) => {
-				const projectLogs = getProjectLogs(project);
-
-				if (projectLogs.length === 0) return;
-
+			.map((project) => ({ project, projectLogs: getProjectLogs(project) }))
+			.filter(({ projectLogs }) => projectLogs.length > 0)
+			.map(({ project, projectLogs }) => {
 				const timeline = logsTimeline({
 					constraints,
 					logs: projectLogs,
 					intervalMinutes,
 					timelineLength,
 				});
-				return `${timeline} ${project.name} (${project.slug})`;
-			})
-			.filter(Boolean);
 
-		const text = logs.map((log) => {
+				return `${timeline} ${project.name} (${project.slug})`;
+			});
+
+		const formattedLogs = logs.map((log) => {
 			const { timestamp, name, diffHuman } = logToTextParts(log);
 			return `(${timestamp}) ${name} [${diffHuman}]`;
 		});
 
-		await navigator.clipboard.writeText(
-			[
-				projectsTimeline.join("\n"),
-				`${getLegend(intervalMinutes)}\n`,
-				text.join("\n"),
-			].join("\n"),
-		);
+		const text = [
+			projectsTimeline.join("\n"),
+			`${getLegend(intervalMinutes)}\n`,
+			formattedLogs.join("\n"),
+		].join("\n");
+
+		navigator.clipboard.writeText(text);
 	});
 
 	const onShowLogs = useWithClick(() => setShowLogs(!showLogs));
@@ -171,7 +184,11 @@ export function App() {
 					<article key={project.slug} className="flex gap-3">
 						<Button
 							className={project.startedAt ? "bg-red-500" : undefined}
-							onClick={() => toggleActiveProject(project)}
+							onClick={() =>
+								isStartedProject(project)
+									? stopProject(project)
+									: startProject(project)
+							}
 						>
 							{project.startedAt ? (
 								<HiPauseCircle size={20} />
