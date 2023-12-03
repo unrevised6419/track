@@ -6,7 +6,7 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, sum, useAppContext, usePlayClick } from "./utils";
+import { cn, sum, useAppContext, useWithClick } from "./utils";
 import { Project } from "./types";
 
 type HeaderActionsProps = {
@@ -17,11 +17,8 @@ type HeaderActionsProps = {
 export function HeaderActions(props: HeaderActionsProps) {
 	const { className, onShowSettingsModal } = props;
 	const { getProjectLogs, setLogs, projects, setProjects } = useAppContext();
-	const playClick = usePlayClick();
 
-	function onFullReset() {
-		playClick();
-
+	const onFullReset = useWithClick(() => {
 		const shouldReset = window.confirm(
 			"Are you sure you want to reset everything?",
 		);
@@ -30,11 +27,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		setProjects([]);
 		setLogs([]);
-	}
+	});
 
-	function onResetTimers() {
-		playClick();
-
+	const onResetTimers = useWithClick(() => {
 		const shouldReset = window.confirm(
 			"Are you sure you want to reset all timers?",
 		);
@@ -48,11 +43,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		setProjects(newProjects);
 		setLogs([]);
-	}
+	});
 
-	function onImport() {
-		playClick();
-
+	const onImport = useWithClick(() => {
 		const text = window.prompt("Paste the Jagaad Manager `/projects me` here");
 
 		if (!text) return;
@@ -72,11 +65,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 		);
 
 		setProjects([...projects, ...filteredProjects]);
-	}
+	});
 
-	async function onExport() {
-		playClick();
-
+	const onExport = useWithClick(async () => {
 		const date = new Date().toISOString().split("T").at(0) as string;
 
 		const projectsExports = projects.map((project) => {
@@ -103,7 +94,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		);
 
 		window.alert("Jagaad Manager Export format was copied to clipboard!");
-	}
+	});
 
 	return (
 		<div className={cn("flex gap-2", className)}>

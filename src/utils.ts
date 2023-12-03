@@ -3,7 +3,14 @@ import { twMerge } from "tailwind-merge";
 // @ts-expect-error - no types
 import { useSound } from "use-sound";
 import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
-import { useMemo, useCallback, useEffect, useState, useContext } from "react";
+import {
+	useMemo,
+	useCallback,
+	useEffect,
+	useState,
+	useContext,
+	useRef,
+} from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 import { AppContext } from "./app-context";
@@ -59,9 +66,25 @@ export function logToTextParts(log: Log) {
 	};
 }
 
-export function usePlayClick() {
+export function useWithClick<Args extends unknown[], Return>(
+	fn: (...args: Args) => Return,
+) {
 	const [playClick] = useSound("/click.mp3");
-	return playClick as () => void;
+	return useEffectEvent<Args, Return>((...args) => {
+		playClick();
+		return fn(...args);
+	});
+}
+
+function useEffectEvent<Args extends unknown[], Return>(
+	callback: (...args: Args) => Return,
+) {
+	const ref = useRef(callback);
+	ref.current = callback;
+	return useCallback<(...args: Args) => Return>(
+		(...args) => ref.current(...args),
+		[],
+	);
 }
 
 export function getLegend(intervalMinutes: number) {

@@ -12,7 +12,7 @@ import {
 	getLegend,
 	logsTimeline,
 	useAppContext,
-	usePlayClick,
+	useWithClick,
 } from "./utils";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
@@ -35,7 +35,6 @@ type ProjectActionProps = {
 };
 
 export function ProjectActions(props: ProjectActionsProps) {
-	const playClick = usePlayClick();
 	const isSmallDevice = useMediaQuery("(max-width : 640px)");
 	const {
 		project,
@@ -52,9 +51,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 	const projectLogs = getProjectLogs(project);
 
-	async function copyProjectLog(project: Project) {
-		playClick();
-
+	const copyProjectLog = useWithClick((project: Project) => {
 		const timeline = logsTimeline({
 			constraints,
 			logs: projectLogs,
@@ -75,12 +72,10 @@ export function ProjectActions(props: ProjectActionsProps) {
 			getLegend(intervalMinutes),
 		].join("\n");
 
-		await navigator.clipboard.writeText(log);
-	}
+		navigator.clipboard.writeText(log);
+	});
 
-	function resetProject(project: Project) {
-		playClick();
-
+	const resetProject = useWithClick((project: Project) => {
 		const newProjects = projects.map((p) => {
 			if (p.slug === project.slug) {
 				return { ...p, startedAt: undefined } satisfies Project;
@@ -93,18 +88,16 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 		setProjects(newProjects);
 		setLogs(newLogs);
-	}
+	});
 
-	function removeProject(project: Project) {
-		playClick();
+	const removeProject = useWithClick((project: Project) => {
 		const newProjects = projects.filter((e) => e.slug !== project.slug);
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		setProjects(newProjects);
 		setLogs(newLogs);
-	}
+	});
 
-	function renameProjectActivity(project: Project) {
-		playClick();
+	const renameProjectActivity = useWithClick((project: Project) => {
 		const activityName = askForActivityName(project.lastActivityName);
 
 		if (!activityName) return;
@@ -114,7 +107,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 		setProjects(
 			projects.map((p) => (p.slug === project.slug ? newProject : p)),
 		);
-	}
+	});
 
 	useHotkeys(`${index}+r`, () => renameProjectActivity(project), [project]);
 	useHotkeys(`${index}+s`, () => toggleActiveProject(project), [project]);
