@@ -3,21 +3,21 @@ import { Project, Log, StartedProject } from "./types";
 
 type DataContextType = {
 	projects: ReadonlyArray<Project>;
-	setProjects: Dispatch<SetStateAction<ReadonlyArray<Project>>>;
 	logs: ReadonlyArray<Log>;
-	setLogs: Dispatch<SetStateAction<ReadonlyArray<Log>>>;
-	activeProjects: ReadonlyArray<StartedProject>;
-	getProjectLogs: (project: Project) => ReadonlyArray<Log>;
+	startedProjects: ReadonlyArray<StartedProject>;
 	shouldAskForActivityName: boolean;
+	setProjects: Dispatch<SetStateAction<ReadonlyArray<Project>>>;
+	setLogs: Dispatch<SetStateAction<ReadonlyArray<Log>>>;
 	setShouldAskForActivityName: Dispatch<SetStateAction<boolean>>;
-	toggleActiveProject: (project: Project) => void;
-	addProject: (project: Project) => void;
 	removeAllProjectsAndLogs: () => void;
 	removeAllLogs: () => void;
-	addProjects: (projects: ReadonlyArray<Project>) => void;
+	getProjectLogs: (project: Project) => ReadonlyArray<Log>;
+	toggleActiveProject: (project: Project) => void;
+	addProject: (project: Project) => void;
 	resetProject: (project: Project) => void;
 	removeProject: (project: Project) => void;
 	updateProject: (project: Project) => void;
+	addProjects: (projects: ReadonlyArray<Project>) => void;
 	sortProjects: (projects: ReadonlyArray<string>) => void;
 };
 
