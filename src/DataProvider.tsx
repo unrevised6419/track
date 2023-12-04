@@ -23,7 +23,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		[],
 	);
 
-	const activeProjects = useMemo(
+	const startedProjects = useMemo(
 		() => projects.filter(isStartedProject),
 		[projects],
 	);
@@ -34,57 +34,44 @@ export function DataProvider({ children }: PropsWithChildren) {
 		(project: Project) => logsByProject[project.slug] ?? [],
 	);
 
-	function createNewLogs() {
-		return activeProjects.map<Log>((project) => ({
+	const toggleActiveProject = useWithClick((project: Project) => {
+		let updatedProject: Project;
+
+		if (isStartedProject(project)) {
+			updatedProject = {
+				...project,
+				startedAt: undefined,
+				lastActivityName: shouldAskForActivityName
+					? project.lastActivityName
+					: undefined,
+			} as Project;
+		} else {
+			const startedAt = Date.now();
+			const activityName = shouldAskForActivityName
+				? askForActivityName(project.lastActivityName)
+				: undefined;
+
+			updatedProject = {
+				...project,
+				startedAt,
+				lastActivityName: activityName || project.name,
+			} as StartedProject;
+		}
+
+		const newLogs = startedProjects.map<Log>((project) => ({
 			projectSlug: project.slug,
 			interval: [project.startedAt, Date.now()],
 			activityName: shouldAskForActivityName
 				? project.lastActivityName ?? project.name
 				: project.name,
 		}));
-	}
-
-	const startProject = useEffectEvent((project: Project) => {
-		setLogs([...createNewLogs(), ...logs]);
-
-		const startedAt = Date.now();
-		const activityName = shouldAskForActivityName
-			? askForActivityName(project.lastActivityName)
-			: undefined;
-
-		const startedProject: StartedProject = {
-			...project,
-			startedAt,
-			lastActivityName: activityName || project.name,
-		};
 
 		const newProjects = projects.map<Project>((p) =>
-			p.slug === project.slug ? startedProject : { ...p, startedAt: undefined },
+			p.slug === project.slug ? updatedProject : { ...p, startedAt: undefined },
 		);
 
+		setLogs([...newLogs, ...logs]);
 		setProjects(newProjects);
-	});
-
-	const stopProject = useEffectEvent((project: StartedProject) => {
-		setLogs([...createNewLogs(), ...logs]);
-
-		const stoppedProject: Project = {
-			...project,
-			startedAt: undefined,
-			lastActivityName: shouldAskForActivityName
-				? project.lastActivityName
-				: undefined,
-		};
-
-		const newProjects = projects.map((p) =>
-			p.slug === project.slug ? stoppedProject : p,
-		);
-
-		setProjects(newProjects);
-	});
-
-	const toggleActiveProject = useWithClick((project: Project) => {
-		isStartedProject(project) ? stopProject(project) : startProject(project);
 	});
 
 	const addProject = useEffectEvent((project: Project) => {
@@ -153,7 +140,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 			value={{
 				projects,
 				logs,
-				activeProjects,
+				startedProjects,
 				shouldAskForActivityName,
 				setProjects,
 				setLogs,
