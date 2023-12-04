@@ -67,7 +67,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		setProjects([...projects, ...filteredProjects]);
 	});
 
-	const onExport = useWithClick(async () => {
+	const onExport = useWithClick(() => {
 		const date = new Date().toISOString().split("T").at(0) as string;
 
 		const projectsExports = projects.map((project) => {
@@ -89,11 +89,10 @@ export function HeaderActions(props: HeaderActionsProps) {
 			return `/track ${date} ${project.slug} ${totalTime} TODO ${project.name}`;
 		});
 
-		await navigator.clipboard.writeText(
+		window.alert("Jagaad Manager Export format was copied to clipboard!");
+		void navigator.clipboard.writeText(
 			projectsExports.filter(Boolean).join("\n"),
 		);
-
-		window.alert("Jagaad Manager Export format was copied to clipboard!");
 	});
 
 	return (

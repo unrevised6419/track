@@ -72,7 +72,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 			getLegend(intervalMinutes),
 		].join("\n");
 
-		navigator.clipboard.writeText(log);
+		void navigator.clipboard.writeText(log);
 	});
 
 	const resetProject = useWithClick((project: Project) => {
@@ -109,8 +109,20 @@ export function ProjectActions(props: ProjectActionsProps) {
 		);
 	});
 
-	useHotkeys(`${index}+r`, () => renameProjectActivity(project), [project]);
-	useHotkeys(`${index}+s`, () => toggleActiveProject(project), [project]);
+	useHotkeys(
+		`${index}+r`,
+		() => {
+			renameProjectActivity(project);
+		},
+		[project],
+	);
+	useHotkeys(
+		`${index}+s`,
+		() => {
+			toggleActiveProject(project);
+		},
+		[project],
+	);
 
 	const ProjectActionsMapper: Record<ProjectAction, ProjectActionProps> = {
 		copy: {
@@ -137,7 +149,9 @@ export function ProjectActions(props: ProjectActionsProps) {
 		return actions.map((button) => (
 			<Button
 				key={button}
-				onClick={() => ProjectActionsMapper[button].action(project)}
+				onClick={() => {
+					ProjectActionsMapper[button].action(project);
+				}}
 				className={cn(project.startedAt ? "bg-red-500" : undefined)}
 				disabled={ProjectActionsMapper[button].disabled}
 			>

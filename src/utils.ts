@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-// @ts-expect-error - no types
 import { useSound } from "use-sound";
 import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
 import {
@@ -249,7 +248,9 @@ export function useLiveTotalTime(projects: Project[]) {
 			setTotalTime(logsTime + sumStartedAts(startedAts));
 		}, 1000);
 
-		return () => clearInterval(interval);
+		return () => {
+			clearInterval(interval);
+		};
 	}, [logsTime, projects, startedAts]);
 
 	return totalTime;
@@ -263,10 +264,11 @@ export function isStartedProject(project: Project): project is StartedProject {
 export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 	arr: T[],
 	key: K,
-): Record<string, T[]> =>
-	arr.reduce(
+): Partial<Record<string, T[]>> =>
+	arr.reduce<Record<string, T[]>>(
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
-		{} as Record<string, T[]>,
+		{},
 	);
 
 export function useAppContext() {

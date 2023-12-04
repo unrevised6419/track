@@ -27,7 +27,9 @@ export function Input({
 			type="text"
 			placeholder={placeholder}
 			value={value}
-			onChange={(e) => setValue(e.target.value)}
+			onChange={(e) => {
+				setValue(e.target.value);
+			}}
 			aria-label={placeholder}
 			readOnly={readOnly}
 			ref={inputRef}

@@ -27,11 +27,19 @@ export function AddForm() {
 			<Input
 				inputRef={nameInputRef}
 				value={name}
-				setValue={(v) => setName(v)}
+				setValue={(v) => {
+					setName(v);
+				}}
 				placeholder="Name"
 			/>
 			<div className="max-w-xs">
-				<Input value={slug} setValue={(v) => setSlug(v)} placeholder="Slug" />
+				<Input
+					value={slug}
+					setValue={(v) => {
+						setSlug(v);
+					}}
+					placeholder="Slug"
+				/>
 			</div>
 			<Button>
 				<HiPlusCircle size={20} />

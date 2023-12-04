@@ -10,7 +10,9 @@ type Props = {
 export function Checkbox(props: Props) {
 	return (
 		<button
-			onClick={() => props.setIsChecked(!props.isChecked)}
+			onClick={() => {
+				props.setIsChecked(!props.isChecked);
+			}}
 			className="my-2 flex items-center font-bold"
 			role="checkbox"
 			aria-checked={props.isChecked}

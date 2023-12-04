@@ -119,9 +119,9 @@ export function App() {
 		setProjects(newProjects);
 	});
 
-	const toggleActiveProject = useWithClick((project: Project) =>
-		isStartedProject(project) ? stopProject(project) : startProject(project),
-	);
+	const toggleActiveProject = useWithClick((project: Project) => {
+		isStartedProject(project) ? stopProject(project) : startProject(project);
+	});
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects
@@ -149,10 +149,12 @@ export function App() {
 			formattedLogs.join("\n"),
 		].join("\n");
 
-		navigator.clipboard.writeText(text);
+		void navigator.clipboard.writeText(text);
 	});
 
-	const onShowLogs = useWithClick(() => setShowLogs(!showLogs));
+	const onShowLogs = useWithClick(() => {
+		setShowLogs(!showLogs);
+	});
 
 	return (
 		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
@@ -163,7 +165,9 @@ export function App() {
 				</strong>
 				<HeaderActions
 					className="ml-auto"
-					onShowSettingsModal={() => setShowSettingsModal(true)}
+					onShowSettingsModal={() => {
+						setShowSettingsModal(true);
+					}}
 				/>
 			</header>
 
@@ -181,7 +185,9 @@ export function App() {
 					<article key={project.slug} className="flex gap-3">
 						<Button
 							className={project.startedAt ? "bg-red-500" : undefined}
-							onClick={() => toggleActiveProject(project)}
+							onClick={() => {
+								toggleActiveProject(project);
+							}}
 						>
 							{project.startedAt ? (
 								<HiPauseCircle size={20} />
@@ -256,7 +262,9 @@ export function App() {
 								key={button}
 								item={ProjectActionsSettingsProps[button]}
 								isChecked={projectButtons.includes(button)}
-								setIsChecked={() => toggleProjectButton(button)}
+								setIsChecked={() => {
+									toggleProjectButton(button);
+								}}
 							/>
 						))}
 					</div>
