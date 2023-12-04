@@ -4,31 +4,21 @@ import {
 	HiPlayCircle,
 	HiBars3BottomLeft,
 } from "react-icons/hi2";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import { hash, date } from "virtual:local";
 import {
 	logsTimeline,
 	getLogsConstraints,
 	logToTextParts,
-	askForActivityName,
 	useSortableList,
 	useDynamicFavicon,
 	useProjectButtons,
-	storageKey,
 	getLegend,
 	useDataContext,
 	useWithClick,
-	isStartedProject,
 } from "./utils";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
-import {
-	ProjectAction,
-	Project,
-	projectActions,
-	Log,
-	StartedProject,
-} from "./types";
+import { ProjectAction, projectActions } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
@@ -50,18 +40,16 @@ export function App() {
 	const [projectButtons, toggleProjectButton] = useProjectButtons();
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
-	const [shouldAskForActivityName, setShouldAskForActivityName] =
-		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
+	const [sortableList, setSortableList] = useSortableList();
 
 	const {
 		projects,
-		setProjects,
 		logs,
-		setLogs,
 		getProjectLogs,
-		activeProjects,
+		shouldAskForActivityName,
+		setShouldAskForActivityName,
+		toggleActiveProject,
 	} = useDataContext();
-	const [sortableList, setSortableList] = useSortableList();
 
 	useDynamicFavicon();
 
@@ -69,59 +57,6 @@ export function App() {
 	const timelineLength = 32;
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
-
-	function createNewLogs() {
-		return activeProjects.map<Log>((project) => ({
-			projectSlug: project.slug,
-			interval: [project.startedAt, Date.now()],
-			activityName: shouldAskForActivityName
-				? project.lastActivityName ?? project.name
-				: project.name,
-		}));
-	}
-
-	const startProject = useWithClick((project: Project) => {
-		setLogs([...createNewLogs(), ...logs]);
-
-		const startedAt = Date.now();
-		const activityName = shouldAskForActivityName
-			? askForActivityName(project.lastActivityName)
-			: undefined;
-
-		const startedProject: StartedProject = {
-			...project,
-			startedAt,
-			lastActivityName: activityName || project.name,
-		};
-
-		const newProjects = projects.map<Project>((p) =>
-			p.slug === project.slug ? startedProject : { ...p, startedAt: undefined },
-		);
-
-		setProjects(newProjects);
-	});
-
-	const stopProject = useWithClick((project: StartedProject) => {
-		setLogs([...createNewLogs(), ...logs]);
-
-		const stoppedProject: Project = {
-			...project,
-			startedAt: undefined,
-			lastActivityName: shouldAskForActivityName
-				? project.lastActivityName
-				: undefined,
-		};
-
-		const newProjects = projects.map((p) =>
-			p.slug === project.slug ? stoppedProject : p,
-		);
-
-		setProjects(newProjects);
-	});
-
-	const toggleActiveProject = useWithClick((project: Project) => {
-		isStartedProject(project) ? stopProject(project) : startProject(project);
-	});
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects

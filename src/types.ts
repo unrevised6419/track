@@ -1,19 +1,19 @@
 export type Project = {
-	name: string;
-	slug: string;
-	startedAt?: number;
-	lastActivityName?: string;
+	readonly name: string;
+	readonly slug: string;
+	readonly startedAt?: number;
+	readonly lastActivityName?: string;
 };
 
 export type StartedProject = Project & {
-	startedAt: number;
+	readonly startedAt: number;
 };
 
 export type Interval = readonly [start: number, end: number];
 export type Log = {
-	projectSlug: string;
-	activityName: string;
-	interval: Interval;
+	readonly projectSlug: string;
+	readonly activityName: string;
+	readonly interval: Interval;
 };
 
 export const projectActions = ["copy", "rename", "reset", "remove"] as const;

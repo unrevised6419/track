@@ -94,7 +94,7 @@ export function getLegend(intervalMinutes: number) {
 
 type LogsTimelineOptions = {
 	constraints: Interval;
-	logs: Log[];
+	logs: ReadonlyArray<Log>;
 	intervalMinutes: number;
 	timelineLength: number;
 };
@@ -142,7 +142,10 @@ function inInterval(value: number, [start, end]: Interval): boolean {
 	return start <= value && value <= end;
 }
 
-export function getLogsConstraints(logs: Log[], projects: Project[]) {
+export function getLogsConstraints(
+	logs: ReadonlyArray<Log>,
+	projects: ReadonlyArray<Project>,
+) {
 	const startedAts = projects.map((e) => e.startedAt).filter(Boolean);
 	const endedAts = startedAts.length ? [Date.now()] : [];
 
@@ -158,21 +161,16 @@ export function askForActivityName(defaultName?: string) {
 }
 
 export function useSortableList() {
-	const { projects, setProjects } = useDataContext();
+	const { projects, sortProjects } = useDataContext();
+
 	const projectsList = useMemo<ItemInterface[]>(
 		() => projects.map((p) => ({ id: p.slug })),
 		[projects],
 	);
-	const setProjectsList = useCallback(
-		(list: ItemInterface[]) => {
-			const newProjects = list.map((item) =>
-				projects.find((p) => p.slug === item.id),
-			);
 
-			setProjects(newProjects as Project[]);
-		},
-		[projects, setProjects],
-	);
+	const setProjectsList = useEffectEvent((list: ItemInterface[]) => {
+		sortProjects(list.map((p) => p.id.toString()));
+	});
 
 	return [projectsList, setProjectsList] as const;
 }
@@ -217,7 +215,7 @@ export function useProjectButtons() {
 const sumStartedAts = (startedAts: number[]) =>
 	sum(startedAts.map((startedAt) => Date.now() - startedAt));
 
-export function useLiveTotalTime(projects: Project[]) {
+export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
 	const { getProjectLogs } = useDataContext();
 
 	const logs = useMemo(
@@ -262,7 +260,7 @@ export function isStartedProject(project: Project): project is StartedProject {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const groupBy = <T extends Record<string, any>, K extends keyof T>(
-	arr: T[],
+	arr: readonly T[],
 	key: K,
 ): Partial<Record<string, T[]>> =>
 	arr.reduce<Record<string, T[]>>(
