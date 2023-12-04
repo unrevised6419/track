@@ -2,10 +2,10 @@ import { useState, useRef, FormEvent } from "react";
 import { HiPlusCircle } from "react-icons/hi2";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { useAppContext, useWithClick } from "./utils";
+import { useDataContext, useWithClick } from "./utils";
 
 export function AddForm() {
-	const { projects, setProjects } = useAppContext();
+	const { projects, setProjects } = useDataContext();
 	const [name, setName] = useState("");
 	const [slug, setSlug] = useState("");
 	const nameInputRef = useRef<HTMLInputElement>(null);

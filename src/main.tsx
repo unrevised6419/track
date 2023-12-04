@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Analytics } from "@vercel/analytics/react";
 import { App } from "./App.tsx";
-import { AppProvider } from "./AppProvider.tsx";
+import { DataProvider } from "./DataProvider.tsx";
 
 const rootElement = document.getElementById("root");
 
@@ -11,9 +11,9 @@ if (rootElement) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
 		<React.StrictMode>
-			<AppProvider>
+			<DataProvider>
 				<App />
-			</AppProvider>
+			</DataProvider>
 			<Analytics />
 		</React.StrictMode>,
 	);

@@ -6,7 +6,7 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, sum, useAppContext, useWithClick } from "./utils";
+import { cn, sum, useDataContext, useWithClick } from "./utils";
 import { Project } from "./types";
 
 type HeaderActionsProps = {
@@ -16,7 +16,7 @@ type HeaderActionsProps = {
 
 export function HeaderActions(props: HeaderActionsProps) {
 	const { className, onShowSettingsModal } = props;
-	const { getProjectLogs, setLogs, projects, setProjects } = useAppContext();
+	const { getProjectLogs, setLogs, projects, setProjects } = useDataContext();
 
 	const onFullReset = useWithClick(() => {
 		const shouldReset = window.confirm(

@@ -5,12 +5,12 @@ import {
 	cn,
 	useLiveTotalTime,
 	storageKey,
-	useAppContext,
+	useDataContext,
 } from "./utils";
 import { useLocalStorage } from "@uidotdev/usehooks";
 
 export function TotalInfo() {
-	const { projects } = useAppContext();
+	const { projects } = useDataContext();
 	const [playAlarm] = useSound("/call-to-attention.mp3");
 	const [alarmSoundWasPlayed, setAlarmSoundWasPlayed] = useLocalStorage(
 		storageKey("alarm-sound-was-played"),

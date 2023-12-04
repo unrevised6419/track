@@ -1,7 +1,7 @@
-import { logToTextParts, useAppContext } from "./utils";
+import { logToTextParts, useDataContext } from "./utils";
 
 export function ProjectsLogs() {
-	const { logs } = useAppContext();
+	const { logs } = useDataContext();
 	return (
 		<section className="grid gap-2 font-mono text-xs pb-3 max-h-96 overflow-y-auto">
 			{logs.map((log) => {
