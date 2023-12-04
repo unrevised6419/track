@@ -70,61 +70,58 @@ export function App() {
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
+	function createNewLogs() {
+		return activeProjects.map<Log>((project) => ({
+			projectSlug: project.slug,
+			interval: [project.startedAt, Date.now()],
+			activityName: shouldAskForActivityName
+				? project.lastActivityName ?? project.name
+				: project.name,
+		}));
+	}
+
 	const startProject = useWithClick((project: Project) => {
-		const startedProject = {
+		setLogs([...createNewLogs(), ...logs]);
+
+		const startedAt = Date.now();
+		const activityName = shouldAskForActivityName
+			? askForActivityName(project.lastActivityName)
+			: undefined;
+
+		const startedProject: StartedProject = {
 			...project,
-			startedAt: Date.now(),
-		} satisfies StartedProject;
+			startedAt,
+			lastActivityName: activityName || project.name,
+		};
 
 		const newProjects = projects.map<Project>((p) =>
 			p.slug === project.slug ? startedProject : { ...p, startedAt: undefined },
 		);
 
 		setProjects(newProjects);
+	});
 
-		setTimeout(() => {
-			const activityName = shouldAskForActivityName
-				? askForActivityName(project.lastActivityName)
-				: undefined;
+	const stopProject = useWithClick((project: StartedProject) => {
+		setLogs([...createNewLogs(), ...logs]);
 
-			const newProject: StartedProject = {
-				...startedProject,
-				lastActivityName: activityName || project.name,
-			};
+		const stoppedProject: Project = {
+			...project,
+			startedAt: undefined,
+			lastActivityName: shouldAskForActivityName
+				? project.lastActivityName
+				: undefined,
+		};
 
-			setProjects(
-				newProjects.map((p) => (p.slug === newProject.slug ? newProject : p)),
-			);
-		}, 200);
+		const newProjects = projects.map((p) =>
+			p.slug === project.slug ? stoppedProject : p,
+		);
+
+		setProjects(newProjects);
 	});
 
 	const toggleActiveProject = useWithClick((project: Project) =>
 		isStartedProject(project) ? stopProject(project) : startProject(project),
 	);
-
-	const stopProject = useWithClick((project: StartedProject) => {
-		const newLogs = activeProjects.map<Log>((startedProject) => ({
-			projectSlug: startedProject.slug,
-			interval: [startedProject.startedAt, Date.now()],
-			activityName: shouldAskForActivityName
-				? startedProject.lastActivityName ?? startedProject.name
-				: startedProject.name,
-		}));
-
-		const newProjects = projects.map<Project>((p) => {
-			if (p.slug !== project.slug) return p;
-			return {
-				...p,
-				startedAt: undefined,
-				lastActivityName: shouldAskForActivityName
-					? p.lastActivityName
-					: undefined,
-			};
-		});
-
-		setLogs([...newLogs, ...logs]);
-		setProjects(newProjects);
-	});
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects
@@ -184,11 +181,7 @@ export function App() {
 					<article key={project.slug} className="flex gap-3">
 						<Button
 							className={project.startedAt ? "bg-red-500" : undefined}
-							onClick={() =>
-								isStartedProject(project)
-									? stopProject(project)
-									: startProject(project)
-							}
+							onClick={() => toggleActiveProject(project)}
 						>
 							{project.startedAt ? (
 								<HiPauseCircle size={20} />
