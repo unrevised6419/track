@@ -5,11 +5,16 @@ import { Analytics } from "@vercel/analytics/react";
 import { App } from "./App.tsx";
 import { AppProvider } from "./AppProvider.tsx";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-	<React.StrictMode>
-		<AppProvider>
-			<App />
-		</AppProvider>
-		<Analytics />
-	</React.StrictMode>,
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+	const root = ReactDOM.createRoot(rootElement);
+	root.render(
+		<React.StrictMode>
+			<AppProvider>
+				<App />
+			</AppProvider>
+			<Analytics />
+		</React.StrictMode>,
+	);
+}

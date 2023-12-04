@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-// @ts-expect-error - no types
 import { useSound } from "use-sound";
 import {
 	msToHumanFormat,
