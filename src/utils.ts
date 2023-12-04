@@ -12,7 +12,7 @@ import {
 } from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { AppContext } from "./app-context";
+import { DataContext } from "./data-context";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -71,7 +71,7 @@ export function useWithClick<Args extends unknown[], Return>(
 	});
 }
 
-function useEffectEvent<Args extends unknown[], Return>(
+export function useEffectEvent<Args extends unknown[], Return>(
 	callback: (...args: Args) => Return,
 ) {
 	const ref = useRef(callback);
@@ -158,7 +158,7 @@ export function askForActivityName(defaultName?: string) {
 }
 
 export function useSortableList() {
-	const { projects, setProjects } = useAppContext();
+	const { projects, setProjects } = useDataContext();
 	const projectsList = useMemo<ItemInterface[]>(
 		() => projects.map((p) => ({ id: p.slug })),
 		[projects],
@@ -181,7 +181,7 @@ const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 export function useDynamicFavicon() {
-	const { activeProjects } = useAppContext();
+	const { activeProjects } = useDataContext();
 	const [favicon, setFavicon] = useState(
 		activeProjects.length ? faviconPlay : faviconPause,
 	);
@@ -218,7 +218,7 @@ const sumStartedAts = (startedAts: number[]) =>
 	sum(startedAts.map((startedAt) => Date.now() - startedAt));
 
 export function useLiveTotalTime(projects: Project[]) {
-	const { getProjectLogs } = useAppContext();
+	const { getProjectLogs } = useDataContext();
 
 	const logs = useMemo(
 		() => projects.flatMap((p) => getProjectLogs(p)),
@@ -271,8 +271,8 @@ export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 		{},
 	);
 
-export function useAppContext() {
-	const context = useContext(AppContext);
+export function useDataContext() {
+	const context = useContext(DataContext);
 	if (context) return context;
 	throw new Error("useAppContext must be used within an AppProvider");
 }

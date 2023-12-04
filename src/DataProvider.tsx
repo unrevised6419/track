@@ -2,9 +2,9 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 import { PropsWithChildren, useCallback, useMemo } from "react";
 import { Log, Project } from "./types";
 import { groupBy, isStartedProject, storageKey } from "./utils";
-import { AppContext } from "./app-context";
+import { DataContext } from "./data-context";
 
-export function AppProvider({ children }: PropsWithChildren) {
+export function DataProvider({ children }: PropsWithChildren) {
 	const [logs, setLogs] = useLocalStorage<Log[]>(storageKey("logs"), []);
 	const [projects, setProjects] = useLocalStorage<Project[]>(
 		storageKey("projects"),
@@ -24,7 +24,7 @@ export function AppProvider({ children }: PropsWithChildren) {
 	);
 
 	return (
-		<AppContext.Provider
+		<DataContext.Provider
 			value={{
 				projects,
 				setProjects,
@@ -35,6 +35,6 @@ export function AppProvider({ children }: PropsWithChildren) {
 			}}
 		>
 			{children}
-		</AppContext.Provider>
+		</DataContext.Provider>
 	);
 }

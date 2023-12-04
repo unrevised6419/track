@@ -16,7 +16,7 @@ import {
 	useProjectButtons,
 	storageKey,
 	getLegend,
-	useAppContext,
+	useDataContext,
 	useWithClick,
 	isStartedProject,
 } from "./utils";
@@ -60,7 +60,7 @@ export function App() {
 		setLogs,
 		getProjectLogs,
 		activeProjects,
-	} = useAppContext();
+	} = useDataContext();
 	const [sortableList, setSortableList] = useSortableList();
 
 	useDynamicFavicon();

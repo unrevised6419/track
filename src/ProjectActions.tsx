@@ -11,7 +11,7 @@ import {
 	cn,
 	getLegend,
 	logsTimeline,
-	useAppContext,
+	useDataContext,
 	useWithClick,
 } from "./utils";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
@@ -47,7 +47,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 	} = props;
 
 	const { getProjectLogs, projects, setProjects, logs, setLogs } =
-		useAppContext();
+		useDataContext();
 
 	const projectLogs = getProjectLogs(project);
 
