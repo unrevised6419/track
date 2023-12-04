@@ -27,15 +27,15 @@ export function msToHumanFormat(
 	ms: number,
 	separator: "units" | "colon" = "colon",
 ) {
-	const value = ms / 1000;
-	const hours = Math.floor(value / 60 / 60);
-	const minutes = Math.floor(value / 60) % 60;
-	const seconds = Math.ceil(value % 60);
+	const seconds = ms / 1000;
+	const h = Math.floor(seconds / 60 / 60);
+	const m = Math.floor(seconds / 60) % 60;
+	const s = Math.ceil(seconds % 60);
 
 	const pairs = [
-		{ value: hours, label: "h" },
-		{ value: minutes, label: "m" },
-		{ value: seconds, label: "s" },
+		{ value: h, label: "h" },
+		{ value: m, label: "m" },
+		{ value: s, label: "s" },
 	];
 
 	if (separator === "units") {
@@ -45,11 +45,7 @@ export function msToHumanFormat(
 			.join(" ");
 	}
 
-	const hoursPadded = String(hours).padStart(2, "0");
-	const minutesPadded = String(minutes).padStart(2, "0");
-	const secondsPadded = String(seconds).padStart(2, "0");
-
-	return `${hoursPadded}:${minutesPadded}:${secondsPadded}`;
+	return pairs.map(({ value }) => String(value).padStart(2, "0")).join(":");
 }
 
 export function logToTextParts(log: Log) {
@@ -155,20 +151,6 @@ export function getLogsConstraints(logs: Log[], projects: Project[]) {
 	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
 
 	return [start, end] as Interval;
-}
-
-type FocusableElements =
-	| HTMLInputElement
-	| HTMLTextAreaElement
-	| HTMLButtonElement
-	| HTMLSelectElement
-	| HTMLAnchorElement;
-
-export function isFocusable(
-	element: Element | null,
-): element is FocusableElements {
-	const elements = ["INPUT", "TEXTAREA", "BUTTON", "SELECT", "A"];
-	return elements.includes(element?.tagName as string);
 }
 
 export function askForActivityName(defaultName?: string) {
