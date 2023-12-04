@@ -46,12 +46,22 @@ export function ProjectActions(props: ProjectActionsProps) {
 		constraints,
 	} = props;
 
-	const { getProjectLogs, projects, setProjects, logs, setLogs } =
+	const { getProjectLogs, resetProject, removeProject, updateProject } =
 		useDataContext();
 
 	const projectLogs = getProjectLogs(project);
 
-	const copyProjectLog = useWithClick((project: Project) => {
+	const onResetProject = useWithClick(resetProject);
+	const onRemoveProject = useWithClick(removeProject);
+	const onRenameProjectActivity = useWithClick((project: Project) => {
+		const activityName = askForActivityName(project.lastActivityName);
+
+		if (activityName) {
+			updateProject({ ...project, lastActivityName: activityName });
+		}
+	});
+
+	const onCopyProjectLog = useWithClick((project: Project) => {
 		const timeline = logsTimeline({
 			constraints,
 			logs: projectLogs,
@@ -75,44 +85,10 @@ export function ProjectActions(props: ProjectActionsProps) {
 		void navigator.clipboard.writeText(log);
 	});
 
-	const resetProject = useWithClick((project: Project) => {
-		const newProjects = projects.map((p) => {
-			if (p.slug === project.slug) {
-				return { ...p, startedAt: undefined } satisfies Project;
-			}
-
-			return p;
-		});
-
-		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
-
-		setProjects(newProjects);
-		setLogs(newLogs);
-	});
-
-	const removeProject = useWithClick((project: Project) => {
-		const newProjects = projects.filter((e) => e.slug !== project.slug);
-		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
-		setProjects(newProjects);
-		setLogs(newLogs);
-	});
-
-	const renameProjectActivity = useWithClick((project: Project) => {
-		const activityName = askForActivityName(project.lastActivityName);
-
-		if (!activityName) return;
-
-		const newProject = { ...project, lastActivityName: activityName };
-
-		setProjects(
-			projects.map((p) => (p.slug === project.slug ? newProject : p)),
-		);
-	});
-
 	useHotkeys(
 		`${index}+r`,
 		() => {
-			renameProjectActivity(project);
+			onRenameProjectActivity(project);
 		},
 		[project],
 	);
@@ -126,21 +102,21 @@ export function ProjectActions(props: ProjectActionsProps) {
 
 	const ProjectActionsMapper: Record<ProjectAction, ProjectActionProps> = {
 		copy: {
-			action: copyProjectLog,
+			action: onCopyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
 			disabled: projectLogs.length === 0,
 		},
 		remove: {
-			action: removeProject,
+			action: onRemoveProject,
 			icon: <HiMinusCircle size={20} />,
 		},
 		reset: {
-			action: resetProject,
+			action: onResetProject,
 			icon: <HiArrowPath size={20} />,
 			disabled: projectLogs.length === 0,
 		},
 		rename: {
-			action: renameProjectActivity,
+			action: onRenameProjectActivity,
 			icon: <HiPencil size={20} />,
 		},
 	};

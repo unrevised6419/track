@@ -5,7 +5,7 @@ import { Input } from "./Input";
 import { useDataContext, useWithClick } from "./utils";
 
 export function AddForm() {
-	const { projects, setProjects } = useDataContext();
+	const { projects, addProject } = useDataContext();
 	const [name, setName] = useState("");
 	const [slug, setSlug] = useState("");
 	const nameInputRef = useRef<HTMLInputElement>(null);
@@ -16,7 +16,8 @@ export function AddForm() {
 		if (!name || !slug) return;
 		if (projects.find((p) => p.slug === slug)) return;
 
-		setProjects([{ name, slug: slug }, ...projects]);
+		addProject({ name, slug });
+
 		setName("");
 		setSlug("");
 		nameInputRef.current?.focus();

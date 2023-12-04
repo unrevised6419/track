@@ -16,17 +16,22 @@ type HeaderActionsProps = {
 
 export function HeaderActions(props: HeaderActionsProps) {
 	const { className, onShowSettingsModal } = props;
-	const { getProjectLogs, setLogs, projects, setProjects } = useDataContext();
+	const {
+		getProjectLogs,
+		projects,
+		removeAllProjectsAndLogs,
+		removeAllLogs,
+		addProjects,
+	} = useDataContext();
 
 	const onFullReset = useWithClick(() => {
 		const shouldReset = window.confirm(
 			"Are you sure you want to reset everything?",
 		);
 
-		if (!shouldReset) return;
-
-		setProjects([]);
-		setLogs([]);
+		if (shouldReset) {
+			removeAllProjectsAndLogs();
+		}
 	});
 
 	const onResetTimers = useWithClick(() => {
@@ -34,15 +39,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 			"Are you sure you want to reset all timers?",
 		);
 
-		if (!shouldReset) return;
-
-		const newProjects = projects.map<Project>((e) => ({
-			...e,
-			startedAt: undefined,
-		}));
-
-		setProjects(newProjects);
-		setLogs([]);
+		if (shouldReset) {
+			removeAllLogs();
+		}
 	});
 
 	const onImport = useWithClick(() => {
@@ -60,11 +59,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 			return { slug, name } satisfies Project;
 		});
 
-		const filteredProjects = newProjects.filter(
-			(p) => !projects.some((e) => e.slug === p.slug),
-		);
-
-		setProjects([...projects, ...filteredProjects]);
+		addProjects(newProjects);
 	});
 
 	const onExport = useWithClick(() => {
