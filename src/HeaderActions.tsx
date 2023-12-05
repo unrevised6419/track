@@ -88,10 +88,11 @@ export function HeaderActions(props: HeaderActionsProps) {
 			return `/track ${date} ${project.slug} ${totalTime} TODO ${project.name}`;
 		});
 
-		window.alert("Jagaad Manager Export format was copied to clipboard!");
-		void navigator.clipboard.writeText(
-			projectsExports.filter(Boolean).join("\n"),
-		);
+		void navigator.clipboard
+			.writeText(projectsExports.filter(Boolean).join("\n"))
+			.then(() => {
+				window.alert("Jagaad Manager Export format was copied to clipboard!");
+			});
 	});
 
 	return (
