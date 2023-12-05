@@ -100,14 +100,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 	});
 
 	useHotkeys(
-		`${index}+r`,
-		() => {
-			onRenameProjectActivity(project);
-		},
-		[project],
-	);
-	useHotkeys(
-		`${index}+s`,
+		`${index}`,
 		() => {
 			toggleActiveProject(project);
 		},
