@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSound } from "use-sound";
-import { Project, Log, ProjectAction, StartedProject, Interval } from "./types";
+import { Project, Log, ProjectAction, Interval, StartedLog } from "./types";
 import {
 	useMemo,
 	useCallback,
@@ -144,9 +144,9 @@ function inInterval(value: number, [start, end]: Interval): boolean {
 
 export function getLogsConstraints(
 	logs: ReadonlyArray<Log>,
-	projects: ReadonlyArray<Project>,
+	startedLogs: ReadonlyArray<StartedLog>,
 ) {
-	const startedAts = projects.map((e) => e.startedAt).filter(Boolean);
+	const startedAts = startedLogs.map((e) => e.startedAt).filter(Boolean);
 	const endedAts = startedAts.length ? [Date.now()] : [];
 
 	const start = Math.min(...logs.map((e) => e.interval[0]), ...startedAts);
@@ -179,16 +179,16 @@ const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 export function useDynamicFavicon() {
-	const { startedProjects } = useDataContext();
+	const { startedLogs } = useDataContext();
 	const [favicon, setFavicon] = useState(
-		startedProjects.length ? faviconPlay : faviconPause,
+		startedLogs.length ? faviconPlay : faviconPause,
 	);
 
 	useFavicon(favicon);
 
 	useEffect(() => {
-		setFavicon(startedProjects.length ? faviconPlay : faviconPause);
-	}, [startedProjects.length]);
+		setFavicon(startedLogs.length ? faviconPlay : faviconPause);
+	}, [startedLogs.length]);
 }
 
 export function storageKey(key: string) {
@@ -212,11 +212,12 @@ export function useProjectButtons() {
 	return [projectButtons, toggleProjectButton] as const;
 }
 
-const sumStartedAts = (startedAts: number[]) =>
-	sum(startedAts.map((startedAt) => Date.now() - startedAt));
+function sumStartedLogs(startedLogs: ReadonlyArray<StartedLog>) {
+	return sum(startedLogs.map((l) => Date.now() - l.startedAt));
+}
 
 export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
-	const { getProjectLogs } = useDataContext();
+	const { getProjectLogs, getProjectStartedLogs } = useDataContext();
 
 	const logs = useMemo(
 		() => projects.flatMap((p) => getProjectLogs(p)),
@@ -228,34 +229,30 @@ export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
 		[logs],
 	);
 
-	const startedAts = useMemo(
-		() => projects.filter(isStartedProject).map((p) => p.startedAt),
-		[projects],
+	const startedLogs = useMemo(
+		() => projects.flatMap(getProjectStartedLogs),
+		[getProjectStartedLogs, projects],
 	);
 
 	const [totalTime, setTotalTime] = useState(
-		logsTime + sumStartedAts(startedAts),
+		logsTime + sumStartedLogs(startedLogs),
 	);
 
 	useEffect(() => {
-		setTotalTime(logsTime + sumStartedAts(startedAts));
+		setTotalTime(logsTime + sumStartedLogs(startedLogs));
 
-		if (!projects.some((e) => e.startedAt)) return;
+		if (startedLogs.length === 0) return;
 
 		const interval = setInterval(() => {
-			setTotalTime(logsTime + sumStartedAts(startedAts));
+			setTotalTime(logsTime + sumStartedLogs(startedLogs));
 		}, 1000);
 
 		return () => {
 			clearInterval(interval);
 		};
-	}, [logsTime, projects, startedAts]);
+	}, [logsTime, startedLogs]);
 
 	return totalTime;
-}
-
-export function isStartedProject(project: Project): project is StartedProject {
-	return project.startedAt !== undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -273,4 +270,12 @@ export function useDataContext() {
 	const context = useContext(DataContext);
 	if (context) return context;
 	throw new Error("useAppContext must be used within an AppProvider");
+}
+
+export function startedLogToLog(startedLog: StartedLog): Log {
+	return {
+		activityName: startedLog.activityName,
+		projectSlug: startedLog.projectSlug,
+		interval: [startedLog.startedAt, Date.now()],
+	};
 }

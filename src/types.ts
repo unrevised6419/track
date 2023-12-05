@@ -1,11 +1,11 @@
 export type Project = {
 	readonly name: string;
 	readonly slug: string;
-	readonly startedAt?: number;
-	readonly lastActivityName?: string;
 };
 
-export type StartedProject = Project & {
+export type StartedLog = {
+	readonly projectSlug: string;
+	readonly activityName: string;
 	readonly startedAt: number;
 };
 

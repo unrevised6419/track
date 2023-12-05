@@ -1,10 +1,9 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { PropsWithChildren, useMemo } from "react";
-import { Log, Project, StartedProject } from "./types";
+import { Log, Project, StartedLog } from "./types";
 import {
 	askForActivityName,
 	groupBy,
-	isStartedProject,
 	storageKey,
 	useEffectEvent,
 	useWithClick,
@@ -22,56 +21,64 @@ export function DataProvider({ children }: PropsWithChildren) {
 		storageKey("projects"),
 		[],
 	);
-
-	const startedProjects = useMemo(
-		() => projects.filter(isStartedProject),
-		[projects],
+	const [startedLogs, setStartedLogs] = useLocalStorage<readonly StartedLog[]>(
+		storageKey("started-logs"),
+		[],
 	);
 
+	const [lastActivities, setLastActivities] = useLocalStorage<
+		Partial<Record<string, string>>
+	>(storageKey("last-activities"), {});
+
 	const logsByProject = useMemo(() => groupBy(logs, "projectSlug"), [logs]);
+	const startedLogsByProject = useMemo(
+		() => groupBy(startedLogs, "projectSlug"),
+		[startedLogs],
+	);
 
 	const getProjectLogs = useEffectEvent(
 		(project: Project) => logsByProject[project.slug] ?? [],
 	);
 
+	const getProjectStartedLogs = useEffectEvent(
+		(project: Project) => startedLogsByProject[project.slug] ?? [],
+	);
+
 	const toggleActiveProject = useWithClick((project: Project) => {
-		let updatedProject: Project;
-
-		if (isStartedProject(project)) {
-			updatedProject = {
-				...project,
-				startedAt: undefined,
-				lastActivityName: shouldAskForActivityName
-					? project.lastActivityName
-					: undefined,
-			} as Project;
-		} else {
-			const startedAt = Date.now();
-			const activityName = shouldAskForActivityName
-				? askForActivityName(project.lastActivityName)
-				: undefined;
-
-			updatedProject = {
-				...project,
-				startedAt,
-				lastActivityName: activityName || project.name,
-			} as StartedProject;
-		}
-
-		const newLogs = startedProjects.map<Log>((project) => ({
-			projectSlug: project.slug,
-			interval: [project.startedAt, Date.now()],
-			activityName: shouldAskForActivityName
-				? project.lastActivityName ?? project.name
-				: project.name,
+		const newLogs = startedLogs.map<Log>((log) => ({
+			projectSlug: log.projectSlug,
+			interval: [log.startedAt, Date.now()],
+			activityName: lastActivities[log.projectSlug] ?? log.activityName,
 		}));
 
-		const newProjects = projects.map<Project>((p) =>
-			p.slug === project.slug ? updatedProject : { ...p, startedAt: undefined },
+		const projectHasStartedLog = startedLogs.some(
+			(l) => l.projectSlug === project.slug,
 		);
 
+		if (projectHasStartedLog) {
+			setStartedLogs([]);
+		} else {
+			const startedAt = Date.now();
+
+			const previousActivityName = lastActivities[project.slug] ?? project.name;
+			const activityName = shouldAskForActivityName
+				? askForActivityName(previousActivityName) ?? project.name
+				: project.name;
+
+			const startLog: StartedLog = {
+				projectSlug: project.slug,
+				startedAt,
+				activityName,
+			};
+
+			setStartedLogs([startLog]);
+			setLastActivities({
+				...lastActivities,
+				[project.slug]: activityName,
+			});
+		}
+
 		setLogs([...newLogs, ...logs]);
-		setProjects(newProjects);
 	});
 
 	const addProject = useEffectEvent((project: Project) => {
@@ -84,13 +91,8 @@ export function DataProvider({ children }: PropsWithChildren) {
 	});
 
 	const removeAllLogs = useEffectEvent(() => {
-		const newProjects = projects.map<Project>((e) => ({
-			...e,
-			startedAt: undefined,
-		}));
-
-		setProjects(newProjects);
 		setLogs([]);
+		setStartedLogs([]);
 	});
 
 	const addProjects = useEffectEvent((newProjects: ReadonlyArray<Project>) => {
@@ -102,18 +104,13 @@ export function DataProvider({ children }: PropsWithChildren) {
 	});
 
 	const resetProject = useEffectEvent((project: Project) => {
-		const newProjects = projects.map((p) => {
-			if (p.slug === project.slug) {
-				return { ...p, startedAt: undefined } satisfies Project;
-			}
-
-			return p;
-		});
-
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
+		const newStartedLogs = startedLogs.filter(
+			(l) => l.projectSlug !== project.slug,
+		);
 
-		setProjects(newProjects);
 		setLogs(newLogs);
+		setStartedLogs(newStartedLogs);
 	});
 
 	const removeProject = useEffectEvent((project: Project) => {
@@ -121,10 +118,6 @@ export function DataProvider({ children }: PropsWithChildren) {
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		setProjects(newProjects);
 		setLogs(newLogs);
-	});
-
-	const updateProject = useEffectEvent((project: Project) => {
-		setProjects(projects.map((p) => (p.slug === project.slug ? project : p)));
 	});
 
 	const sortProjects = useEffectEvent((slugs: ReadonlyArray<string>) => {
@@ -140,7 +133,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 			value={{
 				projects,
 				logs,
-				startedProjects,
+				startedLogs,
 				shouldAskForActivityName,
 				setProjects,
 				setLogs,
@@ -153,8 +146,10 @@ export function DataProvider({ children }: PropsWithChildren) {
 				addProjects,
 				resetProject,
 				removeProject,
-				updateProject,
 				sortProjects,
+				lastActivities,
+				setLastActivities,
+				getProjectStartedLogs,
 			}}
 		>
 			{children}
