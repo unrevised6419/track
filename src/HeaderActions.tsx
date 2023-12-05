@@ -6,7 +6,13 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import { cn, sum, useDataContext, useWithClick } from "./utils";
+import {
+	cn,
+	startedLogToLog,
+	sum,
+	useDataContext,
+	useWithClick,
+} from "./utils";
 import { Project } from "./types";
 
 type HeaderActionsProps = {
@@ -22,6 +28,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		removeAllProjectsAndLogs,
 		removeAllLogs,
 		addProjects,
+		getProjectStartedLogs,
 	} = useDataContext();
 
 	const onFullReset = useWithClick(() => {
@@ -66,13 +73,10 @@ export function HeaderActions(props: HeaderActionsProps) {
 		const date = new Date().toISOString().split("T").at(0) as string;
 
 		const projectsExports = projects.map((project) => {
-			const logs = getProjectLogs(project);
-			const durations = logs.map((e) => e.interval[1] - e.interval[0]);
-
-			if (project.startedAt) {
-				const lastDuration = Date.now() - project.startedAt;
-				durations.push(lastDuration);
-			}
+			const durations = [
+				...getProjectLogs(project),
+				...getProjectStartedLogs(project).map(startedLogToLog),
+			].map((e) => e.interval[1] - e.interval[0]);
 
 			if (durations.length === 0) return;
 

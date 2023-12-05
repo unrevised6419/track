@@ -17,6 +17,7 @@ import {
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useMemo } from "react";
 
 type ProjectActionsProps = {
 	project: Project;
@@ -46,18 +47,31 @@ export function ProjectActions(props: ProjectActionsProps) {
 		constraints,
 	} = props;
 
-	const { getProjectLogs, resetProject, removeProject, updateProject } =
-		useDataContext();
+	const {
+		getProjectLogs,
+		resetProject,
+		removeProject,
+		lastActivities,
+		setLastActivities,
+		getProjectStartedLogs,
+	} = useDataContext();
 
 	const projectLogs = getProjectLogs(project);
+	const isStarted = useMemo(
+		() => getProjectStartedLogs(project).length > 0,
+		[getProjectStartedLogs, project],
+	);
 
 	const onResetProject = useWithClick(resetProject);
 	const onRemoveProject = useWithClick(removeProject);
 	const onRenameProjectActivity = useWithClick((project: Project) => {
-		const activityName = askForActivityName(project.lastActivityName);
+		const activityName = askForActivityName(lastActivities[project.slug]);
 
 		if (activityName) {
-			updateProject({ ...project, lastActivityName: activityName });
+			setLastActivities({
+				...lastActivities,
+				[project.slug]: activityName,
+			});
 		}
 	});
 
@@ -128,7 +142,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 				onClick={() => {
 					ProjectActionsMapper[button].action(project);
 				}}
-				className={cn(project.startedAt ? "bg-red-500" : undefined)}
+				className={cn(isStarted ? "bg-red-500" : undefined)}
 				disabled={ProjectActionsMapper[button].disabled}
 			>
 				{ProjectActionsMapper[button].icon}

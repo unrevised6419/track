@@ -49,11 +49,13 @@ export function App() {
 		shouldAskForActivityName,
 		setShouldAskForActivityName,
 		toggleActiveProject,
+		getProjectStartedLogs,
+		startedLogs,
 	} = useDataContext();
 
 	useDynamicFavicon();
 
-	const constraints = getLogsConstraints(logs, projects);
+	const constraints = getLogsConstraints(logs, startedLogs);
 	const timelineLength = 32;
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
@@ -116,48 +118,52 @@ export function App() {
 				setList={setSortableList}
 				handle=".js-handle"
 			>
-				{projects.map((project, index) => (
-					<article key={project.slug} className="flex gap-3">
-						<Button
-							className={project.startedAt ? "bg-red-500" : undefined}
-							onClick={() => {
-								toggleActiveProject(project);
-							}}
-						>
-							{project.startedAt ? (
-								<HiPauseCircle size={20} />
-							) : (
-								<HiPlayCircle size={20} />
-							)}
-						</Button>
+				{projects.map((project, index) => {
+					const isStarted = getProjectStartedLogs(project).length > 0;
 
-						<div className="grow relative">
-							<div className="absolute left-4 inset-y-0 items-center hidden sm:flex">
-								<button className="js-handle">
-									<HiBars3BottomLeft size={20} />
-								</button>
-							</div>
-							<ProjectInfo project={project} />
-							<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
-								{index < 9 && (
-									<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
-										{index + 1}
-									</kbd>
+					return (
+						<article key={project.slug} className="flex gap-3">
+							<Button
+								className={isStarted ? "bg-red-500" : undefined}
+								onClick={() => {
+									toggleActiveProject(project);
+								}}
+							>
+								{isStarted ? (
+									<HiPauseCircle size={20} />
+								) : (
+									<HiPlayCircle size={20} />
 								)}
-							</div>
-						</div>
+							</Button>
 
-						<ProjectActions
-							project={project}
-							actions={projectButtons}
-							index={index + 1}
-							toggleActiveProject={toggleActiveProject}
-							intervalMinutes={intervalMinutes}
-							timelineLength={timelineLength}
-							constraints={constraints}
-						/>
-					</article>
-				))}
+							<div className="grow relative">
+								<div className="absolute left-4 inset-y-0 items-center hidden sm:flex">
+									<button className="js-handle">
+										<HiBars3BottomLeft size={20} />
+									</button>
+								</div>
+								<ProjectInfo project={project} />
+								<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
+									{index < 9 && (
+										<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
+											{index + 1}
+										</kbd>
+									)}
+								</div>
+							</div>
+
+							<ProjectActions
+								project={project}
+								actions={projectButtons}
+								index={index + 1}
+								toggleActiveProject={toggleActiveProject}
+								intervalMinutes={intervalMinutes}
+								timelineLength={timelineLength}
+								constraints={constraints}
+							/>
+						</article>
+					);
+				})}
 			</ReactSortable>
 
 			<div className="flex gap-2">
