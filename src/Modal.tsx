@@ -1,12 +1,4 @@
-import {
-	Dispatch,
-	ReactNode,
-	SetStateAction,
-	useEffect,
-	useState,
-} from "react";
-import ReactDom from "react-dom";
-import { MdClose } from "react-icons/md";
+import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 
 type Props = {
 	active: boolean;
@@ -15,52 +7,35 @@ type Props = {
 };
 
 export function Modal({ active, setActive, children }: Props) {
-	const [isVisible, setIsVisible] = useState(false);
-
-	const closeModal = () => {
-		setIsVisible(false);
-		setTimeout(() => {
-			setActive(false);
-		}, 300);
-	};
+	const dialogRef = useRef<HTMLDialogElement>(null);
 
 	useEffect(() => {
 		if (active) {
-			setIsVisible(true);
+			dialogRef.current?.showModal();
+		} else {
+			dialogRef.current?.close();
 		}
 	}, [active]);
 
-	if (!active) return null;
-
-	const modalElement = document.getElementById("modal");
-
-	if (!modalElement) return null;
-
-	return ReactDom.createPortal(
-		<div
-			role="dialog"
-			aria-modal="true"
-			className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center bg-black/50"
-		>
-			<div
-				style={{
-					opacity: isVisible ? "1" : "0",
-					visibility: isVisible ? "visible" : "hidden",
-				}}
-				className="relative flex flex-col items-center justify-center rounded-md border-2 border-black bg-jagaatrack p-10 pt-12 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-300"
-			>
-				<button onClick={closeModal}>
-					<MdClose className="absolute right-3 top-3 h-6 w-6" />
+	return (
+		<dialog className="modal" ref={dialogRef}>
+			<div className="modal-box">
+				<button
+					className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+					onClick={() => {
+						setActive(false);
+					}}
+				>
+					✕
 				</button>
 				{children}
-				<button
-					className="mt-5 cursor-pointer rounded-md border-2 border-black bg-white px-4 py-1.5 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
-					onClick={closeModal}
-				>
-					Ok
-				</button>
 			</div>
-		</div>,
-		modalElement,
+			<button
+				onClick={() => {
+					setActive(false);
+				}}
+				className="modal-backdrop"
+			></button>
+		</dialog>
 	);
 }

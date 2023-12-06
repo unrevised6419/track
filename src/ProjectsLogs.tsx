@@ -11,7 +11,7 @@ export function ProjectsLogs() {
 				return (
 					<article
 						key={`${log.startedAt}-${log.endedAt}`}
-						className="bg-gray-200 px-3 py-2 rounded-md flex justify-between"
+						className="bg-base-200 border border-base-content px-3 py-2 rounded-btn flex justify-between"
 					>
 						<span>
 							({timestamp}) {name}

@@ -23,6 +23,7 @@
 		"@vitejs/plugin-react-swc": "^3.3.2",
 		"autoprefixer": "^10.4.16",
 		"clsx": "^2.0.0",
+		"daisyui": "^4.4.19",
 		"eslint": "^8.45.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-react": "^7.33.2",

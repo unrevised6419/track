@@ -1,3 +1,5 @@
+import daisyUI from "daisyui";
+
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -7,10 +9,7 @@ export default {
 				center: true,
 				padding: "1rem",
 			},
-			colors: {
-				jagaatrack: "#2EC0FF",
-			},
 		},
 	},
-	plugins: [],
+	plugins: [daisyUI],
 };

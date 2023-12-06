@@ -15,9 +15,9 @@ import {
 	getLegend,
 	useDataContext,
 	useWithClick,
+	cn,
 } from "./utils";
 import { Button } from "./Button";
-import { Badge } from "./Badge";
 import { ProjectAction, projectActions } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
@@ -94,9 +94,11 @@ export function App() {
 	});
 
 	return (
-		<div className="container max-w-2xl border-x min-h-screen flex flex-col">
+		<div className="container max-w-2xl border-x border-base-300 min-h-screen flex flex-col">
 			<header className="py-3 flex items-center gap-4 ">
-				<Badge badgeText="Jagaatrack" />
+				<div className="btn btn-sm sm:btn-md btn-primary">
+					<div className="badge uppercase">Jagaatrack</div>
+				</div>
 				<strong className="hidden sm:inline mt-0.5">
 					Why are you running?
 				</strong>
@@ -124,7 +126,7 @@ export function App() {
 					return (
 						<article key={project.slug} className="flex gap-3">
 							<Button
-								className={isStarted ? "bg-red-500" : undefined}
+								className={isStarted ? "btn-error" : undefined}
 								onClick={() => {
 									toggleActiveProject(project);
 								}}
@@ -137,17 +139,20 @@ export function App() {
 							</Button>
 
 							<div className="grow relative">
-								<div className="absolute left-4 inset-y-0 items-center hidden sm:flex">
-									<button className="js-handle">
-										<HiBars3BottomLeft size={20} />
+								<div className="absolute left-2 inset-y-0 items-center hidden sm:flex">
+									<button
+										className={cn(
+											"js-handle p-2",
+											isStarted && "text-error-content",
+										)}
+									>
+										<HiBars3BottomLeft />
 									</button>
 								</div>
 								<ProjectInfo project={project} />
 								<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
 									{index < 9 && (
-										<kbd className="rounded-md bg-black text-xs font-mono text-white px-1.5 border border-jagaatrack">
-											{index + 1}
-										</kbd>
+										<kbd className="kbd kbd-sm border-primary">{index + 1}</kbd>
 									)}
 								</div>
 							</div>
@@ -166,17 +171,11 @@ export function App() {
 				})}
 			</ReactSortable>
 
-			<div className="flex gap-2">
-				<button
-					className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3 grow"
-					onClick={onShowLogs}
-				>
+			<div className="flex gap-2 mb-2">
+				<button className="btn btn-sm grow" onClick={onShowLogs}>
 					{showLogs ? "Hide Logs" : "Show Logs"}
 				</button>
-				<button
-					className="bg-gray-200 px-3 py-2 rounded-md mb-2 text-xs text-center font-bold flex justify-center items-center gap-3"
-					onClick={onCopyLogs}
-				>
+				<button className="btn btn-sm w-[108px]" onClick={onCopyLogs}>
 					Copy Logs
 				</button>
 			</div>
@@ -185,19 +184,17 @@ export function App() {
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<div className="grid gap-2">
-					<label>Actions</label>
-
-					<div className="border px-2 rounded-md">
+					<fieldset>
+						<legend>Actions</legend>
 						<Checkbox
 							item="Ask for activity name?"
 							isChecked={shouldAskForActivityName}
 							setIsChecked={setShouldAskForActivityName}
 						/>
-					</div>
+					</fieldset>
 
-					<label>Show Buttons</label>
-
-					<div className="border px-2 rounded-md">
+					<fieldset className="grid gap-2">
+						<legend>Show Buttons</legend>
 						{projectActions.map((button) => (
 							<Checkbox
 								key={button}
@@ -208,9 +205,9 @@ export function App() {
 								}}
 							/>
 						))}
-					</div>
+					</fieldset>
 
-					<div className="border font-mono text-xs flex gap-1 items-center justify-center p-1 rounded">
+					<div className="font-mono text-xs flex gap-1 items-center justify-center p-1 rounded">
 						<span>{hash}</span>
 						<span>:</span>
 						<span>{date}</span>

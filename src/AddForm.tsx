@@ -32,16 +32,16 @@ export function AddForm() {
 					setName(v);
 				}}
 				placeholder="Name"
+				className="grow"
 			/>
-			<div className="max-w-xs">
-				<Input
-					value={slug}
-					setValue={(v) => {
-						setSlug(v);
-					}}
-					placeholder="Slug"
-				/>
-			</div>
+			<Input
+				value={slug}
+				setValue={(v) => {
+					setSlug(v);
+				}}
+				placeholder="Slug"
+				className="w-[108px]"
+			/>
 			<Button>
 				<HiPlusCircle size={20} />
 			</Button>

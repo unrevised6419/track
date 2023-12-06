@@ -20,10 +20,7 @@ export function Input({
 }: InputProps) {
 	return (
 		<input
-			className={cn(
-				"rounded-md border-2 border-black p-[10px] font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none transition-all focus:translate-x-[3px] focus:translate-y-[3px] focus:shadow-none block w-full read-only:bg-gray-200",
-				className,
-			)}
+			className={cn("input input-bordered", className)}
 			type="text"
 			placeholder={placeholder}
 			value={value}

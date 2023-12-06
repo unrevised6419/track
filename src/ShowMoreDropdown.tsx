@@ -16,7 +16,7 @@ export function ShowMoreDropdown({ children }: PropsWithChildren) {
 				onClick={() => {
 					setIsActiveDropdown(!isActiveDropdown);
 				}}
-				className="flex bg-jagaatrack disabled:bg-gray-200 cursor-pointer items-center rounded-md border-2 border-black px-3 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
+				className="btn btn-primary btn-square"
 			>
 				<HiEllipsisVertical size={20} />
 			</button>

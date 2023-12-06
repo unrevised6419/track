@@ -9,7 +9,7 @@ export function HeaderButton(props: HeaderButtonProps) {
 	return (
 		<button
 			onClick={props.onClick}
-			className="p-1.5 sm:p-3 bg-gray-200 rounded-md hover:bg-gray-300 transition-all"
+			className="btn btn-sm sm:btn-md btn-square"
 			title={props.title}
 		>
 			{props.children}
