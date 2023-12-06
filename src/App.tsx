@@ -3,6 +3,7 @@ import {
 	HiPauseCircle,
 	HiPlayCircle,
 	HiBars3BottomLeft,
+	HiArrowSmallUp,
 } from "react-icons/hi2";
 import { hash, date } from "virtual:local";
 import {
@@ -94,7 +95,7 @@ export function App() {
 	});
 
 	return (
-		<div className="container max-w-2xl border-x border-base-300 min-h-screen flex flex-col">
+		<div className="container max-w-screen-md border-x border-base-300 min-h-screen flex flex-col">
 			<header className="py-3 flex items-center gap-4 ">
 				<div className="btn btn-sm sm:btn-md btn-primary">
 					<div className="badge uppercase">Jagaatrack</div>
@@ -181,6 +182,15 @@ export function App() {
 			</div>
 
 			{showLogs && <ProjectsLogs />}
+
+			<button
+				onClick={() => {
+					window.scrollTo({ top: 0, behavior: "smooth" });
+				}}
+				className="btn fixed btn-sm btn-square bottom-2 left-2 md:left-auto md:right-2"
+			>
+				<HiArrowSmallUp />
+			</button>
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<div className="grid gap-2">

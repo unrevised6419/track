@@ -21,6 +21,7 @@ type DataContextType = {
 	addProjects: (projects: ReadonlyArray<Project>) => void;
 	sortProjects: (projects: ReadonlyArray<string>) => void;
 	setLastActivities: Dispatch<SetStateAction<Partial<Record<string, string>>>>;
+	removeLog: (log: Log) => void;
 };
 
 export const DataContext = createContext<DataContextType | undefined>(
