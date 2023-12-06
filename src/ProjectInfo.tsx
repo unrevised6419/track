@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Input } from "./Input";
 import { Project } from "./types";
 import { cn, msToHumanFormat, useDataContext, useLiveTotalTime } from "./utils";
 
@@ -14,15 +13,13 @@ export function ProjectInfo({ project }: { project: Project }) {
 	);
 
 	return (
-		<Input
-			readOnly
-			value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
-			setValue={() => {}}
+		<input
+			defaultValue={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
 			placeholder=""
 			className={cn(
-				"font-mono lg:pr-12 sm:pl-10",
-				isStarted ? "read-only:bg-red-500" : undefined,
-				!totalTime ? "text-gray-400" : undefined,
+				"input input-bordered w-full font-mono lg:pr-12 sm:pl-10",
+				isStarted ? "bg-error text-error-content input-error" : undefined,
+				!totalTime ? "text-base-content/40" : undefined,
 			)}
 		/>
 	);

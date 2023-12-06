@@ -37,9 +37,9 @@ export function TotalInfo() {
 	}, [alarmSoundWasPlayed, playAlarm, setAlarmSoundWasPlayed, shouldAlarm]);
 
 	return (
-		<aside className="bg-gray-200 p-3 rounded-md font-mono text-sm grid grid-cols-2">
+		<aside className="bg-base-200 py-3 px-3.5 rounded-btn font-mono text-sm grid grid-cols-2">
 			<div>Total: {totalTimeHuman}</div>
-			<div className={cn(overtime ? "text-red-500" : undefined)}>
+			<div className={cn(overtime ? "text-error" : undefined)}>
 				Overtime: {overtimeHuman}
 			</div>
 		</aside>

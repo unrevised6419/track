@@ -135,7 +135,7 @@ export function ProjectActions(props: ProjectActionsProps) {
 				onClick={() => {
 					ProjectActionsMapper[button].action(project);
 				}}
-				className={cn(isStarted ? "bg-red-500" : undefined)}
+				className={cn(isStarted ? "btn-error" : undefined)}
 				disabled={ProjectActionsMapper[button].disabled}
 			>
 				{ProjectActionsMapper[button].icon}

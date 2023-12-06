@@ -98,19 +98,19 @@ export function HeaderActions(props: HeaderActionsProps) {
 	return (
 		<div className={cn("flex gap-2", className)}>
 			<HeaderButton onClick={onFullReset} title="Full Reset">
-				<HiTrash className="w-6 h-6 sm:w-6 sm:h-6" />
+				<HiTrash className="w-5 h-5 sm:w-6 sm:h-6" />
 			</HeaderButton>
 			<HeaderButton onClick={onResetTimers} title="Reset Timers">
-				<HiClock className="w-6 h-6 sm:w-6 sm:h-6" />
+				<HiClock className="w-5 h-5 sm:w-6 sm:h-6" />
 			</HeaderButton>
 			<HeaderButton onClick={onImport} title="Import JM Projects">
-				<HiFolderPlus className="w-6 h-6 sm:w-6 sm:h-6" />
+				<HiFolderPlus className="w-5 h-5 sm:w-6 sm:h-6" />
 			</HeaderButton>
 			<HeaderButton onClick={onExport} title="Export JM Format">
-				<HiClipboardDocument className="w-6 h-6 sm:w-6 sm:h-6" />
+				<HiClipboardDocument className="w-5 h-5 sm:w-6 sm:h-6" />
 			</HeaderButton>
 			<HeaderButton onClick={onShowSettingsModal} title="Open Settings Modal">
-				<HiCog8Tooth className="w-6 h-6 sm:w-6 sm:h-6" />
+				<HiCog8Tooth className="w-5 h-5 sm:w-6 sm:h-6" />
 			</HeaderButton>
 		</div>
 	);

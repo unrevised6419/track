@@ -7,5 +7,10 @@
 		"allowSyntheticDefaultImports": true,
 		"strictNullChecks": true
 	},
-	"include": ["vite.config.ts", "packages/vite-plugin-local"]
+	"include": [
+		"vite.config.*",
+		"postcss.config.*",
+		"tailwind.config.*",
+		"packages/vite-plugin-local"
+	]
 }
