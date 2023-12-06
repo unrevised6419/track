@@ -10,7 +10,7 @@ export function ProjectsLogs() {
 
 				return (
 					<article
-						key={log.interval.toString()}
+						key={`${log.startedAt}-${log.endedAt}`}
 						className="bg-gray-200 px-3 py-2 rounded-md flex justify-between"
 					>
 						<span>

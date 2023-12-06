@@ -1,7 +1,14 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSound } from "use-sound";
-import { Project, Log, ProjectAction, Interval, StartedLog } from "./types";
+import {
+	Project,
+	Log,
+	ProjectAction,
+	IntervalOld,
+	StartedLog,
+	Interval,
+} from "./types";
 import {
 	useMemo,
 	useCallback,
@@ -48,10 +55,9 @@ export function msToHumanFormat(
 }
 
 export function logToTextParts(log: Log) {
-	const [start, end] = log.interval;
-	const startTime = new Date(start).toLocaleTimeString();
-	const endTime = new Date(end).toLocaleTimeString();
-	const diff = end - start;
+	const startTime = new Date(log.startedAt).toLocaleTimeString();
+	const endTime = new Date(log.endedAt).toLocaleTimeString();
+	const diff = log.endedAt - log.startedAt;
 	const diffHuman = msToHumanFormat(diff, "units");
 
 	return {
@@ -93,7 +99,7 @@ export function getLegend(intervalMinutes: number) {
 }
 
 type LogsTimelineOptions = {
-	constraints: Interval;
+	constraints: IntervalOld;
 	logs: ReadonlyArray<Log>;
 	intervalMinutes: number;
 	timelineLength: number;
@@ -105,16 +111,17 @@ export function logsTimeline(options: LogsTimelineOptions) {
 	const thirdPartMs = intervalMs / 3;
 
 	const intervals = logs.flatMap((log) =>
-		[...createInterval(log.interval, intervalMs)].map((start) => ({
+		[...createInterval(log, intervalMs)].map((start) => ({
 			start,
-			size: Math.min(intervalMs, log.interval[1] - start),
+			size: Math.min(intervalMs, log.endedAt - start),
 		})),
 	);
 
-	const blocks = [...createInterval([0, timelineLength])].map((i) => {
+	const blocksInterval = { startedAt: 0, endedAt: timelineLength };
+	const blocks = [...createInterval(blocksInterval)].map((i) => {
 		const intervalStart = constraints[0] + i * intervalMs;
 		const intervalEnd = intervalStart + intervalMs;
-		const interval = [intervalStart, intervalEnd] as Interval;
+		const interval = [intervalStart, intervalEnd] as IntervalOld;
 		const blocks = intervals.filter(({ start }) => inInterval(start, interval));
 		const sumMs = sum(blocks.map((e) => e.size));
 
@@ -132,13 +139,13 @@ export function logsTimeline(options: LogsTimelineOptions) {
 	return blocks.join("");
 }
 
-function* createInterval([start, end]: Interval, step = 1) {
-	for (let i = start; i < end; i += step) {
+function* createInterval({ startedAt, endedAt }: Interval, step = 1) {
+	for (let i = startedAt; i < endedAt; i += step) {
 		yield i;
 	}
 }
 
-function inInterval(value: number, [start, end]: Interval): boolean {
+function inInterval(value: number, [start, end]: IntervalOld): boolean {
 	return start <= value && value <= end;
 }
 
@@ -149,10 +156,10 @@ export function getLogsConstraints(
 	const startedAts = startedLogs.map((e) => e.startedAt).filter(Boolean);
 	const endedAts = startedAts.length ? [Date.now()] : [];
 
-	const start = Math.min(...logs.map((e) => e.interval[0]), ...startedAts);
-	const end = Math.max(...logs.map((e) => e.interval[1]), ...endedAts);
+	const start = Math.min(...logs.map((e) => e.startedAt), ...startedAts);
+	const end = Math.max(...logs.map((e) => e.endedAt), ...endedAts);
 
-	return [start, end] as Interval;
+	return [start, end] as IntervalOld;
 }
 
 export function askForActivityName(defaultName?: string) {
@@ -225,7 +232,7 @@ export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
 	);
 
 	const logsTime = useMemo(
-		() => sum(logs.map((e) => e.interval[1] - e.interval[0])),
+		() => sum(logs.map((e) => e.endedAt - e.startedAt)),
 		[logs],
 	);
 
@@ -276,6 +283,7 @@ export function startedLogToLog(startedLog: StartedLog): Log {
 	return {
 		activityName: startedLog.activityName,
 		projectSlug: startedLog.projectSlug,
-		interval: [startedLog.startedAt, Date.now()],
+		startedAt: startedLog.startedAt,
+		endedAt: Date.now(),
 	};
 }
