@@ -5,7 +5,7 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectAction, Project, projectActions, Interval } from "./types";
+import { ProjectAction, Project, projectActions, IntervalOld } from "./types";
 import {
 	askForActivityName,
 	cn,
@@ -26,7 +26,7 @@ type ProjectActionsProps = {
 	toggleActiveProject: (project: Project) => void;
 	intervalMinutes: number;
 	timelineLength: number;
-	constraints: Interval;
+	constraints: IntervalOld;
 };
 
 type ProjectActionProps = {

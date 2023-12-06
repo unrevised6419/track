@@ -76,7 +76,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 			const durations = [
 				...getProjectLogs(project),
 				...getProjectStartedLogs(project).map(startedLogToLog),
-			].map((e) => e.interval[1] - e.interval[0]);
+			].map((e) => e.endedAt - e.startedAt);
 
 			if (durations.length === 0) return;
 
