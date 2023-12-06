@@ -164,6 +164,11 @@ export function DataProvider({ children }: PropsWithChildren) {
 		setProjects(newProjects);
 	});
 
+	const removeLog = useWithClick((log: Log) => {
+		const newLogs = logs.filter((l) => l !== log);
+		setLogs(newLogs);
+	});
+
 	return (
 		<DataContext.Provider
 			value={{
@@ -186,6 +191,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 				lastActivities,
 				setLastActivities,
 				getProjectStartedLogs,
+				removeLog,
 			}}
 		>
 			{children}

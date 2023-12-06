@@ -15,6 +15,7 @@ export function ProjectInfo({ project }: { project: Project }) {
 	return (
 		<input
 			defaultValue={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
+			readOnly
 			placeholder=""
 			className={cn(
 				"input input-bordered w-full font-mono lg:pr-12 sm:pl-10",
