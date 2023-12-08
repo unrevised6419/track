@@ -14,7 +14,8 @@ export function ProjectInfo({ project }: { project: Project }) {
 
 	return (
 		<input
-			defaultValue={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
+			value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
+			onChange={() => {}}
 			readOnly
 			placeholder=""
 			className={cn(
