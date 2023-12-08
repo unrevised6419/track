@@ -33,6 +33,7 @@
 		"lint-staged": "^14.0.1",
 		"postcss": "^8.4.31",
 		"prettier": "^3.0.3",
+		"prettier-plugin-tailwindcss": "^0.5.9",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-hotkeys-hook": "^4.4.1",
@@ -45,7 +46,6 @@
 		"use-sound": "^4.0.1",
 		"vite": "^4.4.5"
 	},
-	"prettier": "@allindevelopers/prettier-config",
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
 			"eslint --fix",

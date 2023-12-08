@@ -16,7 +16,7 @@ export function Button(props: ButtonProps) {
 			aria-label="Click to perform an action"
 			onClick={onClick}
 			disabled={disabled}
-			className={cn("btn btn-primary btn-square", className)}
+			className={cn("btn btn-square btn-primary", className)}
 		>
 			{children}
 		</button>

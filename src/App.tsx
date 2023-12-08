@@ -95,12 +95,12 @@ export function App() {
 	});
 
 	return (
-		<div className="container max-w-screen-md border-x border-base-300 min-h-screen flex flex-col">
-			<header className="py-3 flex items-center gap-4 ">
-				<div className="btn btn-sm sm:btn-md btn-primary">
+		<div className="container flex min-h-screen max-w-screen-md flex-col border-x border-base-300">
+			<header className="flex items-center gap-4 py-3 ">
+				<div className="btn btn-primary btn-sm sm:btn-md">
 					<div className="badge uppercase">Jagaatrack</div>
 				</div>
-				<strong className="hidden sm:inline mt-0.5">
+				<strong className="mt-0.5 hidden sm:inline">
 					Why are you running?
 				</strong>
 				<HeaderActions
@@ -116,7 +116,7 @@ export function App() {
 
 			<ReactSortable
 				tag="main"
-				className="py-3 space-y-3"
+				className="space-y-3 py-3"
 				list={sortableList}
 				setList={setSortableList}
 				handle=".js-handle"
@@ -139,8 +139,8 @@ export function App() {
 								)}
 							</Button>
 
-							<div className="grow relative">
-								<div className="absolute left-2 inset-y-0 items-center hidden sm:flex">
+							<div className="relative grow">
+								<div className="absolute inset-y-0 left-2 hidden items-center sm:flex">
 									<button
 										className={cn(
 											"js-handle p-2",
@@ -151,7 +151,7 @@ export function App() {
 									</button>
 								</div>
 								<ProjectInfo project={project} />
-								<div className="absolute right-4 inset-y-0 items-center hidden lg:flex">
+								<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 									{index < 9 && (
 										<kbd className="kbd kbd-sm border-primary">{index + 1}</kbd>
 									)}
@@ -172,7 +172,7 @@ export function App() {
 				})}
 			</ReactSortable>
 
-			<div className="flex gap-2 mb-2">
+			<div className="mb-2 flex gap-2">
 				<button className="btn btn-sm grow" onClick={onShowLogs}>
 					{showLogs ? "Hide Logs" : "Show Logs"}
 				</button>
@@ -187,7 +187,7 @@ export function App() {
 				onClick={() => {
 					window.scrollTo({ top: 0, behavior: "smooth" });
 				}}
-				className="btn fixed btn-sm btn-square bottom-2 left-2 md:left-auto md:right-2"
+				className="btn btn-square btn-sm fixed bottom-2 left-2 md:left-auto md:right-2"
 			>
 				<HiArrowSmallUp />
 			</button>
@@ -217,7 +217,7 @@ export function App() {
 						))}
 					</fieldset>
 
-					<div className="font-mono text-xs flex gap-1 items-center justify-center p-1 rounded">
+					<div className="flex items-center justify-center gap-1 rounded p-1 font-mono text-xs">
 						<span>{hash}</span>
 						<span>:</span>
 						<span>{date}</span>
