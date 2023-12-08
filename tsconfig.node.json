@@ -11,6 +11,7 @@
 		"vite.config.*",
 		"postcss.config.*",
 		"tailwind.config.*",
+		"prettier.config.*",
 		"packages/vite-plugin-local"
 	]
 }

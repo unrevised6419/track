@@ -21,7 +21,7 @@ export function Modal({ active, setActive, children }: Props) {
 		<dialog className="modal" ref={dialogRef}>
 			<div className="modal-box">
 				<button
-					className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+					className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
 					onClick={() => {
 						setActive(false);
 					}}

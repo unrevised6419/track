@@ -16,7 +16,7 @@ export function ShowMoreDropdown({ children }: PropsWithChildren) {
 				onClick={() => {
 					setIsActiveDropdown(!isActiveDropdown);
 				}}
-				className="btn btn-primary btn-square"
+				className="btn btn-square btn-primary"
 			>
 				<HiEllipsisVertical size={20} />
 			</button>

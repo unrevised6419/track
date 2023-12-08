@@ -18,8 +18,8 @@ export function ProjectInfo({ project }: { project: Project }) {
 			readOnly
 			placeholder=""
 			className={cn(
-				"input input-bordered w-full font-mono lg:pr-12 sm:pl-10",
-				isStarted ? "bg-error text-error-content input-error" : undefined,
+				"input input-bordered w-full font-mono sm:pl-10 lg:pr-12",
+				isStarted ? "input-error bg-error text-error-content" : undefined,
 				!totalTime ? "text-base-content/40" : undefined,
 			)}
 		/>
