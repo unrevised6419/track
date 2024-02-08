@@ -29,6 +29,7 @@ import { Checkbox } from "./Checkbox";
 import { ReactSortable } from "react-sortablejs";
 import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
+import { useHotkeys } from "react-hotkeys-hook";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -50,6 +51,7 @@ export function App() {
 		shouldAskForActivityName,
 		setShouldAskForActivityName,
 		toggleActiveProject,
+		stopAllProjects,
 		getProjectStartedLogs,
 		startedLogs,
 	} = useDataContext();
@@ -60,6 +62,8 @@ export function App() {
 	const timelineLength = 32;
 	const diff = constraints[1] - constraints[0];
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
+
+	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects

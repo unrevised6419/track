@@ -15,6 +15,7 @@ type DataContextType = {
 	getProjectLogs: (project: Project) => ReadonlyArray<Log>;
 	getProjectStartedLogs: (project: Project) => ReadonlyArray<StartedLog>;
 	toggleActiveProject: (project: Project) => void;
+	stopAllProjects: () => void;
 	addProject: (project: Project) => void;
 	resetProject: (project: Project) => void;
 	removeProject: (project: Project) => void;

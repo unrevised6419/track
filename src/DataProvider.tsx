@@ -46,6 +46,18 @@ export function DataProvider({ children }: PropsWithChildren) {
 		(project: Project) => startedLogsByProject[project.slug] ?? [],
 	);
 
+	const stopAllProjects = useWithClick(() => {
+		const newLogs = startedLogs.map<Log>((log) => ({
+			projectSlug: log.projectSlug,
+			startedAt: log.startedAt,
+			endedAt: Date.now(),
+			activityName: lastActivities[log.projectSlug] ?? log.activityName,
+		}));
+
+		setStartedLogs([]);
+		setLogs([...newLogs, ...logs]);
+	});
+
 	const toggleActiveProject = useWithClick((project: Project) => {
 		const newLogs = startedLogs.map<Log>((log) => ({
 			projectSlug: log.projectSlug,
@@ -148,6 +160,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 				getProjectLogs,
 				setShouldAskForActivityName,
 				toggleActiveProject,
+				stopAllProjects,
 				addProject,
 				removeAllProjectsAndLogs,
 				removeAllLogs,
