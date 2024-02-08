@@ -1,12 +1,5 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
-import {
-	Dispatch,
-	PropsWithChildren,
-	SetStateAction,
-	useCallback,
-	useEffect,
-	useMemo,
-} from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { Log, Project, StartedLog } from "./types";
 import {
 	askForActivityName,
@@ -20,37 +13,11 @@ import { DataContext } from "./data-context";
 export function DataProvider({ children }: PropsWithChildren) {
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
 		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
-	const [_logs, _setLogs] = useLocalStorage<ReadonlyArray<Log>>(
+
+	const [logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
 		storageKey("logs"),
 		[],
 	);
-
-	// TODO: Remove temporary later
-	const newLogsMapper = (logs: readonly Log[]): readonly Log[] => {
-		return logs.map((l) => ({
-			...l,
-			...(l.interval && {
-				startedAt: l.interval[0],
-				endedAt: l.interval[1],
-				interval: undefined,
-			}),
-		}));
-	};
-	const logs = useMemo(() => newLogsMapper(_logs), [_logs]);
-	const setLogs: Dispatch<SetStateAction<readonly Log[]>> = useCallback(
-		(value) => {
-			if (typeof value === "function") {
-				_setLogs((prev) => value(newLogsMapper(prev)));
-			} else {
-				_setLogs(newLogsMapper(value));
-			}
-		},
-		[_setLogs],
-	);
-	useEffect(() => {
-		console.log("Migrating logs");
-		_setLogs(newLogsMapper);
-	}, [_setLogs]);
 
 	const [projects, setProjects] = useLocalStorage<ReadonlyArray<Project>>(
 		storageKey("projects"),

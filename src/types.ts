@@ -17,8 +17,6 @@ export type Interval = {
 export type Log = {
 	readonly projectSlug: string;
 	readonly activityName: string;
-	/** @deprecated */
-	readonly interval?: IntervalOld;
 	readonly startedAt: number;
 	readonly endedAt: number;
 };
