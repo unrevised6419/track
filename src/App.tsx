@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-	HiPauseCircle,
-	HiPlayCircle,
-	HiBars3BottomLeft,
-	HiArrowSmallUp,
-} from "react-icons/hi2";
+import { HiArrowSmallUp } from "react-icons/hi2";
 import { hash, date } from "virtual:local";
 import {
 	logsTimeline,
@@ -16,20 +11,17 @@ import {
 	getLegend,
 	useDataContext,
 	useWithClick,
-	cn,
 } from "./utils";
-import { Button } from "./Button";
 import { ProjectAction, projectActions } from "./types";
 import { TotalInfo } from "./TotalInfo";
 import { AddForm } from "./AddForm";
 import { ProjectsLogs } from "./ProjectsLogs";
-import { ProjectInfo } from "./ProjectInfo";
 import { Modal } from "./Modal";
 import { Checkbox } from "./Checkbox";
 import { ReactSortable } from "react-sortablejs";
-import { ProjectActions } from "./ProjectActions";
 import { HeaderActions } from "./HeaderActions";
 import { useHotkeys } from "react-hotkeys-hook";
+import { ProjectRow } from "./ProjectRow";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -50,9 +42,7 @@ export function App() {
 		getProjectLogs,
 		shouldAskForActivityName,
 		setShouldAskForActivityName,
-		toggleActiveProject,
 		stopAllProjects,
-		getProjectStartedLogs,
 		startedLogs,
 	} = useDataContext();
 
@@ -125,55 +115,17 @@ export function App() {
 				setList={setSortableList}
 				handle=".js-handle"
 			>
-				{projects.map((project, index) => {
-					const isStarted = getProjectStartedLogs(project).length > 0;
-
-					return (
-						<article key={project.slug} className="flex gap-3">
-							<Button
-								className={isStarted ? "btn-error" : undefined}
-								onClick={() => {
-									toggleActiveProject(project);
-								}}
-							>
-								{isStarted ? (
-									<HiPauseCircle size={20} />
-								) : (
-									<HiPlayCircle size={20} />
-								)}
-							</Button>
-
-							<div className="relative grow">
-								<div className="absolute inset-y-0 left-2 hidden items-center sm:flex">
-									<button
-										className={cn(
-											"js-handle p-2",
-											isStarted && "text-error-content",
-										)}
-									>
-										<HiBars3BottomLeft />
-									</button>
-								</div>
-								<ProjectInfo project={project} />
-								<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
-									{index < 9 && (
-										<kbd className="kbd kbd-sm border-primary">{index + 1}</kbd>
-									)}
-								</div>
-							</div>
-
-							<ProjectActions
-								project={project}
-								actions={projectButtons}
-								index={index + 1}
-								toggleActiveProject={toggleActiveProject}
-								intervalMinutes={intervalMinutes}
-								timelineLength={timelineLength}
-								constraints={constraints}
-							/>
-						</article>
-					);
-				})}
+				{projects.map((project, index) => (
+					<ProjectRow
+						key={project.slug}
+						project={project}
+						projectButtons={projectButtons}
+						intervalMinutes={intervalMinutes}
+						timelineLength={timelineLength}
+						constraints={constraints}
+						order={index + 1}
+					/>
+				))}
 			</ReactSortable>
 
 			<div className="mb-2 flex gap-2">
