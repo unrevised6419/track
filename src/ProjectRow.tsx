@@ -8,14 +8,15 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { ProjectInfo } from "./ProjectInfo";
 import { Interval, Project, ProjectAction, projectActions } from "./types";
 import {
 	askForActivityName,
 	cn,
 	getLegend,
 	logsTimeline,
+	msToHumanFormat,
 	useDataContext,
+	useLiveTotalTime,
 	useWithClick,
 } from "./utils";
 import { useMediaQuery } from "@uidotdev/usehooks";
@@ -57,6 +58,10 @@ export function ProjectRow({
 		getProjectStartedLogs,
 		toggleActiveProject,
 	} = useDataContext();
+
+	const localProjects = useMemo(() => [project], [project]);
+	const totalTime = useLiveTotalTime(localProjects);
+	const totalTimeHuman = useMemo(() => msToHumanFormat(totalTime), [totalTime]);
 
 	const projectLogs = getProjectLogs(project);
 	const isStarted = useMemo(
@@ -179,7 +184,17 @@ export function ProjectRow({
 						<HiBars3BottomLeft />
 					</button>
 				</div>
-				<ProjectInfo project={project} />
+				<input
+					value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
+					onChange={() => {}}
+					readOnly
+					placeholder=""
+					className={cn(
+						"input input-bordered w-full font-mono sm:pl-10 lg:pr-12",
+						isStarted ? "input-error bg-error text-error-content" : undefined,
+						!totalTime ? "text-base-content/40" : undefined,
+					)}
+				/>
 				<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 					{order <= 9 && (
 						<kbd className="kbd kbd-sm border-primary">{order}</kbd>
