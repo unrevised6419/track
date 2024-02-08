@@ -50,7 +50,7 @@ export function App() {
 
 	const constraints = getLogsConstraints(logs, startedLogs);
 	const timelineLength = 32;
-	const diff = constraints[1] - constraints[0];
+	const diff = constraints.endedAt - constraints.startedAt;
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });

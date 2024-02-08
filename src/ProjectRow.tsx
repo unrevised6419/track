@@ -6,7 +6,7 @@ import {
 import { Button } from "./Button";
 import { ProjectActions } from "./ProjectActions";
 import { ProjectInfo } from "./ProjectInfo";
-import { IntervalOld, Project, ProjectAction } from "./types";
+import { Interval, Project, ProjectAction } from "./types";
 import { cn, useDataContext } from "./utils";
 
 type ProjectRowProps = {
@@ -14,7 +14,7 @@ type ProjectRowProps = {
 	projectButtons: ProjectAction[];
 	intervalMinutes: number;
 	timelineLength: number;
-	constraints: IntervalOld;
+	constraints: Interval;
 	order: number;
 };
 

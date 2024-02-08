@@ -1,14 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSound } from "use-sound";
-import {
-	Project,
-	Log,
-	ProjectAction,
-	IntervalOld,
-	StartedLog,
-	Interval,
-} from "./types";
+import { Project, Log, ProjectAction, StartedLog, Interval } from "./types";
 import {
 	useMemo,
 	useCallback,
@@ -99,7 +92,7 @@ export function getLegend(intervalMinutes: number) {
 }
 
 type LogsTimelineOptions = {
-	constraints: IntervalOld;
+	constraints: Interval;
 	logs: ReadonlyArray<Log>;
 	intervalMinutes: number;
 	timelineLength: number;
@@ -119,9 +112,9 @@ export function logsTimeline(options: LogsTimelineOptions) {
 
 	const blocksInterval = { startedAt: 0, endedAt: timelineLength };
 	const blocks = [...createInterval(blocksInterval)].map((i) => {
-		const intervalStart = constraints[0] + i * intervalMs;
-		const intervalEnd = intervalStart + intervalMs;
-		const interval = [intervalStart, intervalEnd] as IntervalOld;
+		const startedAt = constraints.startedAt + i * intervalMs;
+		const endedAt = startedAt + intervalMs;
+		const interval = { startedAt, endedAt } as Interval;
 		const blocks = intervals.filter(({ start }) => inInterval(start, interval));
 		const sumMs = sum(blocks.map((e) => e.size));
 
@@ -145,8 +138,8 @@ function* createInterval({ startedAt, endedAt }: Interval, step = 1) {
 	}
 }
 
-function inInterval(value: number, [start, end]: IntervalOld): boolean {
-	return start <= value && value <= end;
+function inInterval(value: number, interval: Interval): boolean {
+	return interval.startedAt <= value && value <= interval.endedAt;
 }
 
 export function getLogsConstraints(
@@ -156,10 +149,10 @@ export function getLogsConstraints(
 	const startedAts = startedLogs.map((e) => e.startedAt).filter(Boolean);
 	const endedAts = startedAts.length ? [Date.now()] : [];
 
-	const start = Math.min(...logs.map((e) => e.startedAt), ...startedAts);
-	const end = Math.max(...logs.map((e) => e.endedAt), ...endedAts);
+	const startedAt = Math.min(...logs.map((e) => e.startedAt), ...startedAts);
+	const endedAt = Math.max(...logs.map((e) => e.endedAt), ...endedAts);
 
-	return [start, end] as IntervalOld;
+	return { startedAt, endedAt } as Interval;
 }
 
 export function askForActivityName(defaultName?: string) {

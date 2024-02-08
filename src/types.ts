@@ -9,11 +9,11 @@ export type StartedLog = {
 	readonly startedAt: number;
 };
 
-export type IntervalOld = readonly [start: number, end: number];
 export type Interval = {
 	readonly startedAt: number;
 	readonly endedAt: number;
 };
+
 export type Log = {
 	readonly projectSlug: string;
 	readonly activityName: string;
