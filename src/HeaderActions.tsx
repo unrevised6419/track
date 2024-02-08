@@ -8,6 +8,8 @@ import {
 import { HeaderButton } from "./HeaderButton";
 import {
 	cn,
+	splitEnd,
+	splitStart,
 	startedLogToLog,
 	sum,
 	useDataContext,
@@ -56,17 +58,27 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		if (!text) return;
 
-		const lines = text
-			.split("\n")
-			.map((line) => line.split("] - ").at(0)?.split("• ").at(-1)?.trim())
-			.filter(Boolean);
+		const newProjects = text.split("\n").map((line) => {
+			// • Advisor Online [Evolution] [AO107] - (2024-02-06-NO ENDING)
+			//   ^ name                      ^ slug
 
-		const newProjects = lines.map<Project>((line) => {
-			const [name, slug] = line.split(" [");
-			return { slug, name } satisfies Project;
+			// • Advisor Online [Evolution] [AO107
+			const a = splitEnd(line.trim(), "] - (").at(0);
+			if (!a) return;
+
+			// Advisor Online [Evolution] [AO107
+			const b = splitStart(a.trim(), "• ").at(-1);
+			if (!b) return;
+
+			// Advisor Online [Evolution]
+			// AO107
+			const [name, slug] = splitEnd(b.trim(), " [");
+			if (!(name && slug)) return;
+
+			return { name: name.trim(), slug: slug.trim() } satisfies Project;
 		});
 
-		addProjects(newProjects);
+		addProjects(newProjects.filter(Boolean));
 	});
 
 	const onExport = useWithClick(() => {

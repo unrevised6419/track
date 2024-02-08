@@ -287,3 +287,17 @@ export function startedLogToLog(startedLog: StartedLog): Log {
 		endedAt: Date.now(),
 	};
 }
+
+export function splitEnd(str: string, separator: string): [string, string?] {
+	const parts = str.split(separator);
+	const end = parts.pop();
+	const start = parts.join(separator);
+	return [start, end];
+}
+
+export function splitStart(str: string, separator: string): [string, string?] {
+	const parts = str.split(separator);
+	const start = parts.shift();
+	const end = parts.join(separator);
+	return start ? [start, end] : [end];
+}
