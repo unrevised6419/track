@@ -150,21 +150,6 @@ export function ProjectRow({
 		));
 	};
 
-	let projectActionsElement;
-
-	if (isSmallDevice && actions.length > 1) {
-		projectActionsElement = (
-			<ShowMoreDropdown>
-				{/* Render all the actions, no matter what is selected */}
-				<div className="flex gap-2">{renderActions(projectActions)}</div>
-			</ShowMoreDropdown>
-		);
-	} else {
-		projectActionsElement = (
-			<div className="flex gap-3">{renderActions(actions)}</div>
-		);
-	}
-
 	return (
 		<article key={project.slug} className="flex gap-3">
 			<Button
@@ -202,7 +187,14 @@ export function ProjectRow({
 				</div>
 			</div>
 
-			{projectActionsElement}
+			{isSmallDevice && actions.length > 1 ? (
+				<ShowMoreDropdown>
+					{/* Render all the actions, no matter what is selected */}
+					<div className="flex gap-2">{renderActions(projectActions)}</div>
+				</ShowMoreDropdown>
+			) : (
+				<div className="flex gap-3">{renderActions(actions)}</div>
+			)}
 		</article>
 	);
 }
