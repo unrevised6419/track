@@ -1,5 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 export INCLUDE_TAILWINDCSS_PRETTIER=true
 npx lint-staged
