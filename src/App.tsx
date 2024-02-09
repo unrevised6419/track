@@ -44,6 +44,7 @@ export function App() {
 		setShouldAskForActivityName,
 		stopAllProjects,
 		startedLogs,
+		startNewLog,
 	} = useDataContext();
 
 	useDynamicFavicon();
@@ -54,6 +55,7 @@ export function App() {
 	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
 
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
+	useHotkeys(`l`, startNewLog, { enabled: startedLogs.length > 0 });
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects

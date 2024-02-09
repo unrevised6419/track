@@ -12,6 +12,7 @@ type DataContextType = {
 	setShouldAskForActivityName: Dispatch<SetStateAction<boolean>>;
 	removeAllProjectsAndLogs: () => void;
 	removeAllLogs: () => void;
+	startNewLog: () => void;
 	getProjectLogs: (project: Project) => ReadonlyArray<Log>;
 	getProjectStartedLogs: (project: Project) => ReadonlyArray<StartedLog>;
 	toggleActiveProject: (project: Project) => void;

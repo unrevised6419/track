@@ -46,7 +46,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		(project: Project) => startedLogsByProject[project.slug] ?? [],
 	);
 
-	const stopAllProjects = useWithClick(() => {
+	function saveStartedLogs() {
 		const newLogs = startedLogs.map<Log>((log) => ({
 			projectSlug: log.projectSlug,
 			startedAt: log.startedAt,
@@ -54,17 +54,36 @@ export function DataProvider({ children }: PropsWithChildren) {
 			activityName: lastActivities[log.projectSlug] ?? log.activityName,
 		}));
 
-		setStartedLogs([]);
 		setLogs([...newLogs, ...logs]);
+	}
+
+	function createNewStartedLog(project: Project) {
+		const startedAt = Date.now();
+		const previousActivityName = lastActivities[project.slug] ?? project.name;
+		const activityName = shouldAskForActivityName
+			? askForActivityName(previousActivityName) ?? project.name
+			: project.name;
+
+		const startedLog: StartedLog = {
+			projectSlug: project.slug,
+			startedAt,
+			activityName,
+		};
+
+		setStartedLogs([startedLog]);
+		setLastActivities({
+			...lastActivities,
+			[project.slug]: startedLog.activityName,
+		});
+	}
+
+	const stopAllProjects = useWithClick(() => {
+		saveStartedLogs();
+		setStartedLogs([]);
 	});
 
 	const toggleActiveProject = useWithClick((project: Project) => {
-		const newLogs = startedLogs.map<Log>((log) => ({
-			projectSlug: log.projectSlug,
-			startedAt: log.startedAt,
-			endedAt: Date.now(),
-			activityName: lastActivities[log.projectSlug] ?? log.activityName,
-		}));
+		saveStartedLogs();
 
 		const projectHasStartedLog = startedLogs.some(
 			(l) => l.projectSlug === project.slug,
@@ -73,27 +92,21 @@ export function DataProvider({ children }: PropsWithChildren) {
 		if (projectHasStartedLog) {
 			setStartedLogs([]);
 		} else {
-			const startedAt = Date.now();
-
-			const previousActivityName = lastActivities[project.slug] ?? project.name;
-			const activityName = shouldAskForActivityName
-				? askForActivityName(previousActivityName) ?? project.name
-				: project.name;
-
-			const startLog: StartedLog = {
-				projectSlug: project.slug,
-				startedAt,
-				activityName,
-			};
-
-			setStartedLogs([startLog]);
-			setLastActivities({
-				...lastActivities,
-				[project.slug]: activityName,
-			});
+			createNewStartedLog(project);
 		}
+	});
 
-		setLogs([...newLogs, ...logs]);
+	const startNewLog = useWithClick(() => {
+		saveStartedLogs();
+
+		const project = projects.find(
+			// Start a new log for first found project
+			(p) => p.slug === startedLogs.at(0)?.projectSlug,
+		);
+
+		if (project) {
+			createNewStartedLog(project);
+		}
 	});
 
 	const addProject = useEffectEvent((project: Project) => {
@@ -164,6 +177,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 				addProject,
 				removeAllProjectsAndLogs,
 				removeAllLogs,
+				startNewLog,
 				addProjects,
 				resetProject,
 				removeProject,

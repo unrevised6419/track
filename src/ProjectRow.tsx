@@ -59,15 +59,8 @@ export function ProjectRow({
 		toggleActiveProject,
 	} = useDataContext();
 
-	const localProjects = useMemo(() => [project], [project]);
-	const totalTime = useLiveTotalTime(localProjects);
-	const totalTimeHuman = useMemo(() => msToHumanFormat(totalTime), [totalTime]);
-
 	const projectLogs = getProjectLogs(project);
-	const isStarted = useMemo(
-		() => getProjectStartedLogs(project).length > 0,
-		[getProjectStartedLogs, project],
-	);
+	const isStarted = getProjectStartedLogs(project).length > 0;
 
 	const onResetProject = useWithClick(resetProject);
 	const onRemoveProject = useWithClick(removeProject);
@@ -169,17 +162,7 @@ export function ProjectRow({
 						<HiBars3BottomLeft />
 					</button>
 				</div>
-				<input
-					value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
-					onChange={() => {}}
-					readOnly
-					placeholder=""
-					className={cn(
-						"input input-bordered w-full font-mono sm:pl-10 lg:pr-12",
-						isStarted ? "input-error bg-error text-error-content" : undefined,
-						!totalTime ? "text-base-content/40" : undefined,
-					)}
-				/>
+				<ProjectInput project={project} isStarted={isStarted} />
 				<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 					{order <= 9 && (
 						<kbd className="kbd kbd-sm border-primary">{order}</kbd>
@@ -196,5 +179,30 @@ export function ProjectRow({
 				<div className="flex gap-3">{renderActions(actions)}</div>
 			)}
 		</article>
+	);
+}
+
+type ProjectInputProps = {
+	project: Project;
+	isStarted: boolean;
+};
+
+function ProjectInput({ project, isStarted }: ProjectInputProps) {
+	const localProjects = useMemo(() => [project], [project]);
+	const totalTime = useLiveTotalTime(localProjects);
+	const totalTimeHuman = useMemo(() => msToHumanFormat(totalTime), [totalTime]);
+
+	return (
+		<input
+			value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
+			onChange={() => {}}
+			readOnly
+			placeholder=""
+			className={cn(
+				"input input-bordered w-full font-mono sm:pl-10 lg:pr-12",
+				isStarted ? "input-error bg-error text-error-content" : undefined,
+				!totalTime ? "text-base-content/40" : undefined,
+			)}
+		/>
 	);
 }
