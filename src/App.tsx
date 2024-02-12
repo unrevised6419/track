@@ -11,6 +11,7 @@ import {
 	getLegend,
 	useDataContext,
 	useWithClick,
+	storageKey,
 } from "./utils";
 import { ProjectAction, projectActions } from "./types";
 import { TotalInfo } from "./TotalInfo";
@@ -22,6 +23,7 @@ import { ReactSortable } from "react-sortablejs";
 import { HeaderActions } from "./HeaderActions";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ProjectRow } from "./ProjectRow";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -35,6 +37,10 @@ export function App() {
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [sortableList, setSortableList] = useSortableList();
+	const [showOrderButton, setShowOrderButton] = useLocalStorage(
+		storageKey("show-project-reorder"),
+		true,
+	);
 
 	const {
 		projects,
@@ -126,6 +132,7 @@ export function App() {
 						timelineLength={timelineLength}
 						constraints={constraints}
 						order={index + 1}
+						showOrderButton={showOrderButton}
 					/>
 				))}
 			</ReactSortable>
@@ -173,6 +180,13 @@ export function App() {
 								}}
 							/>
 						))}
+						<Checkbox
+							item="Project Reorder"
+							isChecked={showOrderButton}
+							setIsChecked={() => {
+								setShowOrderButton(!showOrderButton);
+							}}
+						/>
 					</fieldset>
 
 					<div className="flex items-center justify-center gap-1 rounded p-1 font-mono text-xs">

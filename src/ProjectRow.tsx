@@ -33,6 +33,7 @@ type ProjectRowProps = {
 	timelineLength: number;
 	constraints: Interval;
 	order: number;
+	showOrderButton: boolean;
 };
 
 type ProjectActionProps = {
@@ -48,6 +49,7 @@ export function ProjectRow({
 	timelineLength,
 	constraints,
 	order,
+	showOrderButton,
 }: ProjectRowProps) {
 	const isSmallDevice = useMediaQuery("(max-width : 640px)");
 
@@ -162,14 +164,20 @@ export function ProjectRow({
 			</Button>
 
 			<div className="relative grow">
-				<div className="absolute inset-y-0 left-2 hidden items-center sm:flex">
-					<button
-						className={cn("js-handle p-2", isStarted && "text-error-content")}
-					>
-						<HiBars3BottomLeft />
-					</button>
-				</div>
-				<ProjectInput project={project} isStarted={isStarted} />
+				{showOrderButton && (
+					<div className="absolute inset-y-0 left-2 flex items-center">
+						<button
+							className={cn("js-handle p-2", isStarted && "text-error-content")}
+						>
+							<HiBars3BottomLeft />
+						</button>
+					</div>
+				)}
+				<ProjectInput
+					project={project}
+					isStarted={isStarted}
+					showOrderButton={showOrderButton}
+				/>
 				<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 					{order <= 9 && (
 						<kbd className="kbd kbd-sm border-primary">{order}</kbd>
@@ -192,9 +200,14 @@ export function ProjectRow({
 type ProjectInputProps = {
 	project: Project;
 	isStarted: boolean;
+	showOrderButton: boolean;
 };
 
-function ProjectInput({ project, isStarted }: ProjectInputProps) {
+function ProjectInput({
+	project,
+	isStarted,
+	showOrderButton,
+}: ProjectInputProps) {
 	const localProjects = useMemo(() => [project], [project]);
 	const totalTime = useLiveTotalTime(localProjects);
 	const totalTimeHuman = useMemo(() => msToHumanFormat(totalTime), [totalTime]);
@@ -206,7 +219,8 @@ function ProjectInput({ project, isStarted }: ProjectInputProps) {
 			readOnly
 			placeholder=""
 			className={cn(
-				"input input-bordered w-full font-mono sm:pl-10 lg:pr-12",
+				"input input-bordered w-full font-mono lg:pr-12",
+				showOrderButton ? "pl-10" : undefined,
 				isStarted ? "input-error bg-error text-error-content" : undefined,
 				!totalTime ? "text-base-content/40" : undefined,
 			)}
