@@ -285,16 +285,27 @@ export function startedLogToLog(startedLog: StartedLog): Log {
 	};
 }
 
-export function splitEnd(str: string, separator: string): [string, string?] {
+export function splitEnd(str: string, separator: string): string[] {
 	const parts = str.split(separator);
 	const end = parts.pop();
 	const start = parts.join(separator);
-	return [start, end];
+	return end ? [start, end] : [start];
 }
 
-export function splitStart(str: string, separator: string): [string, string?] {
+export function splitStart(str: string, separator: string): string[] {
 	const parts = str.split(separator);
 	const start = parts.shift();
 	const end = parts.join(separator);
 	return start ? [start, end] : [end];
+}
+
+export function logsToMachineTimeInHours(logs: ReadonlyArray<Log>) {
+	const durations = logs.map((e) => e.endedAt - e.startedAt);
+	const totalTimeS = sum(durations) / 1000;
+	const totalTimeMinutes = Math.ceil(totalTimeS / 60);
+	return totalTimeMinutes / 60;
+}
+
+export function getDateString(date: Date) {
+	return date.toISOString().split("T").at(0) as string;
 }

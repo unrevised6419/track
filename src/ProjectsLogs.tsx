@@ -12,11 +12,10 @@ export function ProjectsLogs() {
 				return (
 					<article
 						key={`${log.startedAt}-${log.endedAt}`}
-						className="flex items-center justify-between rounded-btn border border-base-content bg-base-200 py-2 pl-3 pr-2"
+						className="flex items-center justify-between gap-2 overflow-hidden rounded-btn border border-base-content bg-base-200 py-2 pl-3 pr-2"
 					>
-						<span>
-							({timestamp}) {name}
-						</span>
+						<span className="whitespace-nowrap">({timestamp})</span>
+						<span className="grow truncate whitespace-nowrap">{name}</span>
 
 						<div className="flex items-center gap-1">
 							<strong>{diffHuman}</strong>

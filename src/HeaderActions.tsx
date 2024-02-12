@@ -8,10 +8,11 @@ import {
 import { HeaderButton } from "./HeaderButton";
 import {
 	cn,
+	getDateString,
+	logsToMachineTimeInHours,
 	splitEnd,
 	splitStart,
 	startedLogToLog,
-	sum,
 	useDataContext,
 	useWithClick,
 } from "./utils";
@@ -82,22 +83,19 @@ export function HeaderActions(props: HeaderActionsProps) {
 	});
 
 	const onExport = useWithClick(() => {
-		const date = new Date().toISOString().split("T").at(0) as string;
-
 		const projectsExports = projects.map((project) => {
-			const durations = [
+			const logs = [
 				...getProjectLogs(project),
 				...getProjectStartedLogs(project).map(startedLogToLog),
-			].map((e) => e.endedAt - e.startedAt);
+			];
 
-			if (durations.length === 0) return;
+			if (logs.length === 0) return;
 
-			const totalTimeS = sum(durations) / 1000;
-			const totalTimeMinutes = Math.ceil(totalTimeS / 60);
-			const totalTimeHours = totalTimeMinutes / 60;
+			const date = getDateString(new Date());
+			const totalTimeHours = logsToMachineTimeInHours(logs);
 			const totalTime = totalTimeHours.toFixed(2);
 
-			return `/track ${date} ${project.slug} ${totalTime} TODO ${project.name}`;
+			return `/track ${date} ${project.slug} ${totalTime} ${project.name}`;
 		});
 
 		void navigator.clipboard

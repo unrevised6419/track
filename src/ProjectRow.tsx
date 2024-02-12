@@ -12,10 +12,13 @@ import { Interval, Project, ProjectAction, projectActions } from "./types";
 import {
 	askForActivityName,
 	cn,
+	getDateString,
 	getLegend,
 	groupBy,
 	logsTimeline,
+	logsToMachineTimeInHours,
 	msToHumanFormat,
+	startedLogToLog,
 	sumLogs,
 	useDataContext,
 	useLiveTotalTime,
@@ -82,7 +85,10 @@ export function ProjectRow({
 	});
 
 	const onCopyProjectLog = useWithClick((project: Project) => {
-		const logs = getProjectLogs(project);
+		const logs = [
+			...getProjectLogs(project),
+			...getProjectStartedLogs(project).map(startedLogToLog),
+		];
 
 		const timeline = logsTimeline({
 			constraints,
@@ -92,7 +98,6 @@ export function ProjectRow({
 		});
 
 		const groupByActivity = Object.entries(groupBy(logs, "activityName"));
-
 		const activities = groupByActivity.map(([name, logs = []]) => {
 			const totalTime = sumLogs(logs);
 			const totalTimeHuman = msToHumanFormat(totalTime, "units");
@@ -100,12 +105,20 @@ export function ProjectRow({
 			return `${name} (${totalTimeHuman} / x${logs.length})`;
 		});
 
+		const date = getDateString(new Date());
+		const totalTimeHours = logsToMachineTimeInHours(logs);
+		const totalTime = totalTimeHours.toFixed(2);
+
 		const log = [
-			activities.map((a) => `- ${a}`).join("\n"),
+			`/track ${date} ${project.slug} ${totalTime} ${activities.map((a) => `- ${a}`).join("\n")}`,
 			"",
+			"Timeline temporary disabled due to server issues.",
 			timeline,
 			getLegend(intervalMinutes),
-		].join("\n");
+		]
+			// TODO: Temporary disable emoji until server handles them corectly
+			.slice(0, -2)
+			.join("\n");
 
 		void navigator.clipboard.writeText(log);
 	});
@@ -228,7 +241,7 @@ function ProjectInput({
 				totalTime === 0 ? "text-base-content/40" : undefined,
 			)}
 		>
-			<div className="text-sm">({totalTimeHuman})</div>
+			<div>({totalTimeHuman})</div>
 			<div className="overflow-hidden text-xs">
 				<div className="pt-0.5">
 					{project.name}, {project.slug}
