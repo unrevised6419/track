@@ -64,7 +64,9 @@ export function ProjectRow({
 	} = useDataContext();
 
 	const projectLogs = getProjectLogs(project);
-	const isStarted = getProjectStartedLogs(project).length > 0;
+	const projectStartedLogs = getProjectStartedLogs(project);
+	const startedLogsTitles = projectStartedLogs.at(0)?.activityName;
+	const isStarted = projectStartedLogs.length > 0;
 
 	const onResetProject = useWithClick(resetProject);
 	const onRemoveProject = useWithClick(removeProject);
@@ -163,7 +165,14 @@ export function ProjectRow({
 				{isStarted ? <HiPauseCircle size={20} /> : <HiPlayCircle size={20} />}
 			</Button>
 
-			<div className="relative grow">
+			<div className="relative min-w-0 grow">
+				<ProjectInput
+					project={project}
+					isStarted={isStarted}
+					showOrderButton={showOrderButton}
+					activityName={startedLogsTitles}
+				/>
+
 				{showOrderButton && (
 					<div className="absolute inset-y-0 left-2 flex items-center">
 						<button
@@ -173,16 +182,12 @@ export function ProjectRow({
 						</button>
 					</div>
 				)}
-				<ProjectInput
-					project={project}
-					isStarted={isStarted}
-					showOrderButton={showOrderButton}
-				/>
-				<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
-					{order <= 9 && (
+
+				{order <= 9 && (
+					<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 						<kbd className="kbd kbd-sm border-primary">{order}</kbd>
-					)}
-				</div>
+					</div>
+				)}
 			</div>
 
 			{isSmallDevice && actions.length > 1 ? (
@@ -201,29 +206,37 @@ type ProjectInputProps = {
 	project: Project;
 	isStarted: boolean;
 	showOrderButton: boolean;
+	activityName?: string;
 };
 
 function ProjectInput({
 	project,
 	isStarted,
 	showOrderButton,
+	activityName,
 }: ProjectInputProps) {
 	const localProjects = useMemo(() => [project], [project]);
 	const totalTime = useLiveTotalTime(localProjects);
 	const totalTimeHuman = useMemo(() => msToHumanFormat(totalTime), [totalTime]);
 
 	return (
-		<input
-			value={`(${totalTimeHuman}) ${project.name}, ${project.slug}`}
-			onChange={() => {}}
-			readOnly
-			placeholder=""
+		<div
 			className={cn(
-				"input input-bordered w-full font-mono lg:pr-12",
+				"relative flex h-12 items-center gap-2 rounded-btn border border-base-content/20 bg-base-100 px-4 font-mono lg:pr-12",
 				showOrderButton ? "pl-10" : undefined,
-				isStarted ? "input-error bg-error text-error-content" : undefined,
-				!totalTime ? "text-base-content/40" : undefined,
+				isStarted ? "bg-error text-error-content" : undefined,
+				totalTime === 0 ? "text-base-content/40" : undefined,
 			)}
-		/>
+		>
+			<div className="text-sm">({totalTimeHuman})</div>
+			<div className="overflow-hidden text-xs">
+				<div className="pt-0.5">
+					{project.name}, {project.slug}
+				</div>
+				<div className="truncate font-sans opacity-50">
+					{activityName ?? "No activity"}
+				</div>
+			</div>
+		</div>
 	);
 }
