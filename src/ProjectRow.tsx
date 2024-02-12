@@ -13,8 +13,10 @@ import {
 	askForActivityName,
 	cn,
 	getLegend,
+	groupBy,
 	logsTimeline,
 	msToHumanFormat,
+	sumLogs,
 	useDataContext,
 	useLiveTotalTime,
 	useWithClick,
@@ -76,21 +78,26 @@ export function ProjectRow({
 	});
 
 	const onCopyProjectLog = useWithClick((project: Project) => {
+		const logs = getProjectLogs(project);
+
 		const timeline = logsTimeline({
 			constraints,
-			logs: projectLogs,
+			logs,
 			intervalMinutes,
 			timelineLength,
 		});
 
-		const activities = projectLogs
-			.map((l) => l.activityName)
-			.filter((a) => a !== project.name);
+		const groupByActivity = Object.entries(groupBy(logs, "activityName"));
 
-		const uniqueActivities = [...new Set(activities)];
+		const activities = groupByActivity.map(([name, logs = []]) => {
+			const totalTime = sumLogs(logs);
+			const totalTimeHuman = msToHumanFormat(totalTime, "units");
+
+			return `${name} (${totalTimeHuman} / x${logs.length})`;
+		});
 
 		const log = [
-			uniqueActivities.map((a) => `- ${a}`).join("\n"),
+			activities.map((a) => `- ${a}`).join("\n"),
 			"",
 			timeline,
 			getLegend(intervalMinutes),

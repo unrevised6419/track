@@ -212,6 +212,10 @@ export function useProjectButtons() {
 	return [projectButtons, toggleProjectButton] as const;
 }
 
+export function sumLogs(logs: ReadonlyArray<Log>) {
+	return sum(logs.map((l) => l.endedAt - l.startedAt));
+}
+
 function sumStartedLogs(startedLogs: ReadonlyArray<StartedLog>) {
 	return sum(startedLogs.map((l) => Date.now() - l.startedAt));
 }
@@ -259,8 +263,8 @@ export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
 export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 	arr: readonly T[],
 	key: K,
-): Partial<Record<string, T[]>> =>
-	arr.reduce<Record<string, T[]>>(
+): Partial<Record<string, readonly T[]>> =>
+	arr.reduce<Record<string, readonly T[]>>(
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
 		{},
