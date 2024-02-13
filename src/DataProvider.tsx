@@ -55,7 +55,7 @@ function useDataProvider() {
 			endedAt: Date.now(),
 		}));
 
-		setLogs([...newLogs, ...logs]);
+		setLogs([...logs, ...newLogs]);
 	}
 
 	function createNewStartedLog(project: Project) {
@@ -117,6 +117,7 @@ function useDataProvider() {
 	const removeAllProjectsAndLogs = useEffectEvent(() => {
 		setProjects([]);
 		setLogs([]);
+		setStartedLogs([]);
 	});
 
 	const removeAllLogs = useEffectEvent(() => {
@@ -145,8 +146,13 @@ function useDataProvider() {
 	const removeProject = useWithClick((project: Project) => {
 		const newProjects = projects.filter((e) => e.slug !== project.slug);
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
+		const newStartedLogs = startedLogs.filter(
+			(l) => l.projectSlug !== project.slug,
+		);
+
 		setProjects(newProjects);
 		setLogs(newLogs);
+		setStartedLogs(newStartedLogs);
 	});
 
 	const sortProjects = useEffectEvent((slugs: ReadonlyArray<string>) => {
