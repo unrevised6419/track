@@ -68,8 +68,9 @@ export function ProjectRow({
 
 	const projectLogs = getProjectLogs(project);
 	const projectStartedLogs = getProjectStartedLogs(project);
-	const startedLogsTitles = projectStartedLogs.at(0)?.activityName;
 	const isStarted = projectStartedLogs.length > 0;
+	const startedLogsTitles = (projectStartedLogs.at(-1) ?? projectLogs.at(-1))
+		?.activityName;
 
 	const onResetProject = useWithClick(resetProject);
 	const onRemoveProject = useWithClick(removeProject);
