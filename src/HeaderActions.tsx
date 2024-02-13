@@ -13,10 +13,10 @@ import {
 	splitEnd,
 	splitStart,
 	startedLogToLog,
-	useDataContext,
 	useWithClick,
 } from "./utils";
 import { Project } from "./types";
+import { useDataContext } from "./data-context";
 
 type HeaderActionsProps = {
 	className?: string;

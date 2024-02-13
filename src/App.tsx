@@ -9,7 +9,6 @@ import {
 	useDynamicFavicon,
 	useProjectButtons,
 	getLegend,
-	useDataContext,
 	useWithClick,
 	storageKey,
 } from "./utils";
@@ -24,6 +23,7 @@ import { HeaderActions } from "./HeaderActions";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ProjectRow } from "./ProjectRow";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { useDataContext } from "./data-context";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",

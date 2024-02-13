@@ -2,7 +2,8 @@ import { useState, useRef, FormEvent } from "react";
 import { HiPlusCircle } from "react-icons/hi2";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { useDataContext, useWithClick } from "./utils";
+import { useWithClick } from "./utils";
+import { useDataContext } from "./data-context";
 
 export function AddForm() {
 	const { projects, addProject } = useDataContext();

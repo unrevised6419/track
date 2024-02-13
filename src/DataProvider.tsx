@@ -177,7 +177,7 @@ function useDataProvider() {
 		setStartedLogs(newStartedLogs);
 	});
 
-	const value = {
+	return {
 		projects,
 		logs,
 		startedLogs,
@@ -202,8 +202,6 @@ function useDataProvider() {
 		removeLog,
 		renameProjectActivity,
 	};
-
-	return value;
 }
 
 export function DataProvider({ children }: PropsWithChildren) {

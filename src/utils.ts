@@ -2,17 +2,10 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSound } from "use-sound";
 import { Project, Log, ProjectAction, StartedLog, Interval } from "./types";
-import {
-	useMemo,
-	useCallback,
-	useEffect,
-	useState,
-	useContext,
-	useRef,
-} from "react";
+import { useMemo, useCallback, useEffect, useState, useRef } from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { DataContext } from "./data-context";
+import { useDataContext } from "./data-context";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -269,12 +262,6 @@ export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
 		{},
 	);
-
-export function useDataContext() {
-	const context = useContext(DataContext);
-	if (context) return context;
-	throw new Error("useAppContext must be used within an AppProvider");
-}
 
 export function startedLogToLog(startedLog: StartedLog): Log {
 	return {

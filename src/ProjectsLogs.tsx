@@ -1,5 +1,6 @@
 import { HiXMark } from "react-icons/hi2";
-import { logToTextParts, useDataContext } from "./utils";
+import { logToTextParts } from "./utils";
+import { useDataContext } from "./data-context";
 
 export function ProjectsLogs() {
 	const { logs, removeLog } = useDataContext();

@@ -1,13 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { useSound } from "use-sound";
-import {
-	msToHumanFormat,
-	cn,
-	useLiveTotalTime,
-	storageKey,
-	useDataContext,
-} from "./utils";
+import { msToHumanFormat, cn, useLiveTotalTime, storageKey } from "./utils";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { useDataContext } from "./data-context";
 
 export function TotalInfo() {
 	const { projects } = useDataContext();

@@ -19,7 +19,6 @@ import {
 	msToHumanFormat,
 	startedLogToLog,
 	sumLogs,
-	useDataContext,
 	useLiveTotalTime,
 	useWithClick,
 } from "./utils";
@@ -27,6 +26,7 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ShowMoreDropdown } from "./ShowMoreDropdown";
+import { useDataContext } from "./data-context";
 
 type ProjectRowProps = {
 	project: Project;
