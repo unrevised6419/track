@@ -10,7 +10,6 @@ import {
 import { Button } from "./Button";
 import { Interval, Project, ProjectAction, projectActions } from "./types";
 import {
-	askForActivityName,
 	cn,
 	getDateString,
 	getLegend,
@@ -60,30 +59,17 @@ export function ProjectRow({
 		getProjectLogs,
 		resetProject,
 		removeProject,
-		lastActivities,
-		setLastActivities,
 		getProjectStartedLogs,
 		toggleActiveProject,
+		renameProjectActivity,
 	} = useDataContext();
 
 	const projectLogs = getProjectLogs(project);
 	const projectStartedLogs = getProjectStartedLogs(project);
+
 	const isStarted = projectStartedLogs.length > 0;
 	const startedLogsTitles = (projectStartedLogs.at(-1) ?? projectLogs.at(-1))
 		?.activityName;
-
-	const onResetProject = useWithClick(resetProject);
-	const onRemoveProject = useWithClick(removeProject);
-	const onRenameProjectActivity = useWithClick((project: Project) => {
-		const activityName = askForActivityName(lastActivities[project.slug]);
-
-		if (activityName) {
-			setLastActivities({
-				...lastActivities,
-				[project.slug]: activityName,
-			});
-		}
-	});
 
 	const onCopyProjectLog = useWithClick((project: Project) => {
 		const logs = [
@@ -139,16 +125,16 @@ export function ProjectRow({
 			disabled: projectLogs.length === 0,
 		},
 		remove: {
-			action: onRemoveProject,
+			action: removeProject,
 			icon: <HiMinusCircle size={20} />,
 		},
 		reset: {
-			action: onResetProject,
+			action: resetProject,
 			icon: <HiArrowPath size={20} />,
 			disabled: projectLogs.length === 0,
 		},
 		rename: {
-			action: onRenameProjectActivity,
+			action: renameProjectActivity,
 			icon: <HiPencil size={20} />,
 		},
 	};

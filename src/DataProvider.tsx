@@ -10,7 +10,9 @@ import {
 } from "./utils";
 import { DataContext } from "./data-context";
 
-export function DataProvider({ children }: PropsWithChildren) {
+export type DataContextType = ReturnType<typeof useDataProvider>;
+
+function useDataProvider() {
 	const [shouldAskForActivityName, setShouldAskForActivityName] =
 		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
 
@@ -23,10 +25,9 @@ export function DataProvider({ children }: PropsWithChildren) {
 		storageKey("projects"),
 		[],
 	);
-	const [startedLogs, setStartedLogs] = useLocalStorage<readonly StartedLog[]>(
-		storageKey("started-logs"),
-		[],
-	);
+	const [startedLogs, setStartedLogs] = useLocalStorage<
+		ReadonlyArray<StartedLog>
+	>(storageKey("started-logs"), []);
 
 	const [lastActivities, setLastActivities] = useLocalStorage<
 		Partial<Record<string, string>>
@@ -49,9 +50,9 @@ export function DataProvider({ children }: PropsWithChildren) {
 	function saveStartedLogs() {
 		const newLogs = startedLogs.map<Log>((log) => ({
 			projectSlug: log.projectSlug,
+			activityName: log.activityName,
 			startedAt: log.startedAt,
 			endedAt: Date.now(),
-			activityName: lastActivities[log.projectSlug] ?? log.activityName,
 		}));
 
 		setLogs([...newLogs, ...logs]);
@@ -61,8 +62,8 @@ export function DataProvider({ children }: PropsWithChildren) {
 		const startedAt = Date.now();
 		const previousActivityName = lastActivities[project.slug] ?? project.name;
 		const activityName = shouldAskForActivityName
-			? askForActivityName(previousActivityName) ?? project.name
-			: project.name;
+			? askForActivityName(previousActivityName)
+			: "Unknown activity";
 
 		const startedLog: StartedLog = {
 			projectSlug: project.slug,
@@ -131,7 +132,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		setProjects([...projects, ...filteredProjects]);
 	});
 
-	const resetProject = useEffectEvent((project: Project) => {
+	const resetProject = useWithClick((project: Project) => {
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		const newStartedLogs = startedLogs.filter(
 			(l) => l.projectSlug !== project.slug,
@@ -141,7 +142,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		setStartedLogs(newStartedLogs);
 	});
 
-	const removeProject = useEffectEvent((project: Project) => {
+	const removeProject = useWithClick((project: Project) => {
 		const newProjects = projects.filter((e) => e.slug !== project.slug);
 		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		setProjects(newProjects);
@@ -161,34 +162,51 @@ export function DataProvider({ children }: PropsWithChildren) {
 		setLogs(newLogs);
 	});
 
-	return (
-		<DataContext.Provider
-			value={{
-				projects,
-				logs,
-				startedLogs,
-				shouldAskForActivityName,
-				setProjects,
-				setLogs,
-				getProjectLogs,
-				setShouldAskForActivityName,
-				toggleActiveProject,
-				stopAllProjects,
-				addProject,
-				removeAllProjectsAndLogs,
-				removeAllLogs,
-				startNewLog,
-				addProjects,
-				resetProject,
-				removeProject,
-				sortProjects,
-				lastActivities,
-				setLastActivities,
-				getProjectStartedLogs,
-				removeLog,
-			}}
-		>
-			{children}
-		</DataContext.Provider>
-	);
+	const renameProjectActivity = useWithClick((project: Project) => {
+		const activityName = askForActivityName(lastActivities[project.slug]);
+
+		setLastActivities({
+			...lastActivities,
+			[project.slug]: activityName,
+		});
+
+		const newStartedLogs = startedLogs.map((l) =>
+			l.projectSlug === project.slug ? { ...l, activityName } : l,
+		);
+
+		setStartedLogs(newStartedLogs);
+	});
+
+	const value = {
+		projects,
+		logs,
+		startedLogs,
+		shouldAskForActivityName,
+		setProjects,
+		setLogs,
+		getProjectLogs,
+		setShouldAskForActivityName,
+		toggleActiveProject,
+		stopAllProjects,
+		addProject,
+		removeAllProjectsAndLogs,
+		removeAllLogs,
+		startNewLog,
+		addProjects,
+		resetProject,
+		removeProject,
+		sortProjects,
+		lastActivities,
+		setLastActivities,
+		getProjectStartedLogs,
+		removeLog,
+		renameProjectActivity,
+	};
+
+	return value;
+}
+
+export function DataProvider({ children }: PropsWithChildren) {
+	const value = useDataProvider();
+	return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

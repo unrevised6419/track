@@ -157,7 +157,7 @@ export function getLogsConstraints(
 
 export function askForActivityName(defaultName?: string) {
 	const userAnswer = window.prompt("What are you working on?", defaultName);
-	return userAnswer || undefined;
+	return userAnswer || "Unknown activity";
 }
 
 export function useSortableList() {
@@ -261,10 +261,10 @@ export function useLiveTotalTime(projects: ReadonlyArray<Project>) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const groupBy = <T extends Record<string, any>, K extends keyof T>(
-	arr: readonly T[],
+	arr: ReadonlyArray<T>,
 	key: K,
-): Partial<Record<string, readonly T[]>> =>
-	arr.reduce<Record<string, readonly T[]>>(
+): Partial<Record<string, ReadonlyArray<T>>> =>
+	arr.reduce<Record<string, ReadonlyArray<T>>>(
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
 		{},
