@@ -54,7 +54,7 @@ export function ProjectRow({
 	order,
 	showOrderButton,
 }: ProjectRowProps) {
-	const isSmallDevice = useMediaQuery("(max-width : 640px)");
+	const isSmallDevice = useMediaQuery("(max-width : 768px)");
 
 	const {
 		getProjectLogs,
@@ -243,7 +243,7 @@ function ProjectInput({
 		>
 			<div>({totalTimeHuman})</div>
 			<div className="overflow-hidden text-xs">
-				<div className="pt-0.5">
+				<div className="truncate pt-0.5">
 					{project.name}, {project.slug}
 				</div>
 				<div className="truncate font-sans opacity-50">

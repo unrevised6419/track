@@ -32,7 +32,7 @@ export function AddForm() {
 					setName(v);
 				}}
 				placeholder="Name"
-				className="grow"
+				className="min-w-0 grow"
 			/>
 			<Input
 				value={slug}
