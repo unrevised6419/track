@@ -21,5 +21,10 @@ export type Log = {
 	readonly endedAt: number;
 };
 
+export type Activity = {
+	readonly name: string;
+	readonly projectSlug: string;
+};
+
 export const projectActions = ["copy", "rename", "reset", "remove"] as const;
 export type ProjectAction = (typeof projectActions)[number];

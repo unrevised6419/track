@@ -98,13 +98,11 @@ export function ProjectRow({
 
 		const log = [
 			`/track ${date} ${project.slug} ${totalTime} ${activities.map((a) => `- ${a}`).join("\n")}`,
-			"",
-			"Timeline temporary disabled due to server issues.",
 			timeline,
 			getLegend(intervalMinutes),
 		]
 			// TODO: Temporary disable emoji until server handles them corectly
-			.slice(0, -2)
+			.slice(0, 1)
 			.join("\n");
 
 		void navigator.clipboard.writeText(log);
