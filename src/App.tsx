@@ -46,8 +46,6 @@ export function App() {
 		projects,
 		logs,
 		getProjectLogs,
-		shouldAskForActivityName,
-		setShouldAskForActivityName,
 		stopAllProjects,
 		startedLogs,
 		startNewLog,
@@ -159,15 +157,6 @@ export function App() {
 
 			<Modal active={showSettingsModal} setActive={setShowSettingsModal}>
 				<div className="grid gap-2">
-					<fieldset>
-						<legend>Actions</legend>
-						<Checkbox
-							item="Ask for activity name?"
-							isChecked={shouldAskForActivityName}
-							setIsChecked={setShouldAskForActivityName}
-						/>
-					</fieldset>
-
 					<fieldset className="grid gap-2">
 						<legend>Show Buttons</legend>
 						{projectActions.map((button) => (

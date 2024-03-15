@@ -13,9 +13,6 @@ import { DataContext } from "./data-context";
 export type DataContextType = ReturnType<typeof useDataProvider>;
 
 function useDataProvider() {
-	const [shouldAskForActivityName, setShouldAskForActivityName] =
-		useLocalStorage(storageKey("should-ask-for-activity-name"), false);
-
 	const [logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
 		storageKey("logs"),
 		[],
@@ -34,7 +31,9 @@ function useDataProvider() {
 		[],
 	);
 
-	const setProjectActivity = (project: Project, activityName: string) => {
+	const setProjectActivity = (project: Project, activityName?: string) => {
+		if (!activityName) return;
+
 		const foundActivity = activities.find(
 			(a) => a.projectSlug === project.slug && a.name === activityName,
 		);
@@ -89,9 +88,8 @@ function useDataProvider() {
 		const startedAt = Date.now();
 		const projectActivities = getProjectActivities(project);
 		const lastActivityName = projectActivities.at(-1)?.name;
-		const activityName = shouldAskForActivityName
-			? askForActivityName(lastActivityName)
-			: "Unknown activity";
+		const maybeActivityName = askForActivityName(lastActivityName);
+		const activityName = maybeActivityName ?? "Unknown activity";
 
 		const startedLog: StartedLog = {
 			projectSlug: project.slug,
@@ -100,7 +98,7 @@ function useDataProvider() {
 		};
 
 		setStartedLogs([startedLog]);
-		setProjectActivity(project, activityName);
+		setProjectActivity(project, maybeActivityName);
 	}
 
 	const stopAllProjects = useWithClick(() => {
@@ -195,9 +193,11 @@ function useDataProvider() {
 
 	const renameProjectActivity = useWithClick((project: Project) => {
 		const projectActivities = getProjectActivities(project);
-		const activityName = askForActivityName(projectActivities.at(-1)?.name);
+		const lastActivityName = projectActivities.at(-1)?.name;
+		const maybeActivityName = askForActivityName(lastActivityName);
+		const activityName = maybeActivityName ?? "Unknown activity";
 
-		setProjectActivity(project, activityName);
+		setProjectActivity(project, maybeActivityName);
 
 		const newStartedLogs = startedLogs.map((l) =>
 			l.projectSlug === project.slug ? { ...l, activityName } : l,
@@ -210,11 +210,9 @@ function useDataProvider() {
 		projects,
 		logs,
 		startedLogs,
-		shouldAskForActivityName,
 		setProjects,
 		setLogs,
 		getProjectLogs,
-		setShouldAskForActivityName,
 		toggleActiveProject,
 		stopAllProjects,
 		addProject,

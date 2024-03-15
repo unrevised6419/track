@@ -150,7 +150,7 @@ export function getLogsConstraints(
 
 export function askForActivityName(defaultName?: string) {
 	const userAnswer = window.prompt("What are you working on?", defaultName);
-	return userAnswer || "Unknown activity";
+	return userAnswer || undefined;
 }
 
 export function useSortableList() {
