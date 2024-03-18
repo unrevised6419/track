@@ -33,7 +33,7 @@ export function msToHumanFormat(
 	if (separator === "units") {
 		return pairs
 			.filter((pair) => pair.value > 0)
-			.map((pair) => `${pair.value}${pair.label}`)
+			.map((pair) => `${String(pair.value)}${pair.label}`)
 			.join(" ");
 	}
 
@@ -77,9 +77,9 @@ export function useEffectEvent<Args extends unknown[], Return>(
 export function getLegend(intervalMinutes: number) {
 	const thirdPartM = intervalMinutes / 3;
 	const noActivity = "⬜ 0m";
-	const oneThird = `< 🟨 < ${Math.floor(thirdPartM)}m`;
-	const twoThirds = `< 🟧 < ${Math.floor(thirdPartM * 2)}m`;
-	const full = `< 🟥 < ${intervalMinutes}m`;
+	const oneThird = `< 🟨 < ${String(Math.floor(thirdPartM))}m`;
+	const twoThirds = `< 🟧 < ${String(Math.floor(thirdPartM * 2))}m`;
+	const full = `< 🟥 < ${String(intervalMinutes)}m`;
 
 	return `Legend: ${noActivity} ${oneThird} ${twoThirds} ${full}`;
 }

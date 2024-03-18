@@ -23,6 +23,7 @@ module.exports = {
 			"warn",
 			{ allowConstantExport: true },
 		],
+		"@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
 	},
 	settings: {
 		react: {

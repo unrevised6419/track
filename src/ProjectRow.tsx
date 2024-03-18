@@ -89,7 +89,7 @@ export function ProjectRow({
 			const totalTime = sumLogs(logs);
 			const totalTimeHuman = msToHumanFormat(totalTime, "units");
 
-			return `${name} (${totalTimeHuman} / x${logs.length})`;
+			return `${name} (${totalTimeHuman} / x${String(logs.length)})`;
 		});
 
 		const date = getDateString(new Date());
@@ -109,7 +109,7 @@ export function ProjectRow({
 	});
 
 	useHotkeys(
-		`${order}`,
+		order.toString(),
 		() => {
 			toggleActiveProject(project);
 		},
