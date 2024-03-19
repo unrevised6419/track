@@ -24,6 +24,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { ProjectRow } from "./ProjectRow";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useDataContext } from "./data-context";
+import { CommandMenu } from "./CommandMenu";
 
 const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -36,6 +37,7 @@ export function App() {
 	const [projectButtons, toggleProjectButton] = useProjectButtons();
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
+	const [showCommandMenu, setShowCommandMenu] = useState(false);
 	const [sortableList, setSortableList] = useSortableList();
 	const [showOrderButton, setShowOrderButton] = useLocalStorage(
 		storageKey("show-project-reorder"),
@@ -60,6 +62,9 @@ export function App() {
 
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
 	useHotkeys(`l`, startNewLog, { enabled: startedLogs.length > 0 });
+	useHotkeys(`meta+k`, () => {
+		setShowCommandMenu(!showCommandMenu);
+	});
 
 	const onCopyLogs = useWithClick(() => {
 		const projectsTimeline = projects
@@ -96,6 +101,8 @@ export function App() {
 
 	return (
 		<div className="container flex min-h-screen max-w-screen-md flex-col border-x border-base-300">
+			<CommandMenu open={showCommandMenu} setOpen={setShowCommandMenu} />
+
 			<header className="flex items-center gap-4 py-3 ">
 				<div className="btn btn-primary btn-sm sm:btn-md">
 					<div className="badge uppercase">Jagaatrack</div>

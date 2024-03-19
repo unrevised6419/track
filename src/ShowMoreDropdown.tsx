@@ -27,7 +27,7 @@ export function ShowMoreDropdown({ children }: PropsWithChildren) {
 					visibility: isActiveDropdown ? "visible" : "hidden",
 					zIndex: isActiveDropdown ? "1" : "-1",
 				}}
-				className="absolute right-0 top-1/2 transition-all"
+				className="absolute right-0 top-1/2 rounded-btn border bg-white p-1 transition-all"
 			>
 				{children}
 			</div>

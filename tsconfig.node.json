@@ -12,6 +12,7 @@
 		"postcss.config.*",
 		"tailwind.config.*",
 		"prettier.config.*",
+		".eslintrc.*",
 		"packages/vite-plugin-local"
 	]
 }

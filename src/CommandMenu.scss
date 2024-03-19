@@ -1,0 +1,147 @@
+// These were copied from https://cmdk.paco.me/ with small adjustments.
+// TODO: Migrate to daisyUI
+
+:root.cmdk-styles {
+	--cmdk-shadow: 0 16px 70px rgb(0 0 0 / 20%);
+
+	--gray4: hsl(0, 0%, 93%);
+	--gray5: hsl(0, 0%, 90.9%);
+	--gray6: hsl(0, 0%, 88.7%);
+	--gray8: hsl(0, 0%, 78%);
+	--gray9: hsl(0, 0%, 56.1%);
+	--gray11: hsl(0, 0%, 43.5%);
+	--gray12: hsl(0, 0%, 9%);
+	--grayA3: hsla(0, 0%, 0%, 0.047);
+	--grayA11: hsla(0, 0%, 0%, 0.565);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root.cmdk-styles {
+		--gray4: hsl(0, 0%, 15.8%);
+		--gray5: hsl(0, 0%, 17.9%);
+		--gray6: hsl(0, 0%, 20.5%);
+		--gray8: hsl(0, 0%, 31.2%);
+		--gray9: hsl(0, 0%, 43.9%);
+		--gray11: hsl(0, 0%, 62.8%);
+		--gray12: hsl(0, 0%, 93%);
+		--grayA3: hsla(0, 0%, 100%, 0.056);
+		--grayA11: hsla(0, 0%, 100%, 0.592);
+	}
+}
+
+.cmdk-styles {
+	[cmdk-overlay] {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.8);
+	}
+
+	[cmdk-dialog] {
+		position: fixed;
+		display: flex;
+		justify-content: center;
+		align-items: start;
+		margin-top: 25vh;
+		inset: 0;
+	}
+
+	[cmdk-root] {
+		max-width: 576px;
+		width: 100%;
+		padding: 8px;
+		background: #ffffff;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid var(--gray6);
+		box-shadow: var(--cmdk-shadow);
+		transition: transform 100ms ease;
+		outline: none;
+
+		@media (prefers-color-scheme: dark) {
+			background: rgba(22, 22, 22, 0.7);
+		}
+	}
+
+	[cmdk-item] {
+		content-visibility: auto;
+
+		cursor: pointer;
+		height: 48px;
+		border-radius: 8px;
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 0 16px;
+		color: var(--gray11);
+		user-select: none;
+		will-change: background, color;
+		transition: all 150ms ease;
+		transition-property: none;
+
+		&[data-selected="true"] {
+			background: var(--grayA3);
+			color: var(--gray12);
+		}
+
+		&[data-disabled="true"] {
+			color: var(--gray8);
+			cursor: not-allowed;
+		}
+
+		&:active {
+			transition-property: background;
+			background: var(--gray4);
+		}
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	[cmdk-list] {
+		height: min(330px, calc(var(--cmdk-list-height)));
+		max-height: 400px;
+		overflow: auto;
+		overscroll-behavior: contain;
+		transition: 100ms ease;
+		transition-property: height;
+	}
+
+	[cmdk-list-sizer] {
+		display: grid;
+		gap: 4px;
+	}
+
+	[cmdk-separator] {
+		height: 1px;
+		width: 100%;
+		background: var(--gray5);
+		margin: 4px 0;
+	}
+
+	*:not([hidden]) + [cmdk-group] {
+		margin-top: 8px;
+	}
+
+	[cmdk-group-heading] {
+		user-select: none;
+		font-size: 12px;
+		color: var(--gray11);
+		padding: 0 8px;
+		display: flex;
+		align-items: center;
+		margin-bottom: 8px;
+	}
+
+	[cmdk-empty] {
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 48px;
+		white-space: pre-wrap;
+		color: var(--gray11);
+	}
+}

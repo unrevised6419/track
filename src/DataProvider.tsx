@@ -31,24 +31,15 @@ function useDataProvider() {
 		[],
 	);
 
-	const setProjectActivity = (project: Project, activityName?: string) => {
-		if (!activityName) return;
+	const addActivity = (newActivity: Activity) => {
+		const filteredActivities = activities.filter((a) => {
+			const sameProject = a.projectSlug === newActivity.projectSlug;
+			const sameName = a.name === newActivity.name;
+			return !(sameProject && sameName);
+		});
 
-		const foundActivity = activities.find(
-			(a) => a.projectSlug === project.slug && a.name === activityName,
-		);
-
-		if (foundActivity) return;
-
-		const newActivity: Activity = {
-			name: activityName,
-			projectSlug: project.slug,
-		};
-
-		_setActivities(
-			// Keep only the last 100 activities
-			[...activities, newActivity].slice(-100),
-		);
+		// Keep only the last 100 activities
+		_setActivities([...filteredActivities, newActivity].slice(-100));
 	};
 
 	const logsByProject = useMemo(() => groupBy(logs, "projectSlug"), [logs]);
@@ -60,6 +51,9 @@ function useDataProvider() {
 		() => groupBy(activities, "projectSlug"),
 		[activities],
 	);
+	const projectsBySlug = useMemo(() => {
+		return groupBy(projects, "slug");
+	}, [projects]);
 
 	const getProjectLogs = useEffectEvent(
 		(project: Project) => logsByProject[project.slug] ?? [],
@@ -73,6 +67,18 @@ function useDataProvider() {
 		(project: Project) => activitiesByProject[project.slug] ?? [],
 	);
 
+	const getProjectBySlug = useEffectEvent((slug: string) => {
+		const projects = projectsBySlug[slug]?.at(0);
+		if (!projects) throw new Error(`Project not found: ${slug}`);
+		return projects;
+	});
+
+	const askForProjectActivityName = useEffectEvent((project: Project) => {
+		const projectActivities = getProjectActivities(project);
+		const lastActivityName = projectActivities.at(-1)?.name;
+		return askForActivityName(lastActivityName);
+	});
+
 	function saveStartedLogs() {
 		const newLogs = startedLogs.map<Log>((log) => ({
 			projectSlug: log.projectSlug,
@@ -84,11 +90,22 @@ function useDataProvider() {
 		setLogs([...logs, ...newLogs]);
 	}
 
+	const createNewStartedLogFromActivity = useWithClick((activity: Activity) => {
+		saveStartedLogs();
+
+		const startedLog: StartedLog = {
+			projectSlug: activity.projectSlug,
+			startedAt: Date.now(),
+			activityName: activity.name,
+		};
+
+		setStartedLogs([startedLog]);
+		addActivity(activity);
+	});
+
 	function createNewStartedLog(project: Project) {
 		const startedAt = Date.now();
-		const projectActivities = getProjectActivities(project);
-		const lastActivityName = projectActivities.at(-1)?.name;
-		const maybeActivityName = askForActivityName(lastActivityName);
+		const maybeActivityName = askForProjectActivityName(project);
 		const activityName = maybeActivityName ?? "Unknown activity";
 
 		const startedLog: StartedLog = {
@@ -98,7 +115,9 @@ function useDataProvider() {
 		};
 
 		setStartedLogs([startedLog]);
-		setProjectActivity(project, maybeActivityName);
+		if (maybeActivityName) {
+			addActivity({ projectSlug: project.slug, name: maybeActivityName });
+		}
 	}
 
 	const stopAllProjects = useWithClick(() => {
@@ -192,24 +211,24 @@ function useDataProvider() {
 	});
 
 	const renameProjectActivity = useWithClick((project: Project) => {
-		const projectActivities = getProjectActivities(project);
-		const lastActivityName = projectActivities.at(-1)?.name;
-		const maybeActivityName = askForActivityName(lastActivityName);
+		const maybeActivityName = askForProjectActivityName(project);
 		const activityName = maybeActivityName ?? "Unknown activity";
-
-		setProjectActivity(project, maybeActivityName);
 
 		const newStartedLogs = startedLogs.map((l) =>
 			l.projectSlug === project.slug ? { ...l, activityName } : l,
 		);
 
 		setStartedLogs(newStartedLogs);
+		if (maybeActivityName) {
+			addActivity({ projectSlug: project.slug, name: maybeActivityName });
+		}
 	});
 
 	return {
 		projects,
 		logs,
 		startedLogs,
+		activities,
 		setProjects,
 		setLogs,
 		getProjectLogs,
@@ -226,6 +245,8 @@ function useDataProvider() {
 		getProjectStartedLogs,
 		removeLog,
 		renameProjectActivity,
+		getProjectBySlug,
+		createNewStartedLogFromActivity,
 	};
 }
 
