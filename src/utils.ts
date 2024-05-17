@@ -15,6 +15,27 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export function msToMachineFormat(options: {
+	ms: number;
+	unit: "hours" | "minutes" | "seconds";
+	toFixed?: number;
+}) {
+	const { ms, unit, toFixed = 2 } = options;
+
+	const seconds = ms / 1000;
+	const h = Math.floor(seconds / 60 / 60);
+	const m = Math.floor(seconds / 60) % 60;
+	const s = Math.ceil(seconds % 60);
+
+	let value = 0;
+
+	if (unit === "hours") value = h + m / 60;
+	if (unit === "minutes") value = h * 60 + m + s / 60;
+	if (unit === "seconds") value = h * 60 * 60 + m * 60 + s;
+
+	return value.toFixed(toFixed);
+}
+
 export function msToHumanFormat(
 	ms: number,
 	separator: "units" | "colon" = "colon",
