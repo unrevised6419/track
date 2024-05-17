@@ -123,11 +123,17 @@ export function ProjectRow({
 			disabled: projectLogs.length === 0,
 		},
 		remove: {
-			action: removeProject,
+			action: (project) => {
+				const message = `Are you sure you want to remove ${project.name}?`;
+				if (globalThis.confirm(message)) removeProject(project);
+			},
 			icon: <HiMinusCircle size={20} />,
 		},
 		reset: {
-			action: resetProject,
+			action: (project) => {
+				const message = `Are you sure you want to reset ${project.name}?`;
+				if (globalThis.confirm(message)) resetProject(project);
+			},
 			icon: <HiArrowPath size={20} />,
 			disabled: projectLogs.length === 0,
 		},
