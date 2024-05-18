@@ -30,7 +30,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		projects,
 		removeAllProjectsAndLogs,
 		removeAllLogs,
-		addProjects,
+		importProjects,
 		getProjectStartedLogs,
 	} = useDataContext();
 
@@ -79,7 +79,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 			return { name: name.trim(), slug: slug.trim() } satisfies Project;
 		});
 
-		addProjects(newProjects.filter(Boolean));
+		importProjects(newProjects.filter(Boolean));
 	});
 
 	const onExport = useWithClick(() => {

@@ -317,3 +317,80 @@ export function logsToMachineTimeInHours(logs: ReadonlyArray<Log>) {
 export function getDateString(date: Date) {
 	return date.toISOString().split("T").at(0) as string;
 }
+
+const timeUnitMs = {
+	day: 24 * 60 * 60 * 1000,
+	hour: 60 * 60 * 1000,
+	minute: 60 * 1000,
+} satisfies Record<string, number>;
+
+type TimeUnit = keyof typeof timeUnitMs;
+
+export function splitLogByTimeUnit(options: {
+	log: Log;
+	unit: TimeUnit;
+}): ReadonlyArray<Log> {
+	const { log, unit } = options;
+	const logs: Log[] = [];
+	const timeUnitEnd = getEndOfTimeUnit({ timestamp: log.startedAt, unit });
+
+	let currentStart = log.startedAt;
+	let currentEnd = Math.min(log.endedAt, timeUnitEnd);
+
+	while (currentEnd < log.endedAt) {
+		logs.push({
+			projectSlug: log.projectSlug,
+			activityName: log.activityName,
+			startedAt: currentStart,
+			endedAt: currentEnd,
+		});
+
+		currentStart = currentEnd;
+		currentEnd = Math.min(currentStart + timeUnitMs[unit], log.endedAt);
+	}
+
+	logs.push({
+		projectSlug: log.projectSlug,
+		activityName: log.activityName,
+		startedAt: currentStart,
+		endedAt: log.endedAt,
+	});
+
+	return logs;
+}
+
+function getEndOfTimeUnit(options: {
+	timestamp: number;
+	unit: TimeUnit;
+}): number {
+	const { timestamp, unit } = options;
+	const date = new Date(timestamp);
+
+	switch (unit) {
+		case "day":
+			return new Date(
+				date.getFullYear(),
+				date.getMonth(),
+				date.getDate() + 1,
+			).getTime();
+		case "hour":
+			return new Date(
+				date.getFullYear(),
+				date.getMonth(),
+				date.getDate(),
+				date.getHours() + 1,
+			).getTime();
+		case "minute":
+			return new Date(
+				date.getFullYear(),
+				date.getMonth(),
+				date.getDate(),
+				date.getHours(),
+				date.getMinutes() + 1,
+			).getTime();
+		default: {
+			const exhaustiveCheck: never = unit;
+			throw new Error(`Unsupported time unit: ${String(exhaustiveCheck)}`);
+		}
+	}
+}

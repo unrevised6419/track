@@ -4,6 +4,7 @@ import { Activity, Log, Project, StartedLog } from "./types";
 import {
 	askForActivityName,
 	groupBy,
+	splitLogByTimeUnit,
 	storageKey,
 	useEffectEvent,
 	useWithClick,
@@ -22,6 +23,7 @@ function useDataProvider() {
 		storageKey("projects"),
 		[],
 	);
+
 	const [startedLogs, setStartedLogs] = useLocalStorage<
 		ReadonlyArray<StartedLog>
 	>(storageKey("started-logs"), []);
@@ -30,6 +32,24 @@ function useDataProvider() {
 		storageKey("activities"),
 		[],
 	);
+
+	function deleteLogs(toRemove: ReadonlyArray<Log>) {
+		const newLogs = logs.filter((l) => !toRemove.includes(l));
+		setLogs(newLogs);
+	}
+
+	function addLogs(toAdd: ReadonlyArray<Log>) {
+		setLogs([...logs, ...toAdd]);
+	}
+
+	function deleteProjects(toRemove: ReadonlyArray<Project>) {
+		const newProjects = projects.filter((p) => !toRemove.includes(p));
+		setProjects(newProjects);
+	}
+
+	function addProjects(toAdd: ReadonlyArray<Project>) {
+		setProjects([...projects, ...toAdd]);
+	}
 
 	const addActivity = (newActivity: Activity) => {
 		const filteredActivities = activities.filter((a) => {
@@ -87,7 +107,8 @@ function useDataProvider() {
 			endedAt: Date.now(),
 		}));
 
-		setLogs([...logs, ...newLogs]);
+		// Make sure to split logs that span multiple days
+		addLogs(newLogs.flatMap((log) => splitLogByTimeUnit({ log, unit: "day" })));
 	}
 
 	const createNewStartedLogFromActivity = useWithClick((activity: Activity) => {
@@ -153,7 +174,7 @@ function useDataProvider() {
 	});
 
 	const addProject = useEffectEvent((project: Project) => {
-		setProjects([project, ...projects]);
+		addProjects([project]);
 	});
 
 	const removeAllProjectsAndLogs = useEffectEvent(() => {
@@ -167,33 +188,30 @@ function useDataProvider() {
 		setStartedLogs([]);
 	});
 
-	const addProjects = useEffectEvent((newProjects: ReadonlyArray<Project>) => {
-		const filteredProjects = newProjects.filter(
+	const importProjects = useEffectEvent((toImport: ReadonlyArray<Project>) => {
+		const filteredProjects = toImport.filter(
 			(p) => !projects.some((e) => e.slug === p.slug),
 		);
 
-		setProjects([...projects, ...filteredProjects]);
+		addProjects(filteredProjects);
 	});
 
 	const resetProject = useWithClick((project: Project) => {
-		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		const newStartedLogs = startedLogs.filter(
 			(l) => l.projectSlug !== project.slug,
 		);
 
-		setLogs(newLogs);
+		deleteLogs(getProjectLogs(project));
 		setStartedLogs(newStartedLogs);
 	});
 
 	const removeProject = useWithClick((project: Project) => {
-		const newProjects = projects.filter((e) => e.slug !== project.slug);
-		const newLogs = logs.filter((l) => l.projectSlug !== project.slug);
 		const newStartedLogs = startedLogs.filter(
 			(l) => l.projectSlug !== project.slug,
 		);
 
-		setProjects(newProjects);
-		setLogs(newLogs);
+		deleteLogs(getProjectLogs(project));
+		deleteProjects([project]);
 		setStartedLogs(newStartedLogs);
 	});
 
@@ -206,8 +224,7 @@ function useDataProvider() {
 	});
 
 	const removeLog = useWithClick((log: Log) => {
-		const newLogs = logs.filter((l) => l !== log);
-		setLogs(newLogs);
+		deleteLogs([log]);
 	});
 
 	const renameProjectActivity = useWithClick((project: Project) => {
@@ -229,8 +246,6 @@ function useDataProvider() {
 		logs,
 		startedLogs,
 		activities,
-		setProjects,
-		setLogs,
 		getProjectLogs,
 		toggleActiveProject,
 		stopAllProjects,
@@ -238,7 +253,7 @@ function useDataProvider() {
 		removeAllProjectsAndLogs,
 		removeAllLogs,
 		startNewLog,
-		addProjects,
+		importProjects,
 		resetProject,
 		removeProject,
 		sortProjects,
