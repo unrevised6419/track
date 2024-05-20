@@ -1,5 +1,5 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { PropsWithChildren, useMemo, useState } from "react";
+import { PropsWithChildren, useCallback, useMemo, useState } from "react";
 import { Activity, Log, Project, StartedLog } from "./types";
 import {
 	addDays,
@@ -35,7 +35,14 @@ function useDataProvider() {
 		setLogs([..._logs, ...toAdd]);
 	}
 
-	const [selectedDate, setSelectedDate] = useState(getDateString(new Date()));
+	const [selectedDate, _setSelectedDate] = useState(getDateString(new Date()));
+	const setSelectedDate = useCallback((date: string) => {
+		if (Number.isNaN(new Date(date).getTime())) {
+			_setSelectedDate(getDateString(new Date()));
+		} else {
+			_setSelectedDate(date);
+		}
+	}, []);
 
 	const logs = useMemo(() => {
 		const start = startOfDay(new Date(selectedDate));
