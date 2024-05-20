@@ -25,7 +25,7 @@ export function AddForm() {
 	});
 
 	return (
-		<form className="flex gap-3 pt-3" onSubmit={onAddProject}>
+		<form className="flex gap-3" onSubmit={onAddProject}>
 			<Input
 				inputRef={nameInputRef}
 				value={name}

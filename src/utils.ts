@@ -324,7 +324,7 @@ const timeUnitMs = {
 	minute: 60 * 1000,
 } satisfies Record<string, number>;
 
-type TimeUnit = keyof typeof timeUnitMs;
+export type TimeUnit = keyof typeof timeUnitMs;
 
 export function splitLogByTimeUnit(options: {
 	log: Log;
@@ -393,4 +393,18 @@ function getEndOfTimeUnit(options: {
 			throw new Error(`Unsupported time unit: ${String(exhaustiveCheck)}`);
 		}
 	}
+}
+
+export function startOfDay(date: Date): Date {
+	const _date = new Date(date);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
+}
+
+export function addDays(date: Date, amount: number): Date {
+	const _date = new Date(date);
+	if (isNaN(amount)) return _date;
+	if (!amount) return _date;
+	_date.setDate(_date.getDate() + amount);
+	return _date;
 }

@@ -40,7 +40,7 @@ export function TotalInfo() {
 	}, [alarmSoundWasPlayed, playAlarm, setAlarmSoundWasPlayed, shouldAlarm]);
 
 	return (
-		<aside className="grid rounded-btn bg-base-200 px-3.5 py-3 font-mono text-sm sm:grid-cols-2">
+		<aside className="grid min-h-12 items-center rounded-btn bg-base-200 px-3.5 py-3 font-mono text-xs sm:grid-cols-2 md:text-sm">
 			<div className="space-x-2">
 				<span>Total: {totalTimeHuman}</span>
 				<span>({msToMachineFormat({ ms: totalTime, unit: "hours" })}h)</span>

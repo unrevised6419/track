@@ -51,6 +51,8 @@ export function App() {
 		stopAllProjects,
 		startedLogs,
 		startNewLog,
+		selectedDate,
+		setSelectedDate,
 	} = useDataContext();
 
 	useDynamicFavicon();
@@ -100,10 +102,10 @@ export function App() {
 	});
 
 	return (
-		<div className="container flex min-h-screen max-w-screen-md flex-col border-x border-base-300">
+		<div className="container flex min-h-screen max-w-screen-md flex-col gap-y-4 border-x border-base-300 py-4">
 			<CommandMenu open={showCommandMenu} setOpen={setShowCommandMenu} />
 
-			<header className="flex items-center gap-4 py-3 ">
+			<header className="flex items-center gap-4">
 				<div className="btn btn-primary btn-sm sm:btn-md">
 					<div className="badge uppercase">Jagaatrack</div>
 				</div>
@@ -118,12 +120,24 @@ export function App() {
 				/>
 			</header>
 
-			<TotalInfo />
-			<AddForm />
+			<div className="flex flex-col gap-3 sm:flex-row">
+				<div className="grow">
+					<TotalInfo />
+				</div>
+				<input
+					type="date"
+					placeholder="Date"
+					className="input input-bordered"
+					value={selectedDate}
+					onChange={(e) => {
+						setSelectedDate(e.target.value);
+					}}
+				/>
+			</div>
 
 			<ReactSortable
 				tag="main"
-				className="space-y-3 py-3"
+				className="space-y-3"
 				list={sortableList}
 				setList={setSortableList}
 				handle=".js-handle"
@@ -142,7 +156,9 @@ export function App() {
 				))}
 			</ReactSortable>
 
-			<div className="mb-2 flex gap-2">
+			<AddForm />
+
+			<div className="flex gap-2">
 				<button className="btn btn-sm grow" onClick={onShowLogs}>
 					{showLogs ? "Hide Logs" : "Show Logs"}
 				</button>

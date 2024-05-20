@@ -1,10 +1,13 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { PropsWithChildren, useMemo } from "react";
+import { PropsWithChildren, useMemo, useState } from "react";
 import { Activity, Log, Project, StartedLog } from "./types";
 import {
+	addDays,
 	askForActivityName,
+	getDateString,
 	groupBy,
 	splitLogByTimeUnit,
+	startOfDay,
 	storageKey,
 	useEffectEvent,
 	useWithClick,
@@ -14,10 +17,32 @@ import { DataContext } from "./data-context";
 export type DataContextType = ReturnType<typeof useDataProvider>;
 
 function useDataProvider() {
-	const [logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
+	const [_logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
 		storageKey("logs"),
 		[],
 	);
+
+	function deleteLogs(toRemove: ReadonlyArray<Log>) {
+		const newLogs = _logs.filter((l) => !toRemove.includes(l));
+		setLogs(newLogs);
+	}
+
+	function addLogs(toAdd: ReadonlyArray<Log>) {
+		setLogs([..._logs, ...toAdd]);
+	}
+
+	const [selectedDate, setSelectedDate] = useState(getDateString(new Date()));
+
+	const logs = useMemo(() => {
+		const start = startOfDay(new Date(selectedDate));
+		const end = addDays(start, 1);
+
+		const todayLogs = _logs.filter((l) => {
+			return l.startedAt >= start.getTime() && l.startedAt < end.getTime();
+		});
+
+		return todayLogs;
+	}, [_logs, selectedDate]);
 
 	const [projects, setProjects] = useLocalStorage<ReadonlyArray<Project>>(
 		storageKey("projects"),
@@ -32,15 +57,6 @@ function useDataProvider() {
 		storageKey("activities"),
 		[],
 	);
-
-	function deleteLogs(toRemove: ReadonlyArray<Log>) {
-		const newLogs = logs.filter((l) => !toRemove.includes(l));
-		setLogs(newLogs);
-	}
-
-	function addLogs(toAdd: ReadonlyArray<Log>) {
-		setLogs([...logs, ...toAdd]);
-	}
 
 	function deleteProjects(toRemove: ReadonlyArray<Project>) {
 		const newProjects = projects.filter((p) => !toRemove.includes(p));
@@ -262,6 +278,8 @@ function useDataProvider() {
 		renameProjectActivity,
 		getProjectBySlug,
 		createNewStartedLogFromActivity,
+		selectedDate,
+		setSelectedDate,
 	};
 }
 

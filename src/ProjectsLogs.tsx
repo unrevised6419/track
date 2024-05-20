@@ -6,7 +6,7 @@ export function ProjectsLogs() {
 	const { logs, removeLog } = useDataContext();
 
 	return (
-		<section className="grid gap-2 pb-3 font-mono text-xs">
+		<section className="grid gap-2 font-mono text-xs">
 			{logs.map((log) => {
 				const { timestamp, name, diffHuman } = logToTextParts(log);
 
