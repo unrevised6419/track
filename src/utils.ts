@@ -317,7 +317,9 @@ export function logsToMachineTimeInHours(logs: ReadonlyArray<Log>) {
 }
 
 export function getDateString(date: Date) {
-	return date.toISOString().split("T").at(0) as string;
+	const offset = date.getTimezoneOffset() * 60000;
+	const _date = new Date(date.getTime() - offset).toISOString();
+	return _date.split("T").at(0) as string;
 }
 
 const timeUnitMs = {
