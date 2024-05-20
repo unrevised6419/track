@@ -45,6 +45,7 @@ export function ProjectRow({
 		toggleActiveProject,
 		renameProjectActivity,
 		createProjectTracks,
+		selectedDateIsToday,
 	} = useDataContext();
 
 	const projectLogs = getProjectLogs(project);
@@ -59,11 +60,14 @@ export function ProjectRow({
 		void navigator.clipboard.writeText(tracks.join("\n\n"));
 	});
 
+	const canBeToggled = selectedDateIsToday || isStarted;
+
 	useHotkeys(
 		order.toString(),
 		() => {
 			toggleActiveProject(project);
 		},
+		{ enabled: canBeToggled },
 		[project],
 	);
 
@@ -113,6 +117,7 @@ export function ProjectRow({
 		<article key={project.slug} className="flex gap-3">
 			<Button
 				className={isStarted ? "btn-error" : undefined}
+				disabled={!canBeToggled}
 				onClick={() => {
 					toggleActiveProject(project);
 				}}
@@ -138,7 +143,7 @@ export function ProjectRow({
 					</div>
 				)}
 
-				{order <= 9 && (
+				{canBeToggled && order <= 9 && (
 					<div className="absolute inset-y-0 right-4 hidden items-center lg:flex">
 						<kbd className="kbd kbd-sm border-primary">{order}</kbd>
 					</div>

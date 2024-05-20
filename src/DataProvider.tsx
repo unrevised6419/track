@@ -20,10 +20,19 @@ import { DataContext } from "./data-context";
 
 export type DataContextType = ReturnType<typeof useDataProvider>;
 
-const thirtyDaysAgo = startOfDay(addDays(new Date(), -30)).getTime();
+const todayDate = new Date();
+const todayDateString = getDateString(todayDate);
+const thirtyDaysAgo = startOfDay(addDays(todayDate, -30)).getTime();
 
 function useDataProvider() {
-	const [selectedDate, _setSelectedDate] = useState(getDateString(new Date()));
+	const [selectedDate, _setSelectedDate] = useState(todayDateString);
+	const selectedDateIsToday = selectedDate === todayDateString;
+	const selectedDateRange = useMemo(() => {
+		const start = startOfDay(new Date(selectedDate));
+		const end = addDays(start, 1);
+		return { start: start.getTime(), end: end.getTime() };
+	}, [selectedDate]);
+
 	const setSelectedDate = useCallback((date: string) => {
 		if (Number.isNaN(new Date(date).getTime())) {
 			_setSelectedDate(getDateString(new Date()));
@@ -53,15 +62,11 @@ function useDataProvider() {
 	}
 
 	const logs = useMemo(() => {
-		const start = startOfDay(new Date(selectedDate));
-		const end = addDays(start, 1);
-
-		const todayLogs = _logs.filter((l) => {
-			return l.startedAt >= start.getTime() && l.startedAt < end.getTime();
+		const { start, end } = selectedDateRange;
+		return _logs.filter((l) => {
+			return l.startedAt >= start && l.startedAt < end;
 		});
-
-		return todayLogs;
-	}, [_logs, selectedDate]);
+	}, [_logs, selectedDateRange]);
 
 	const [projects, setProjects] = useLocalStorage<ReadonlyArray<Project>>(
 		storageKey("projects"),
@@ -335,6 +340,7 @@ function useDataProvider() {
 		selectedDate,
 		setSelectedDate,
 		createProjectTracks,
+		selectedDateIsToday,
 	};
 }
 
