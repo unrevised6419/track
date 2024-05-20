@@ -21,6 +21,15 @@ import { DataContext } from "./data-context";
 export type DataContextType = ReturnType<typeof useDataProvider>;
 
 function useDataProvider() {
+	const [selectedDate, _setSelectedDate] = useState(getDateString(new Date()));
+	const setSelectedDate = useCallback((date: string) => {
+		if (Number.isNaN(new Date(date).getTime())) {
+			_setSelectedDate(getDateString(new Date()));
+		} else {
+			_setSelectedDate(date);
+		}
+	}, []);
+
 	const [_logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
 		storageKey("logs"),
 		[],
@@ -34,15 +43,6 @@ function useDataProvider() {
 	function addLogs(toAdd: ReadonlyArray<Log>) {
 		setLogs([..._logs, ...toAdd]);
 	}
-
-	const [selectedDate, _setSelectedDate] = useState(getDateString(new Date()));
-	const setSelectedDate = useCallback((date: string) => {
-		if (Number.isNaN(new Date(date).getTime())) {
-			_setSelectedDate(getDateString(new Date()));
-		} else {
-			_setSelectedDate(date);
-		}
-	}, []);
 
 	const logs = useMemo(() => {
 		const start = startOfDay(new Date(selectedDate));
@@ -237,7 +237,9 @@ function useDataProvider() {
 			(l) => l.projectSlug !== project.slug,
 		);
 
-		deleteLogs(getProjectLogs(project));
+		const projectLogs = _logs.filter((l) => l.projectSlug === project.slug);
+
+		deleteLogs(projectLogs);
 		deleteProjects([project]);
 		setStartedLogs(newStartedLogs);
 	});

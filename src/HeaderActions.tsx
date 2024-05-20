@@ -27,7 +27,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 	const onFullReset = useWithClick(() => {
 		const shouldReset = window.confirm(
-			"Are you sure you want to reset everything?",
+			"Are you sure you want to remove everything for all days?",
 		);
 
 		if (shouldReset) {
@@ -37,7 +37,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 	const onResetTimers = useWithClick(() => {
 		const shouldReset = window.confirm(
-			"Are you sure you want to reset all timers?",
+			"Are you sure you want to remove all logs for all days?",
 		);
 
 		if (shouldReset) {

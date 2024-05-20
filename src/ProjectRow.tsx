@@ -75,14 +75,14 @@ export function ProjectRow({
 		},
 		remove: {
 			action: (project) => {
-				const message = `Are you sure you want to remove ${project.name}?`;
+				const message = `Are you sure you want to remove ${project.name} and all its logs?`;
 				if (globalThis.confirm(message)) removeProject(project);
 			},
 			icon: <HiMinusCircle size={20} />,
 		},
 		reset: {
 			action: (project) => {
-				const message = `Are you sure you want to reset ${project.name}?`;
+				const message = `Are you sure you want to remove all logs for ${project.name}?`;
 				if (globalThis.confirm(message)) resetProject(project);
 			},
 			icon: <HiArrowPath size={20} />,
