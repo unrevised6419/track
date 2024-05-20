@@ -20,6 +20,8 @@ import { DataContext } from "./data-context";
 
 export type DataContextType = ReturnType<typeof useDataProvider>;
 
+const thirtyDaysAgo = startOfDay(addDays(new Date(), -30)).getTime();
+
 function useDataProvider() {
 	const [selectedDate, _setSelectedDate] = useState(getDateString(new Date()));
 	const setSelectedDate = useCallback((date: string) => {
@@ -30,9 +32,15 @@ function useDataProvider() {
 		}
 	}, []);
 
-	const [_logs, setLogs] = useLocalStorage<ReadonlyArray<Log>>(
+	const [_logs, _setLogs] = useLocalStorage<ReadonlyArray<Log>>(
 		storageKey("logs"),
 		[],
+	);
+	const setLogs = useCallback(
+		(logs: ReadonlyArray<Log>) => {
+			_setLogs(logs.filter((l) => l.startedAt > thirtyDaysAgo));
+		},
+		[_setLogs],
 	);
 
 	function deleteLogs(toRemove: ReadonlyArray<Log>) {
