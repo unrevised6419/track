@@ -284,13 +284,15 @@ export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 		{},
 	);
 
-export function startedLogToLog(startedLog: StartedLog): Log {
-	return {
+export function startedLogToLogs(startedLog: StartedLog): ReadonlyArray<Log> {
+	const log = {
 		activityName: startedLog.activityName,
 		projectSlug: startedLog.projectSlug,
 		startedAt: startedLog.startedAt,
 		endedAt: Date.now(),
-	};
+	} satisfies Log;
+
+	return splitLogByTimeUnit({ log, unit: "day" });
 }
 
 export function splitEnd(str: string, separator: string): string[] {

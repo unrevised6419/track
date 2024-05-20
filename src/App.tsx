@@ -57,11 +57,6 @@ export function App() {
 
 	useDynamicFavicon();
 
-	const constraints = getLogsConstraints(logs, startedLogs);
-	const timelineLength = 32;
-	const diff = constraints.endedAt - constraints.startedAt;
-	const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
-
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
 	useHotkeys(`l`, startNewLog, { enabled: startedLogs.length > 0 });
 	useHotkeys(`meta+k`, () => {
@@ -69,6 +64,11 @@ export function App() {
 	});
 
 	const onCopyLogs = useWithClick(() => {
+		const constraints = getLogsConstraints(logs, startedLogs);
+		const timelineLength = 32;
+		const diff = constraints.endedAt - constraints.startedAt;
+		const intervalMinutes = Math.ceil(diff / timelineLength / 1000 / 60);
+
 		const projectsTimeline = projects
 			.map((project) => ({ project, projectLogs: getProjectLogs(project) }))
 			.filter(({ projectLogs }) => projectLogs.length > 0)
@@ -147,9 +147,6 @@ export function App() {
 						key={project.slug}
 						project={project}
 						projectButtons={projectButtons}
-						intervalMinutes={intervalMinutes}
-						timelineLength={timelineLength}
-						constraints={constraints}
 						order={index + 1}
 						showOrderButton={showOrderButton}
 					/>

@@ -6,15 +6,7 @@ import {
 	HiCog8Tooth,
 } from "react-icons/hi2";
 import { HeaderButton } from "./HeaderButton";
-import {
-	cn,
-	getDateString,
-	logsToMachineTimeInHours,
-	splitEnd,
-	splitStart,
-	startedLogToLog,
-	useWithClick,
-} from "./utils";
+import { cn, splitEnd, splitStart, useWithClick } from "./utils";
 import { Project } from "./types";
 import { useDataContext } from "./data-context";
 
@@ -26,12 +18,11 @@ type HeaderActionsProps = {
 export function HeaderActions(props: HeaderActionsProps) {
 	const { className, onShowSettingsModal } = props;
 	const {
-		getProjectLogs,
 		projects,
 		removeAllProjectsAndLogs,
 		removeAllLogs,
 		importProjects,
-		getProjectStartedLogs,
+		createProjectTracks,
 	} = useDataContext();
 
 	const onFullReset = useWithClick(() => {
@@ -83,26 +74,13 @@ export function HeaderActions(props: HeaderActionsProps) {
 	});
 
 	const onExport = useWithClick(() => {
-		const projectsExports = projects.map((project) => {
-			const logs = [
-				...getProjectLogs(project),
-				...getProjectStartedLogs(project).map(startedLogToLog),
-			];
+		const projectsTracks = projects.flatMap((project) =>
+			createProjectTracks(project),
+		);
 
-			if (logs.length === 0) return;
-
-			const date = getDateString(new Date());
-			const totalTimeHours = logsToMachineTimeInHours(logs);
-			const totalTime = totalTimeHours.toFixed(2);
-
-			return `/track ${date} ${project.slug} ${totalTime} ${project.name}`;
+		void navigator.clipboard.writeText(projectsTracks.join("\n\n")).then(() => {
+			window.alert("Jagaad Manager Export format was copied to clipboard!");
 		});
-
-		void navigator.clipboard
-			.writeText(projectsExports.filter(Boolean).join("\n"))
-			.then(() => {
-				window.alert("Jagaad Manager Export format was copied to clipboard!");
-			});
 	});
 
 	return (

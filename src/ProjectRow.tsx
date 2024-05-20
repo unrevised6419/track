@@ -8,20 +8,8 @@ import {
 	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./Button";
-import { Interval, Project, ProjectAction, projectActions } from "./types";
-import {
-	cn,
-	getDateString,
-	getLegend,
-	groupBy,
-	logsTimeline,
-	logsToMachineTimeInHours,
-	msToHumanFormat,
-	startedLogToLog,
-	sumLogs,
-	useLiveTotalTime,
-	useWithClick,
-} from "./utils";
+import { Project, ProjectAction, projectActions } from "./types";
+import { cn, msToHumanFormat, useLiveTotalTime, useWithClick } from "./utils";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -31,9 +19,6 @@ import { useDataContext } from "./data-context";
 type ProjectRowProps = {
 	project: Project;
 	projectButtons: ProjectAction[];
-	intervalMinutes: number;
-	timelineLength: number;
-	constraints: Interval;
 	order: number;
 	showOrderButton: boolean;
 };
@@ -47,9 +32,6 @@ type ProjectActionProps = {
 export function ProjectRow({
 	project,
 	projectButtons: actions,
-	intervalMinutes,
-	timelineLength,
-	constraints,
 	order,
 	showOrderButton,
 }: ProjectRowProps) {
@@ -62,6 +44,7 @@ export function ProjectRow({
 		getProjectStartedLogs,
 		toggleActiveProject,
 		renameProjectActivity,
+		createProjectTracks,
 	} = useDataContext();
 
 	const projectLogs = getProjectLogs(project);
@@ -72,40 +55,8 @@ export function ProjectRow({
 		?.activityName;
 
 	const onCopyProjectLog = useWithClick((project: Project) => {
-		const logs = [
-			...getProjectLogs(project),
-			...getProjectStartedLogs(project).map(startedLogToLog),
-		];
-
-		const timeline = logsTimeline({
-			constraints,
-			logs,
-			intervalMinutes,
-			timelineLength,
-		});
-
-		const groupByActivity = Object.entries(groupBy(logs, "activityName"));
-		const activities = groupByActivity.map(([name, logs = []]) => {
-			const totalTime = sumLogs(logs);
-			const totalTimeHuman = msToHumanFormat(totalTime, "units");
-
-			return `${name} (${totalTimeHuman} / x${String(logs.length)})`;
-		});
-
-		const date = getDateString(new Date());
-		const totalTimeHours = logsToMachineTimeInHours(logs);
-		const totalTime = totalTimeHours.toFixed(2);
-
-		const log = [
-			`/track ${date} ${project.slug} ${totalTime} ${activities.map((a) => `- ${a}`).join("\n")}`,
-			timeline,
-			getLegend(intervalMinutes),
-		]
-			// TODO: Temporary disable emoji until server handles them corectly
-			.slice(0, 1)
-			.join("\n");
-
-		void navigator.clipboard.writeText(log);
+		const tracks = createProjectTracks(project);
+		void navigator.clipboard.writeText(tracks.join("\n\n"));
 	});
 
 	useHotkeys(

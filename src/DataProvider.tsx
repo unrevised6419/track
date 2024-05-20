@@ -6,9 +6,13 @@ import {
 	askForActivityName,
 	getDateString,
 	groupBy,
+	logsToMachineTimeInHours,
+	msToHumanFormat,
 	splitLogByTimeUnit,
 	startOfDay,
+	startedLogToLogs,
 	storageKey,
+	sumLogs,
 	useEffectEvent,
 	useWithClick,
 } from "./utils";
@@ -257,6 +261,39 @@ function useDataProvider() {
 		}
 	});
 
+	const createProjectTracks = useEffectEvent((project: Project) => {
+		const logs = [
+			...getProjectLogs(project),
+			...getProjectStartedLogs(project).flatMap(startedLogToLogs),
+		];
+
+		if (logs.length === 0) [];
+
+		const logsByDay = logs.reduce<Record<string, Log[]>>((acc, log) => {
+			const date = getDateString(new Date(log.startedAt));
+			acc[date] = [...(acc[date] ?? []), log];
+			return acc;
+		}, {});
+
+		const logsByDayEntries = Object.entries(logsByDay);
+
+		const tracks = logsByDayEntries.map(([date, logs]) => {
+			const groupByActivity = Object.entries(groupBy(logs, "activityName"));
+			const activities = groupByActivity.map(([name, logs = []]) => {
+				const totalTime = sumLogs(logs);
+				const totalTimeHuman = msToHumanFormat(totalTime, "units");
+				return `${name} (${totalTimeHuman} / x${String(logs.length)})`;
+			});
+
+			const totalTimeHours = logsToMachineTimeInHours(logs);
+			const totalTime = totalTimeHours.toFixed(2);
+
+			return `/track ${date} ${project.slug} ${totalTime} ${activities.map((a) => `- ${a}`).join("\n")}`;
+		});
+
+		return tracks;
+	});
+
 	return {
 		projects,
 		logs,
@@ -280,6 +317,7 @@ function useDataProvider() {
 		createNewStartedLogFromActivity,
 		selectedDate,
 		setSelectedDate,
+		createProjectTracks,
 	};
 }
 
