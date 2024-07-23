@@ -1,5 +1,5 @@
-// These were copied from https://cmdk.paco.me/ with small adjustments.
-// TODO: Migrate to daisyUI
+/* These were copied from https://cmdk.paco.me/ with small adjustments. */
+/* TODO: Migrate to daisyUI */
 
 :root.cmdk-styles {
 	--cmdk-shadow: 0 16px 70px rgb(0 0 0 / 20%);

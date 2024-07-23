@@ -1,6 +1,6 @@
 import React from "react";
 import { Command } from "cmdk";
-import "./CommandMenu.scss";
+import "./CommandMenu.css";
 import { useDataContext } from "./data-context";
 
 type CommandMenuProps = {
