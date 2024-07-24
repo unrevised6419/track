@@ -169,11 +169,6 @@ export function getLogsConstraints(
 	return { startedAt, endedAt } as Interval;
 }
 
-export function askForActivityName(defaultName?: string) {
-	const userAnswer = window.prompt("What are you working on?", defaultName);
-	return userAnswer || undefined;
-}
-
 export function useSortableList() {
 	const { projects, sortProjects } = useDataContext();
 
@@ -212,7 +207,7 @@ export function storageKey(key: string) {
 export function useProjectButtons() {
 	const [projectButtons, _setProjectButtons] = useLocalStorage<ProjectAction[]>(
 		storageKey("project-end-buttons"),
-		["copy", "rename"],
+		["copy"],
 	);
 
 	function toggleProjectButton(button: ProjectAction) {

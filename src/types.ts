@@ -26,5 +26,7 @@ export type Activity = {
 	readonly projectSlug: string;
 };
 
-export const projectActions = ["copy", "rename", "reset", "remove"] as const;
-export type ProjectAction = (typeof projectActions)[number];
+export const projectActions = ["copy", "reset", "remove"] as const;
+export type ProjectAction =
+	| (typeof projectActions)[number]
+	| (string & Record<never, never>);

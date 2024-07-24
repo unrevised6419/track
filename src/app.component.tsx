@@ -25,13 +25,12 @@ import { ProjectRow } from "./project-row.component";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useDataContext } from "./data.context";
 import { CommandMenu } from "./command-menu.component";
-import { useMenuProviderContext } from "./command-menu.context";
+import { useCommandMenuContext } from "./command-menu.context";
 
 const ProjectActionsLabels: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
 	copy: "Project Log Copy",
 	remove: "Project Remove",
-	rename: "Rename Project Activity Name",
 };
 
 export function App() {
@@ -44,7 +43,8 @@ export function App() {
 		true,
 	);
 
-	const { toggleCommandMenu } = useMenuProviderContext();
+	const { toggleCommandMenu, showCommandMenuForProject } =
+		useCommandMenuContext();
 
 	const {
 		projects,
@@ -52,15 +52,23 @@ export function App() {
 		getProjectLogs,
 		stopAllProjects,
 		startedLogs,
-		startNewLog,
 		selectedDate,
 		setSelectedDate,
+		firstStartedProject,
 	} = useDataContext();
 
 	useDynamicFavicon();
 
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
-	useHotkeys(`l`, startNewLog, { enabled: startedLogs.length > 0 });
+	useHotkeys(
+		`l`,
+		(event) => {
+			if (!firstStartedProject) return;
+			event.preventDefault();
+			showCommandMenuForProject(firstStartedProject);
+		},
+		{ enabled: startedLogs.length > 0 },
+	);
 	useHotkeys(`meta+k`, toggleCommandMenu);
 
 	const onCopyLogs = useWithClick(() => {

@@ -5,7 +5,7 @@ export const CommandMenuContext = createContext<
 	CommandMenuContextType | undefined
 >(undefined);
 
-export function useMenuProviderContext() {
+export function useCommandMenuContext() {
 	const context = useContext(CommandMenuContext);
 	if (context) return context;
 	const message = `useMenuProviderContext must be used within an CommandMenuProvider`;

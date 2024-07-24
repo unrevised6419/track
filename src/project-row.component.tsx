@@ -5,7 +5,6 @@ import {
 	HiArrowPath,
 	HiClipboardDocumentList,
 	HiMinusCircle,
-	HiPencil,
 } from "react-icons/hi2";
 import { Button } from "./button.component";
 import { Project, ProjectAction, projectActions } from "./types";
@@ -15,6 +14,7 @@ import { useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ShowMoreDropdown } from "./show-more-dropdown.component";
 import { useDataContext } from "./data.context";
+import { useCommandMenuContext } from "./command-menu.context";
 
 type ProjectRowProps = {
 	project: Project;
@@ -24,6 +24,7 @@ type ProjectRowProps = {
 };
 
 type ProjectActionProps = {
+	key: ProjectAction;
 	action: (project: Project) => void;
 	icon: JSX.Element;
 	disabled?: boolean;
@@ -42,11 +43,12 @@ export function ProjectRow({
 		resetProject,
 		removeProject,
 		getProjectStartedLogs,
-		toggleActiveProject,
-		renameProjectActivity,
 		createProjectTracks,
 		selectedDateIsToday,
 	} = useDataContext();
+
+	const { toggleCommandMenuForProject, showCommandMenuForProject } =
+		useCommandMenuContext();
 
 	const projectLogs = getProjectLogs(project);
 	const projectStartedLogs = getProjectStartedLogs(project);
@@ -64,8 +66,21 @@ export function ProjectRow({
 
 	useHotkeys(
 		order.toString(),
-		() => {
-			toggleActiveProject(project);
+		(event) => {
+			// If not prevented the character will reach command input
+			event.preventDefault();
+			toggleCommandMenuForProject(project);
+		},
+		{ enabled: canBeToggled },
+		[project],
+	);
+
+	useHotkeys(
+		`shift+${String(order)}`,
+		(event) => {
+			// If not prevented the character will reach command input
+			event.preventDefault();
+			showCommandMenuForProject(project);
 		},
 		{ enabled: canBeToggled },
 		[project],
@@ -73,11 +88,13 @@ export function ProjectRow({
 
 	const ProjectActionsMapper: Record<ProjectAction, ProjectActionProps> = {
 		copy: {
+			key: "copy",
 			action: onCopyProjectLog,
 			icon: <HiClipboardDocumentList size={20} />,
 			disabled: projectLogs.length === 0,
 		},
 		remove: {
+			key: "remove",
 			action: (project) => {
 				const message = `Are you sure you want to remove ${project.name} and all its logs?`;
 				if (globalThis.confirm(message)) removeProject(project);
@@ -85,6 +102,7 @@ export function ProjectRow({
 			icon: <HiMinusCircle size={20} />,
 		},
 		reset: {
+			key: "reset",
 			action: (project) => {
 				const message = `Are you sure you want to remove all logs for ${project.name}?`;
 				if (globalThis.confirm(message)) resetProject(project);
@@ -92,25 +110,26 @@ export function ProjectRow({
 			icon: <HiArrowPath size={20} />,
 			disabled: projectLogs.length === 0,
 		},
-		rename: {
-			action: renameProjectActivity,
-			icon: <HiPencil size={20} />,
-		},
 	};
 
 	const renderActions = (actions: ReadonlyArray<ProjectAction>) => {
-		return actions.map((button) => (
-			<Button
-				key={button}
-				onClick={() => {
-					ProjectActionsMapper[button].action(project);
-				}}
-				className={cn(isStarted ? "btn-error" : undefined)}
-				disabled={ProjectActionsMapper[button].disabled}
-			>
-				{ProjectActionsMapper[button].icon}
-			</Button>
-		));
+		return actions
+			.map((button) => ProjectActionsMapper[button])
+			.filter(Boolean)
+			.map((options) => {
+				return (
+					<Button
+						key={options.key}
+						onClick={() => {
+							options.action(project);
+						}}
+						className={cn(isStarted ? "btn-error" : undefined)}
+						disabled={options.disabled}
+					>
+						{options.icon}
+					</Button>
+				);
+			});
 	};
 
 	return (
@@ -119,7 +138,7 @@ export function ProjectRow({
 				className={isStarted ? "btn-error" : undefined}
 				disabled={!canBeToggled}
 				onClick={() => {
-					toggleActiveProject(project);
+					toggleCommandMenuForProject(project);
 				}}
 			>
 				{isStarted ? <HiPauseCircle size={20} /> : <HiPlayCircle size={20} />}

@@ -3,7 +3,6 @@ import { PropsWithChildren, useCallback, useMemo, useState } from "react";
 import { Activity, Log, Project, StartedLog } from "./types";
 import {
 	addDays,
-	askForActivityName,
 	getDateString,
 	groupBy,
 	logsToMachineTimeInHours,
@@ -57,9 +56,12 @@ function useDataProvider() {
 		setLogs(newLogs);
 	}
 
-	function addLogs(toAdd: ReadonlyArray<Log>) {
-		setLogs([..._logs, ...toAdd]);
-	}
+	const addLogs = useCallback(
+		(toAdd: ReadonlyArray<Log>) => {
+			setLogs([..._logs, ...toAdd]);
+		},
+		[_logs, setLogs],
+	);
 
 	const logs = useMemo(() => {
 		const { start, end } = selectedDateRange;
@@ -91,16 +93,19 @@ function useDataProvider() {
 		setProjects([...projects, ...toAdd]);
 	}
 
-	const addActivity = (newActivity: Activity) => {
-		const filteredActivities = activities.filter((a) => {
-			const sameProject = a.projectSlug === newActivity.projectSlug;
-			const sameName = a.name === newActivity.name;
-			return !(sameProject && sameName);
-		});
+	const addActivity = useCallback(
+		(newActivity: Activity) => {
+			const filteredActivities = activities.filter((a) => {
+				const sameProject = a.projectSlug === newActivity.projectSlug;
+				const sameName = a.name === newActivity.name;
+				return !(sameProject && sameName);
+			});
 
-		// Keep only the last 100 activities
-		_setActivities([...filteredActivities, newActivity].slice(-100));
-	};
+			// Keep only the last 100 activities
+			_setActivities([...filteredActivities, newActivity].slice(-100));
+		},
+		[_setActivities, activities],
+	);
 
 	const logsByProject = useMemo(() => groupBy(logs, "projectSlug"), [logs]);
 	const startedLogsByProject = useMemo(
@@ -123,9 +128,10 @@ function useDataProvider() {
 		(project: Project) => startedLogsByProject[project.slug] ?? [],
 	);
 
-	const getProjectActivities = useEffectEvent(
-		(project: Project) => activitiesByProject[project.slug] ?? [],
-	);
+	const getProjectActivities = useEffectEvent((project: Project | string) => {
+		const slug = typeof project === "string" ? project : project.slug;
+		return activitiesByProject[slug] ?? [];
+	});
 
 	const getProjectBySlug = useEffectEvent((slug: string) => {
 		const projects = projectsBySlug[slug]?.at(0);
@@ -133,13 +139,7 @@ function useDataProvider() {
 		return projects;
 	});
 
-	const askForProjectActivityName = useEffectEvent((project: Project) => {
-		const projectActivities = getProjectActivities(project);
-		const lastActivityName = projectActivities.at(-1)?.name;
-		return askForActivityName(lastActivityName);
-	});
-
-	function saveStartedLogs() {
+	const saveStartedLogs = useCallback(() => {
 		const newLogs = startedLogs.map<Log>((log) => ({
 			projectSlug: log.projectSlug,
 			activityName: log.activityName,
@@ -149,69 +149,48 @@ function useDataProvider() {
 
 		// Make sure to split logs that span multiple days
 		addLogs(newLogs.flatMap((log) => splitLogByTimeUnit({ log, unit: "day" })));
-	}
+	}, [addLogs, startedLogs]);
 
-	const createNewStartedLogFromActivity = useWithClick((activity: Activity) => {
-		saveStartedLogs();
+	const createNewStartedLogFromActivity = useCallback(
+		(activity: Activity) => {
+			saveStartedLogs();
 
-		const startedLog: StartedLog = {
-			projectSlug: activity.projectSlug,
-			startedAt: Date.now(),
-			activityName: activity.name,
-		};
+			const startedLog: StartedLog = {
+				projectSlug: activity.projectSlug,
+				startedAt: Date.now(),
+				activityName: activity.name,
+			};
 
-		setStartedLogs([startedLog]);
-		addActivity(activity);
+			setStartedLogs([startedLog]);
+			addActivity(activity);
+		},
+		[addActivity, saveStartedLogs, setStartedLogs],
+	);
+
+	const createNewStartedLogForActivity = useWithClick((activity: Activity) => {
+		createNewStartedLogFromActivity(activity);
 	});
 
-	function createNewStartedLog(project: Project) {
-		const startedAt = Date.now();
-		const maybeActivityName = askForProjectActivityName(project);
-		const activityName = maybeActivityName ?? "Unknown activity";
-
-		const startedLog: StartedLog = {
-			projectSlug: project.slug,
-			startedAt,
-			activityName,
-		};
-
-		setStartedLogs([startedLog]);
-		if (maybeActivityName) {
-			addActivity({ projectSlug: project.slug, name: maybeActivityName });
-		}
-	}
+	const createNewStartedLogForActivityName = useWithClick(
+		(options: { activityName: string; project: Project }) => {
+			createNewStartedLogFromActivity({
+				projectSlug: options.project.slug,
+				name: options.activityName,
+			});
+		},
+	);
 
 	const stopAllProjects = useWithClick(() => {
 		saveStartedLogs();
 		setStartedLogs([]);
 	});
 
-	const toggleActiveProject = useWithClick((project: Project) => {
-		saveStartedLogs();
-
-		const projectHasStartedLog = startedLogs.some(
-			(l) => l.projectSlug === project.slug,
-		);
-
-		if (projectHasStartedLog) {
-			setStartedLogs([]);
-		} else {
-			createNewStartedLog(project);
-		}
-	});
-
-	const startNewLog = useWithClick(() => {
-		saveStartedLogs();
-
-		const project = projects.find(
-			// Start a new log for first found project
-			(p) => p.slug === startedLogs.at(0)?.projectSlug,
-		);
-
-		if (project) {
-			createNewStartedLog(project);
-		}
-	});
+	// TODO: Deprecate this
+	const firstStartedProject = useMemo(() => {
+		const projectSlug = startedLogs.at(0)?.projectSlug;
+		if (!projectSlug) return;
+		return getProjectBySlug(projectSlug);
+	}, [getProjectBySlug, startedLogs]);
 
 	const addProject = useEffectEvent((project: Project) => {
 		addProjects([project]);
@@ -269,20 +248,6 @@ function useDataProvider() {
 		deleteLogs([log]);
 	});
 
-	const renameProjectActivity = useWithClick((project: Project) => {
-		const maybeActivityName = askForProjectActivityName(project);
-		const activityName = maybeActivityName ?? "Unknown activity";
-
-		const newStartedLogs = startedLogs.map((l) =>
-			l.projectSlug === project.slug ? { ...l, activityName } : l,
-		);
-
-		setStartedLogs(newStartedLogs);
-		if (maybeActivityName) {
-			addActivity({ projectSlug: project.slug, name: maybeActivityName });
-		}
-	});
-
 	const createProjectTracks = useEffectEvent((project: Project) => {
 		const logs = [
 			...getProjectLogs(project),
@@ -322,25 +287,25 @@ function useDataProvider() {
 		startedLogs,
 		activities,
 		getProjectLogs,
-		toggleActiveProject,
 		stopAllProjects,
 		addProject,
 		removeAllProjectsAndLogs,
 		removeAllLogs,
-		startNewLog,
 		importProjects,
 		resetProject,
 		removeProject,
 		sortProjects,
 		getProjectStartedLogs,
 		removeLog,
-		renameProjectActivity,
 		getProjectBySlug,
-		createNewStartedLogFromActivity,
+		createNewStartedLogForActivity,
+		createNewStartedLogForActivityName,
 		selectedDate,
 		setSelectedDate,
 		createProjectTracks,
 		selectedDateIsToday,
+		getProjectActivities,
+		firstStartedProject,
 	};
 }
 

@@ -26,7 +26,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 	} = useDataContext();
 
 	const onFullReset = useWithClick(() => {
-		const shouldReset = window.confirm(
+		const shouldReset = globalThis.confirm(
 			"Are you sure you want to remove everything for all days?",
 		);
 
@@ -36,7 +36,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 	});
 
 	const onResetTimers = useWithClick(() => {
-		const shouldReset = window.confirm(
+		const shouldReset = globalThis.confirm(
 			"Are you sure you want to remove all logs for all days?",
 		);
 
@@ -46,7 +46,9 @@ export function HeaderActions(props: HeaderActionsProps) {
 	});
 
 	const onImport = useWithClick(() => {
-		const text = window.prompt("Paste the Jagaad Manager `/projects me` here");
+		const text = globalThis.prompt(
+			"Paste the Jagaad Manager `/projects me` here",
+		);
 
 		if (!text) return;
 
@@ -79,7 +81,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 		);
 
 		void navigator.clipboard.writeText(projectsTracks.join("\n\n")).then(() => {
-			window.alert("Jagaad Manager Export format was copied to clipboard!");
+			globalThis.alert("Jagaad Manager Export format was copied to clipboard!");
 		});
 	});
 
