@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { type DataContextType } from "./DataProvider";
+import { type DataContextType } from "./data.provider";
 
 export const DataContext = createContext<DataContextType | undefined>(
 	undefined,

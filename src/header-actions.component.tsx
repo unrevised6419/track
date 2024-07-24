@@ -5,10 +5,10 @@ import {
 	HiClipboardDocument,
 	HiCog8Tooth,
 } from "react-icons/hi2";
-import { HeaderButton } from "./HeaderButton";
+import { HeaderButton } from "./header-button.component";
 import { cn, splitEnd, splitStart, useWithClick } from "./utils";
 import { Project } from "./types";
-import { useDataContext } from "./data-context";
+import { useDataContext } from "./data.context";
 
 type HeaderActionsProps = {
 	className?: string;

@@ -7,14 +7,14 @@ import {
 	HiMinusCircle,
 	HiPencil,
 } from "react-icons/hi2";
-import { Button } from "./Button";
+import { Button } from "./button.component";
 import { Project, ProjectAction, projectActions } from "./types";
 import { cn, msToHumanFormat, useLiveTotalTime, useWithClick } from "./utils";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { ShowMoreDropdown } from "./ShowMoreDropdown";
-import { useDataContext } from "./data-context";
+import { ShowMoreDropdown } from "./show-more-dropdown.component";
+import { useDataContext } from "./data.context";
 
 type ProjectRowProps = {
 	project: Project;

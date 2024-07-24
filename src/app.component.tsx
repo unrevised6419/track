@@ -13,19 +13,19 @@ import {
 	storageKey,
 } from "./utils";
 import { ProjectAction, projectActions } from "./types";
-import { TotalInfo } from "./TotalInfo";
-import { AddForm } from "./AddForm";
-import { ProjectsLogs } from "./ProjectsLogs";
-import { Modal } from "./Modal";
-import { Checkbox } from "./Checkbox";
+import { TotalInfo } from "./total-info.component";
+import { AddProjectForm } from "./add-project.form";
+import { ProjectsLogs } from "./projects-logs.component";
+import { Modal } from "./modal.component";
+import { Checkbox } from "./checkbox.component";
 import { ReactSortable } from "react-sortablejs";
-import { HeaderActions } from "./HeaderActions";
+import { HeaderActions } from "./header-actions.component";
 import { useHotkeys } from "react-hotkeys-hook";
-import { ProjectRow } from "./ProjectRow";
+import { ProjectRow } from "./project-row.component";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { useDataContext } from "./data-context";
-import { CommandMenu } from "./CommandMenu";
-import { useMenuProviderContext } from "./command-menu-context";
+import { useDataContext } from "./data.context";
+import { CommandMenu } from "./command-menu.component";
+import { useMenuProviderContext } from "./command-menu.context";
 
 const ProjectActionsLabels: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
@@ -153,7 +153,7 @@ export function App() {
 				))}
 			</ReactSortable>
 
-			<AddForm />
+			<AddProjectForm />
 
 			<div className="flex gap-2">
 				<button className="btn btn-sm grow" onClick={onShowLogs}>

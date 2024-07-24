@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { type CommandMenuContextType } from "./CommandMenuProvider";
+import { type CommandMenuContextType } from "./command-menu.provider";
 
 export const CommandMenuContext = createContext<
 	CommandMenuContextType | undefined

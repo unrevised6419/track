@@ -1,8 +1,8 @@
 import React from "react";
 import { Command } from "cmdk";
-import "./CommandMenu.css";
-import { useDataContext } from "./data-context";
-import { useMenuProviderContext } from "./command-menu-context";
+import "./command-menu.component.css";
+import { useDataContext } from "./data.context";
+import { useMenuProviderContext } from "./command-menu.context";
 
 export function CommandMenu() {
 	const { showCommandMenu, setShowCommandMenu } = useMenuProviderContext();

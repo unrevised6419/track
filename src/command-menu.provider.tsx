@@ -1,5 +1,5 @@
 import { PropsWithChildren, useState } from "react";
-import { CommandMenuContext } from "./command-menu-context";
+import { CommandMenuContext } from "./command-menu.context";
 import { useWithClick } from "./utils";
 
 export type CommandMenuContextType = ReturnType<typeof useCommandMenuProvider>;

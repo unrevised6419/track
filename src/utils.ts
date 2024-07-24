@@ -5,7 +5,7 @@ import { Project, Log, ProjectAction, StartedLog, Interval } from "./types";
 import { useMemo, useCallback, useEffect, useState, useRef } from "react";
 import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
-import { useDataContext } from "./data-context";
+import { useDataContext } from "./data.context";
 
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
@@ -279,7 +279,6 @@ export const groupBy = <T extends Record<string, any>, K extends keyof T>(
 	key: K,
 ): Partial<Record<string, ReadonlyArray<T>>> =>
 	arr.reduce<Record<string, ReadonlyArray<T>>>(
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		(acc, item) => ((acc[item[key]] = [...(acc[item[key]] || []), item]), acc),
 		{},
 	);

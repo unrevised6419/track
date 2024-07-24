@@ -16,7 +16,7 @@ import {
 	useEffectEvent,
 	useWithClick,
 } from "./utils";
-import { DataContext } from "./data-context";
+import { DataContext } from "./data.context";
 
 export type DataContextType = ReturnType<typeof useDataProvider>;
 

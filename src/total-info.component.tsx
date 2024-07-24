@@ -8,7 +8,7 @@ import {
 	msToMachineFormat,
 } from "./utils";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { useDataContext } from "./data-context";
+import { useDataContext } from "./data.context";
 
 const h8inMs = 8 * 60 * 60 * 1000;
 const m10inMs = 10 * 60 * 1000;
