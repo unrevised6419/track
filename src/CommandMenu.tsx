@@ -2,13 +2,11 @@ import React from "react";
 import { Command } from "cmdk";
 import "./CommandMenu.css";
 import { useDataContext } from "./data-context";
+import { useMenuProviderContext } from "./command-menu-context";
 
-type CommandMenuProps = {
-	open: boolean;
-	setOpen: (open: boolean) => void;
-};
+export function CommandMenu() {
+	const { showCommandMenu, setShowCommandMenu } = useMenuProviderContext();
 
-export function CommandMenu({ open, setOpen }: CommandMenuProps) {
 	const ref = React.useRef<HTMLDivElement | null>(null);
 	const [inputValue, setInputValue] = React.useState("");
 
@@ -16,7 +14,11 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
 		useDataContext();
 
 	return (
-		<Command.Dialog ref={ref} open={open} onOpenChange={setOpen}>
+		<Command.Dialog
+			ref={ref}
+			open={showCommandMenu}
+			onOpenChange={setShowCommandMenu}
+		>
 			<Command.Input
 				autoFocus
 				placeholder="What do you work on?"
@@ -38,7 +40,7 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
 							onSelect={() => {
 								createNewStartedLogFromActivity(activity);
 								setInputValue("");
-								setOpen(false);
+								setShowCommandMenu(false);
 							}}
 						>
 							{activity.name}

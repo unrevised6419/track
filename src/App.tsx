@@ -25,8 +25,9 @@ import { ProjectRow } from "./ProjectRow";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useDataContext } from "./data-context";
 import { CommandMenu } from "./CommandMenu";
+import { useMenuProviderContext } from "./command-menu-context";
 
-const ProjectActionsSettingsProps: Record<ProjectAction, string> = {
+const ProjectActionsLabels: Record<ProjectAction, string> = {
 	reset: "Project Time Reset",
 	copy: "Project Log Copy",
 	remove: "Project Remove",
@@ -37,12 +38,13 @@ export function App() {
 	const [projectButtons, toggleProjectButton] = useProjectButtons();
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
-	const [showCommandMenu, setShowCommandMenu] = useState(false);
 	const [sortableList, setSortableList] = useSortableList();
 	const [showOrderButton, setShowOrderButton] = useLocalStorage(
 		storageKey("show-project-reorder"),
 		true,
 	);
+
+	const { toggleCommandMenu } = useMenuProviderContext();
 
 	const {
 		projects,
@@ -59,9 +61,7 @@ export function App() {
 
 	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
 	useHotkeys(`l`, startNewLog, { enabled: startedLogs.length > 0 });
-	useHotkeys(`meta+k`, () => {
-		setShowCommandMenu(!showCommandMenu);
-	});
+	useHotkeys(`meta+k`, toggleCommandMenu);
 
 	const onCopyLogs = useWithClick(() => {
 		const constraints = getLogsConstraints(logs, startedLogs);
@@ -103,7 +103,7 @@ export function App() {
 
 	return (
 		<div className="container flex min-h-screen max-w-screen-md flex-col gap-y-4 border-x border-base-300 py-4">
-			<CommandMenu open={showCommandMenu} setOpen={setShowCommandMenu} />
+			<CommandMenu />
 
 			<header className="flex items-center gap-4">
 				<div className="btn btn-primary btn-sm sm:btn-md">
@@ -182,7 +182,7 @@ export function App() {
 						{projectActions.map((button) => (
 							<Checkbox
 								key={button}
-								item={ProjectActionsSettingsProps[button]}
+								item={ProjectActionsLabels[button]}
 								isChecked={projectButtons.includes(button)}
 								setIsChecked={() => {
 									toggleProjectButton(button);

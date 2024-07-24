@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 import { Analytics } from "@vercel/analytics/react";
 import { App } from "./App.tsx";
 import { DataProvider } from "./DataProvider.tsx";
+import { CommandMenuProvider } from "./CommandMenuProvider.tsx";
 
 const rootElement = document.getElementById("root");
 
@@ -13,7 +14,9 @@ if (rootElement) {
 	root.render(
 		<React.StrictMode>
 			<DataProvider>
-				<App />
+				<CommandMenuProvider>
+					<App />
+				</CommandMenuProvider>
 			</DataProvider>
 			<Analytics />
 		</React.StrictMode>,
