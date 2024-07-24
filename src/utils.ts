@@ -406,3 +406,31 @@ export function addDays(date: Date, amount: number): Date {
 	_date.setDate(_date.getDate() + amount);
 	return _date;
 }
+
+export const useKeyIsPressed = (key: string) => {
+	const [isShiftKeyPressed, setIsShiftKeyPressed] = useState(false);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === key) {
+				setIsShiftKeyPressed(true);
+			}
+		};
+
+		const handleKeyUp = (event: KeyboardEvent) => {
+			if (event.key === key) {
+				setIsShiftKeyPressed(false);
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+		};
+	}, [key]);
+
+	return isShiftKeyPressed;
+};

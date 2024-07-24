@@ -8,7 +8,13 @@ import {
 } from "react-icons/hi2";
 import { Button } from "./button.component";
 import { Project, ProjectAction, projectActions } from "./types";
-import { cn, msToHumanFormat, useLiveTotalTime, useWithClick } from "./utils";
+import {
+	cn,
+	msToHumanFormat,
+	useLiveTotalTime,
+	useKeyIsPressed,
+	useWithClick,
+} from "./utils";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -37,6 +43,7 @@ export function ProjectRow({
 	showOrderButton,
 }: ProjectRowProps) {
 	const isSmallDevice = useMediaQuery("(max-width : 768px)");
+	const shiftKeyIsPressed = useKeyIsPressed("Shift");
 
 	const {
 		getProjectLogs,
@@ -54,6 +61,7 @@ export function ProjectRow({
 	const projectStartedLogs = getProjectStartedLogs(project);
 
 	const isStarted = projectStartedLogs.length > 0;
+	const isNotStarted = projectStartedLogs.length === 0;
 	const startedLogsTitles = (projectStartedLogs.at(-1) ?? projectLogs.at(-1))
 		?.activityName;
 
@@ -138,10 +146,18 @@ export function ProjectRow({
 				className={isStarted ? "btn-error" : undefined}
 				disabled={!canBeToggled}
 				onClick={() => {
-					toggleCommandMenuForProject(project);
+					if (isNotStarted || shiftKeyIsPressed) {
+						showCommandMenuForProject(project);
+					} else {
+						toggleCommandMenuForProject(project);
+					}
 				}}
 			>
-				{isStarted ? <HiPauseCircle size={20} /> : <HiPlayCircle size={20} />}
+				{isNotStarted || shiftKeyIsPressed ? (
+					<HiPlayCircle size={20} />
+				) : (
+					<HiPauseCircle size={20} />
+				)}
 			</Button>
 
 			<div className="relative min-w-0 grow">
