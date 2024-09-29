@@ -116,7 +116,7 @@ export function App() {
 
 			<header className="flex items-center gap-4">
 				<div className="btn btn-primary btn-sm sm:btn-md">
-					<div className="badge uppercase">Jagaatrack</div>
+					<div className="badge uppercase">Track</div>
 				</div>
 				<strong className="mt-0.5 hidden sm:inline">
 					Why are you running?

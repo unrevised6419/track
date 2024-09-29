@@ -36,7 +36,7 @@ export function TotalInfo() {
 		setAlarmSoundWasPlayed(shouldAlarm);
 	}, [alarmSoundWasPlayed, playAlarm, setAlarmSoundWasPlayed, shouldAlarm]);
 
-	useDocumentTitle(hasStartedLogs ? humanTotalTime : "Jagaatrack");
+	useDocumentTitle(hasStartedLogs ? humanTotalTime : "Track");
 
 	return (
 		<aside className="grid min-h-12 items-center rounded-btn bg-base-200 px-3.5 py-3 font-mono text-xs sm:grid-cols-2 md:text-sm">
