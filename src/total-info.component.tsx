@@ -4,10 +4,10 @@ import {
 	msToHumanFormat,
 	cn,
 	useLiveTotalTime,
-	storageKey,
 	msToMachineFormat,
+	useAppLocalStorage,
 } from "./utils";
-import { useDocumentTitle, useLocalStorage } from "@uidotdev/usehooks";
+import { useDocumentTitle } from "@uidotdev/usehooks";
 import { useDataContext } from "./data.context";
 
 const h8inMs = 8 * 60 * 60 * 1000;
@@ -17,8 +17,8 @@ const h7m50inMs = h8inMs - m10inMs;
 export function TotalInfo() {
 	const { projects, hasStartedLogs } = useDataContext();
 	const [playAlarm] = useSound("/call-to-attention.mp3");
-	const [alarmSoundWasPlayed, setAlarmSoundWasPlayed] = useLocalStorage(
-		storageKey("alarm-sound-was-played"),
+	const [alarmSoundWasPlayed, setAlarmSoundWasPlayed] = useAppLocalStorage(
+		"alarm-sound-was-played",
 		false,
 	);
 

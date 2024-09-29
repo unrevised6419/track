@@ -7,6 +7,15 @@ import { ItemInterface } from "react-sortablejs";
 import { useFavicon, useLocalStorage } from "@uidotdev/usehooks";
 import { useDataContext } from "./data.context";
 
+export function useAppLocalStorage<T>(
+	key: string,
+	initialValue?: T,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+	const [oldValue] = useLocalStorage(`jagaatrack:${key}`, initialValue);
+	const [value, setValue] = useLocalStorage(`storage8150:${key}`, oldValue);
+	return [value, setValue] as const;
+}
+
 export function sum(items: number[]) {
 	return items.reduce((acc, e) => acc + e, 0);
 }
@@ -200,15 +209,10 @@ export function useDynamicFavicon() {
 	}, [hasStartedLogs]);
 }
 
-export function storageKey(key: string) {
-	return `jagaatrack:${key}`;
-}
-
 export function useProjectButtons() {
-	const [projectButtons, _setProjectButtons] = useLocalStorage<ProjectAction[]>(
-		storageKey("project-end-buttons"),
-		["copy"],
-	);
+	const [projectButtons, _setProjectButtons] = useAppLocalStorage<
+		ProjectAction[]
+	>("project-end-buttons", ["copy"]);
 
 	function toggleProjectButton(button: ProjectAction) {
 		const newButtons = projectButtons.includes(button)

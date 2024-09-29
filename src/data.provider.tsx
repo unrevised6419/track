@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@uidotdev/usehooks";
 import { PropsWithChildren, useCallback, useMemo, useState } from "react";
 import { Activity, Log, Project, StartedLog } from "./types";
 import {
@@ -10,8 +9,8 @@ import {
 	splitLogByTimeUnit,
 	startOfDay,
 	startedLogToLogs,
-	storageKey,
 	sumLogs,
+	useAppLocalStorage,
 	useEffectEvent,
 	useWithClick,
 } from "./utils";
@@ -40,10 +39,7 @@ function useDataProvider() {
 		}
 	}, []);
 
-	const [_logs, _setLogs] = useLocalStorage<ReadonlyArray<Log>>(
-		storageKey("logs"),
-		[],
-	);
+	const [_logs, _setLogs] = useAppLocalStorage<ReadonlyArray<Log>>("logs", []);
 	const setLogs = useCallback(
 		(logs: ReadonlyArray<Log>) => {
 			_setLogs(logs.filter((l) => l.startedAt > thirtyDaysAgo));
@@ -70,21 +66,20 @@ function useDataProvider() {
 		});
 	}, [_logs, selectedDateRange]);
 
-	const [projects, setProjects] = useLocalStorage<ReadonlyArray<Project>>(
-		storageKey("projects"),
+	const [projects, setProjects] = useAppLocalStorage<ReadonlyArray<Project>>(
+		"projects",
 		[],
 	);
 
-	const [startedLogs, setStartedLogs] = useLocalStorage<
+	const [startedLogs, setStartedLogs] = useAppLocalStorage<
 		ReadonlyArray<StartedLog>
-	>(storageKey("started-logs"), []);
+	>("started-logs", []);
 
 	const hasStartedLogs = startedLogs.length > 0;
 
-	const [activities, _setActivities] = useLocalStorage<ReadonlyArray<Activity>>(
-		storageKey("activities"),
-		[],
-	);
+	const [activities, _setActivities] = useAppLocalStorage<
+		ReadonlyArray<Activity>
+	>("activities", []);
 
 	function deleteProjects(toRemove: ReadonlyArray<Project>) {
 		const newProjects = projects.filter((p) => !toRemove.includes(p));

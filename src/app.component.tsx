@@ -10,7 +10,7 @@ import {
 	useProjectButtons,
 	getLegend,
 	useWithClick,
-	storageKey,
+	useAppLocalStorage,
 } from "./utils";
 import { ProjectAction, projectActions } from "./types";
 import { TotalInfo } from "./total-info.component";
@@ -22,7 +22,6 @@ import { ReactSortable } from "react-sortablejs";
 import { HeaderActions } from "./header-actions.component";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ProjectRow } from "./project-row.component";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import { useDataContext } from "./data.context";
 import { CommandMenu } from "./command-menu.component";
 import { useCommandMenuContext } from "./command-menu.context";
@@ -38,8 +37,8 @@ export function App() {
 	const [showLogs, setShowLogs] = useState(false);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [sortableList, setSortableList] = useSortableList();
-	const [showOrderButton, setShowOrderButton] = useLocalStorage(
-		storageKey("show-project-reorder"),
+	const [showOrderButton, setShowOrderButton] = useAppLocalStorage(
+		"show-project-reorder",
 		true,
 	);
 
