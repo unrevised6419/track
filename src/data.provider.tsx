@@ -79,6 +79,8 @@ function useDataProvider() {
 		ReadonlyArray<StartedLog>
 	>(storageKey("started-logs"), []);
 
+	const hasStartedLogs = startedLogs.length > 0;
+
 	const [activities, _setActivities] = useLocalStorage<ReadonlyArray<Activity>>(
 		storageKey("activities"),
 		[],
@@ -306,6 +308,7 @@ function useDataProvider() {
 		selectedDateIsToday,
 		getProjectActivities,
 		firstStartedProject,
+		hasStartedLogs,
 	};
 }
 

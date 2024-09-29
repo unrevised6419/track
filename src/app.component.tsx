@@ -55,11 +55,12 @@ export function App() {
 		selectedDate,
 		setSelectedDate,
 		firstStartedProject,
+		hasStartedLogs,
 	} = useDataContext();
 
 	useDynamicFavicon();
 
-	useHotkeys(`s`, stopAllProjects, { enabled: startedLogs.length > 0 });
+	useHotkeys(`s`, stopAllProjects, { enabled: hasStartedLogs });
 	useHotkeys(
 		`l`,
 		(event) => {
@@ -67,7 +68,7 @@ export function App() {
 			event.preventDefault();
 			showCommandMenuForProject(firstStartedProject);
 		},
-		{ enabled: startedLogs.length > 0 },
+		{ enabled: hasStartedLogs },
 	);
 	useHotkeys(`meta+k`, toggleCommandMenu);
 

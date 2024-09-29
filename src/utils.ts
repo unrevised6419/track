@@ -188,16 +188,16 @@ const faviconPlay = "/favicon-play.svg";
 const faviconPause = "/favicon-pause.svg";
 
 export function useDynamicFavicon() {
-	const { startedLogs } = useDataContext();
+	const { hasStartedLogs } = useDataContext();
 	const [favicon, setFavicon] = useState(
-		startedLogs.length ? faviconPlay : faviconPause,
+		hasStartedLogs ? faviconPlay : faviconPause,
 	);
 
 	useFavicon(favicon);
 
 	useEffect(() => {
-		setFavicon(startedLogs.length ? faviconPlay : faviconPause);
-	}, [startedLogs.length]);
+		setFavicon(hasStartedLogs ? faviconPlay : faviconPause);
+	}, [hasStartedLogs]);
 }
 
 export function storageKey(key: string) {
