@@ -52,7 +52,16 @@ export function HeaderActions(props: HeaderActionsProps) {
 
 		if (!text) return;
 
-		const newProjects = text.split("\n").map((line) => {
+		// Firefox converts newlines in spaces, others don't
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1716229
+		const adjustedLines = text
+			.replaceAll("\n", " ")
+			.replaceAll("• ", "\n")
+			.split("\n")
+			.filter(Boolean)
+			.map((l) => `• ${l}`.trim());
+
+		const newProjects = adjustedLines.map((line) => {
 			// • Advisor Online [Evolution] [AO107] - (2024-02-06-NO ENDING)
 			//   ^ name                      ^ slug
 
