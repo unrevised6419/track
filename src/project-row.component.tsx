@@ -16,7 +16,7 @@ import {
 	useWithClick,
 } from "./utils";
 import { useMediaQuery } from "@uidotdev/usehooks";
-import { useMemo } from "react";
+import { useMemo, type JSX } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { ShowMoreDropdown } from "./show-more-dropdown.component";
 import { useDataContext } from "./data.context";
