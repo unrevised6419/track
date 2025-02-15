@@ -6,6 +6,7 @@ import {
 	groupBy,
 	logsToMachineTimeInHours,
 	msToHumanFormat,
+	removeProjectDuplicates,
 	splitLogByTimeUnit,
 	startOfDay,
 	startedLogToLogs,
@@ -59,7 +60,7 @@ function useDataProvider() {
 		[_logs, setLogs],
 	);
 
-	const logs = useMemo(() => {
+	const logs = useMemo<ReadonlyArray<Log>>(() => {
 		const { start, end } = selectedDateRange;
 		return _logs.filter((l) => {
 			return l.startedAt >= start && l.startedAt < end;
@@ -209,7 +210,7 @@ function useDataProvider() {
 			(p) => !projects.some((e) => e.slug === p.slug),
 		);
 
-		addProjects(filteredProjects);
+		addProjects(removeProjectDuplicates(filteredProjects));
 	});
 
 	const resetProject = useWithClick((project: Project) => {

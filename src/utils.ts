@@ -438,3 +438,17 @@ export const useKeyIsPressed = (key: string) => {
 
 	return isShiftKeyPressed;
 };
+
+export function removeProjectDuplicates(projects: ReadonlyArray<Project>) {
+	const slugs = new Set<string>();
+	const result: Project[] = [];
+
+	for (const project of projects) {
+		if (!slugs.has(project.slug)) {
+			slugs.add(project.slug);
+			result.push(project);
+		}
+	}
+
+	return result;
+}
