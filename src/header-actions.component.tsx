@@ -61,7 +61,7 @@ export function HeaderActions(props: HeaderActionsProps) {
 			.filter(Boolean)
 			.map((l) => `• ${l}`.trim());
 
-		const newProjects = adjustedLines.map((line) => {
+		const newProjects = adjustedLines.map<Project | undefined>((line) => {
 			// • Advisor Online [Evolution] [AO107] - (2024-02-06-NO ENDING)
 			//   ^ name                      ^ slug
 
