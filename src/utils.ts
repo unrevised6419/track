@@ -11,8 +11,7 @@ export function useAppLocalStorage<T>(
 	key: string,
 	initialValue?: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-	const [oldValue] = useLocalStorage(`jagaatrack:${key}`, initialValue);
-	const [value, setValue] = useLocalStorage(`storage8150:${key}`, oldValue);
+	const [value, setValue] = useLocalStorage(`storage8150:${key}`, initialValue);
 	return [value, setValue] as const;
 }
 
